@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <title>匯出管制表資料</title>
+  <style>
+    body { background: #eef3f6; font-family: "Segoe UI", "Noto Sans TC", sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+    .card { background: #fff; border-radius: 12px; box-shadow: 0 14px 36px rgba(18,44,60,.12); padding: 36px 40px; max-width: 420px; width: 100%; text-align: center; }
+    h2 { margin: 0 0 8px; font-size: 20px; color: #17232c; }
+    p  { color: #60717f; font-size: 14px; line-height: 1.6; margin: 0 0 24px; }
+    .btn { background: #1479b8; color: #fff; border: none; border-radius: 8px; padding: 12px 28px; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%; }
+    .btn:hover { background: #0c5d92; }
+    .error { color: #d93f3f; font-size: 13px; margin-top: 14px; display: none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>📦 匯出管制表資料</h2>
+    <p>將目前瀏覽器中儲存的管制表資料下載為 JSON 檔案，<br>再到新版管制表匯入即可。</p>
+    <button class="btn" onclick="exportData()">下載 gantt-export.json</button>
+    <p class="error" id="err">找不到資料，請先用舊版（file://）開啟這個頁面。</p>
+  </div>
+  <script>
+    function exportData() {
+      const raw = localStorage.getItem("projectflow.tasks.v1");
+      if (!raw) { document.getElementById("err").style.display = "block"; return; }
+      try {
+        const payload = {
+          tasks:       JSON.parse(raw),
+          projectName: localStorage.getItem("projectflow.projectName.v1") || "Project schedule",
+          collapsed:   JSON.parse(localStorage.getItem("projectflow.collapsed.v1") || "[]")
+        };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "gantt-export.json";
+        a.click();
+      } catch(e) { document.getElementById("err").textContent = "匯出失敗：" + e.message; document.getElementById("err").style.display = "block"; }
+    }
+  </script>
+</body>
+</html>

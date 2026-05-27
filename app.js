@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteField, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs",
@@ -25,6 +25,24 @@ function getProjectId() {
 }
 const projectId = getProjectId();
 const projectRef = doc(db, "projects", projectId);
+
+// ── 鎖定機制：任務級樂觀鎖 ──────────────────────────────────────
+const LOCK_TTL_MS = 10 * 60 * 1000; // 10 分鐘後自動失效
+
+/** 每個瀏覽器 session 產生唯一使用者名稱，存於 localStorage */
+const userName = (() => {
+  const key = "projectflow.userName.v1";
+  let name = localStorage.getItem(key);
+  if (!name) {
+    const adj  = ["積極", "認真", "勤快", "細心", "熱心"];
+    const noun = ["工程師", "PM", "設計師", "主管", "同事"];
+    const tag  = Math.random().toString(36).slice(2, 5).toUpperCase();
+    name = adj[Math.floor(Math.random() * adj.length)] +
+           noun[Math.floor(Math.random() * noun.length)] + "-" + tag;
+    localStorage.setItem(key, name);
+  }
+  return name;
+})();
 
 const viewModeKey = "projectflow.viewMode.v1";
 const dayMs = 24 * 60 * 60 * 1000;
@@ -59,7 +77,8 @@ const state = {
   editingId: null,
   drag: null,
   suppressClick: false,
-  undoStack: []
+  undoStack: [],
+  locks: {}   // { [taskId]: { user: string, ts: number } }
 };
 
 const els = {
@@ -127,8 +146,33 @@ function persist() {
     tasks: state.tasks,
     projectName: state.projectName,
     collapsed: [...state.collapsed]
-  }).catch(err => console.error("儲存失敗:", err));
+  }, { merge: true }).catch(err => console.error("儲存失敗:", err));
   localStorage.setItem(viewModeKey, state.viewMode);
+}
+
+// ── 鎖定 / 解鎖 / 狀態查詢 ─────────────────────────────────────
+function acquireLock(taskId) {
+  const entry = { user: userName, ts: Date.now() };
+  state.locks[taskId] = entry;
+  updateDoc(projectRef, { [`locks.${taskId}`]: entry })
+    .catch(err => console.error("鎖定失敗:", err));
+}
+
+function releaseLock(taskId) {
+  if (!taskId) return;
+  if (state.locks[taskId]?.user !== userName) return;
+  delete state.locks[taskId];
+  updateDoc(projectRef, { [`locks.${taskId}`]: deleteField() })
+    .catch(err => console.error("解鎖失敗:", err));
+}
+
+/** 回傳正在鎖定此任務的他人名稱，若無則回傳 null */
+function isLockedByOther(taskId) {
+  const lock = state.locks[taskId];
+  if (!lock) return null;
+  if (Date.now() - lock.ts > LOCK_TTL_MS) return null; // 鎖已逾時
+  if (lock.user === userName) return null;              // 自己的鎖
+  return lock.user;
 }
 
 function parseDate(value) {
@@ -444,8 +488,9 @@ function renderTasks() {
   const numbers = computeTaskNumbers();
   els.taskList.innerHTML = "";
   getVisibleTasks().forEach((task) => {
+    const locker = isLockedByOther(task.id);
     const row = document.createElement("div");
-    row.className = `task-row task-grid ${task.type} level-${task.level} status-${task.status}`;
+    row.className = `task-row task-grid ${task.type} level-${task.level} status-${task.status}${locker ? " row-locked" : ""}`;
     row.draggable = true;
     row.dataset.taskId = task.id;
     const canToggle = hasChildren(task.id);
@@ -464,6 +509,7 @@ function renderTasks() {
           >${canToggle ? toggleLabel : "."}</span>
           ${numStr ? `<span class="task-number">${numStr}</span>` : ""}
           <span class="task-title"></span>
+          ${locker ? `<span class="lock-chip" title="${locker} 正在編輯此任務">🔒 ${locker}</span>` : ""}
         </span>
         <span class="owner"></span>
         <span class="status-badge status-${task.status}">${getStatusLabel(task.status)}</span>
@@ -901,6 +947,14 @@ function getSelectedDepId() {
 }
 
 function openDialog(task = null) {
+  if (task) {
+    const locker = isLockedByOther(task.id);
+    if (locker) {
+      alert(`⚠️ 「${task.name}」目前由「${locker}」正在編輯，請稍後再試。`);
+      return;
+    }
+    acquireLock(task.id);
+  }
   state.editingId = task?.id ?? null;
   els.dialogTitle.textContent = task ? "編輯任務" : "新增任務";
   els.deleteTask.hidden = !task;
@@ -1151,6 +1205,12 @@ els.isAtRisk.addEventListener("change", () => {
     els.progressOutput.textContent = isLeaf ? `${els.progress.value}%` : `${els.progress.value}%（自動計算）`;
   }
 });
+// 對話框關閉時釋放鎖（儲存、取消、Esc 均觸發）
+els.dialog.addEventListener("close", () => {
+  releaseLock(state.editingId);
+  state.editingId = null;
+});
+
 els.viewButtons.forEach((button) => {
   button.addEventListener("click", () => {
     state.viewMode = button.dataset.viewMode;
@@ -1291,7 +1351,19 @@ async function initFromFirestore() {
     state.tasks = (data.tasks || []).map(normalizeTask);
     state.projectName = data.projectName || state.projectName;
     state.collapsed = new Set(data.collapsed || []);
-    if (!els.dialog.open) render();
+
+    // 同步鎖定狀態，但保留自己正持有的鎖
+    const remoteLocks = data.locks || {};
+    const myEntry = state.editingId ? state.locks[state.editingId] : null;
+    state.locks = remoteLocks;
+    if (myEntry && state.editingId) state.locks[state.editingId] = myEntry;
+
+    if (!els.dialog.open) {
+      render();
+    } else {
+      // 對話框開著時仍更新任務列表鎖定狀態
+      renderTasks();
+    }
   });
 }
 

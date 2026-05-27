@@ -3,174 +3,110 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ProjectFlow Gantt Planner</title>
+    <title>ProjectFlow — 我的專案</title>
     <link rel="stylesheet" href="styles.css?v=17">
   </head>
   <body>
-    <main class="app-shell">
-      <header class="topbar">
+    <!-- 向下相容：舊版分享連結 index.html?p=xxx 自動跳轉 -->
+    <script>
+      const _p = new URLSearchParams(location.search).get("p");
+      if (_p) location.replace("project.html?p=" + _p);
+    </script>
+
+    <main class="home-shell">
+      <header class="home-topbar">
         <div>
           <p class="eyebrow">ProjectFlow</p>
-          <h1 id="project-title" contenteditable="true" spellcheck="false" title="Click to rename project">Project schedule</h1>
+          <h1>我的專案</h1>
         </div>
-        <div class="toolbar" aria-label="Project tools">
-          <button id="add-task" class="primary-button" type="button" title="新增任務">
-            <span aria-hidden="true">+</span>
-            <span>新增任務</span>
-          </button>
-          <button id="save-project" class="icon-button" type="button" title="儲存專案" aria-label="儲存專案">S</button>
-          <button id="undo-button" class="icon-button" type="button" title="復原（Ctrl+Z）" aria-label="復原" disabled>↩</button>
-          <button id="reset-project" class="icon-button" type="button" title="重設範例" aria-label="重設範例">R</button>
-          <button id="share-project" class="icon-button" type="button" title="複製分享連結" aria-label="複製分享連結">⇪</button>
-          <label id="import-label" class="icon-button" title="從 JSON 匯入" aria-label="匯入" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;">📥<input type="file" id="import-input" accept=".json" style="display:none"></label>
-        </div>
+        <button id="new-project" class="primary-button" type="button">
+          <span aria-hidden="true">+</span>
+          <span>建立新專案</span>
+        </button>
       </header>
 
-      <section class="status-strip" aria-label="Project summary">
-        <article>
-          <span>任務數</span>
-          <strong id="task-count">0</strong>
-        </article>
-        <article>
-          <span>整體進度</span>
-          <strong id="avg-progress">0%</strong>
-        </article>
-        <article>
-          <span>時間範圍</span>
-          <strong id="project-range">-</strong>
-        </article>
-        <article>
-          <span>今日</span>
-          <strong id="today-label">-</strong>
-        </article>
+      <section id="project-grid" class="project-grid" aria-label="專案列表">
+        <!-- JS rendered -->
       </section>
 
-      <section class="workspace" aria-label="Gantt project management tool">
-        <div class="task-pane">
-          <div class="pane-header">
-            <div class="task-grid col-labels">
-              <span></span>
-              <span>項目名稱</span>
-              <span>負責人</span>
-              <span>狀態</span>
-              <span>開始</span>
-              <span>結束</span>
-            </div>
-            <div class="collapse-controls">
-              <span class="collapse-label">階層</span>
-              <button id="expand-all" class="collapse-btn" type="button">全部展開</button>
-              <button id="collapse-all" class="collapse-btn" type="button">全部折疊</button>
-            </div>
-          </div>
-          <div id="task-list" class="task-list" aria-live="polite"></div>
-        </div>
-
-        <div class="timeline-pane">
-          <div class="timeline-tools" aria-label="時間軸顯示模式">
-            <span>顯示</span>
-            <button class="view-button active" type="button" data-view-mode="day">日</button>
-            <button class="view-button" type="button" data-view-mode="week">週</button>
-            <button class="view-button" type="button" data-view-mode="month">月</button>
-          </div>
-          <div class="timeline-scroll">
-            <div id="timeline-header" class="timeline-header"></div>
-            <div id="gantt-body" class="gantt-body"></div>
-          </div>
-        </div>
-      </section>
+      <p id="empty-state" class="home-empty" hidden>
+        還沒有任何專案。點擊右上角「建立新專案」開始。
+      </p>
     </main>
 
-    <dialog id="task-dialog" class="task-dialog">
-      <form method="dialog" id="task-form">
-        <header>
-          <h2 id="dialog-title">新增任務</h2>
-          <button class="icon-button" value="cancel" formnovalidate aria-label="關閉" title="關閉">x</button>
-        </header>
+    <script>
+      const REGISTRY_KEY = "projectflow.registry.v1";
 
-        <div class="dialog-columns">
-          <div class="dialog-col-left">
-            <label>
-              項目名稱
-              <input id="task-name" required maxlength="60">
-            </label>
-            <label>
-              負責人
-              <input id="task-owner" required maxlength="32">
-            </label>
-            <label>
-              層級
-              <select id="task-level">
-                <option value="0">層級 0</option>
-                <option value="1">層級 1</option>
-                <option value="2">層級 2</option>
-                <option value="3">層級 3</option>
-                <option value="4">層級 4</option>
-              </select>
-            </label>
-            <label>
-              狀態
-              <select id="task-status">
-                <option value="not-started">未開始</option>
-                <option value="in-progress">進行中</option>
-                <option value="done">已完成</option>
-              </select>
-            </label>
-            <div class="status-flags">
-              <label class="flag-label">
-                <input type="checkbox" id="task-at-risk">
-                <span>⚠ 有風險</span>
-              </label>
-              <label class="flag-label">
-                <input type="checkbox" id="task-milestone">
-                <span>◆ 里程碑</span>
-              </label>
-            </div>
-            <div class="form-row">
-              <label>
-                開始日期
-                <input id="task-start" type="date" required>
-              </label>
-              <label>
-                結束日期
-                <input id="task-end" type="date" required>
-              </label>
-            </div>
-            <label>
-              進度
-              <input id="task-progress" type="range" min="0" max="100" step="5">
-              <output id="progress-output">0%</output>
-            </label>
-            <label>
-              前置任務
-              <div id="dep-cascade" class="dep-cascade"></div>
-            </label>
-          </div>
-          <div class="dialog-col-right">
-            <label class="notes-label">
-              進度說明
-              <textarea id="task-notes" placeholder="輸入進度說明、備註或待辦事項..."></textarea>
-            </label>
-          </div>
-        </div>
+      function getRegistry() {
+        try { return JSON.parse(localStorage.getItem(REGISTRY_KEY) || "[]"); }
+        catch { return []; }
+      }
 
-        <footer>
-          <button id="delete-task" class="danger-button" type="button">刪除</button>
-          <button id="copy-task" class="ghost-button" type="button">複製</button>
-          <span></span>
-          <button class="ghost-button" value="cancel" formnovalidate>取消</button>
-          <button class="primary-button" id="submit-task" value="default">儲存</button>
-        </footer>
-      </form>
-    </dialog>
+      function escHtml(str) {
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
 
-    <dialog id="confirm-dialog" class="confirm-dialog">
-      <p id="confirm-message"></p>
-      <footer class="confirm-footer">
-        <button id="confirm-cancel" class="ghost-button" type="button">取消</button>
-        <button id="confirm-ok" class="danger-button" type="button">確認刪除</button>
-      </footer>
-    </dialog>
+      function fmtDate(ts) {
+        if (!ts) return "—";
+        return new Intl.DateTimeFormat("zh-Hant", {
+          month: "numeric", day: "numeric",
+          hour: "2-digit", minute: "2-digit"
+        }).format(new Date(ts));
+      }
 
-    <script type="module" src="app.js?v=17"></script>
+      function progressRing(pct) {
+        const r = 16, c = 2 * Math.PI * r;
+        const fill = c - (pct / 100) * c;
+        return `
+          <svg class="progress-ring" viewBox="0 0 40 40" aria-hidden="true">
+            <circle cx="20" cy="20" r="${r}" class="ring-bg"/>
+            <circle cx="20" cy="20" r="${r}" class="ring-fill"
+              stroke-dasharray="${c}" stroke-dashoffset="${fill}"
+              transform="rotate(-90 20 20)"/>
+            <text x="20" y="20" class="ring-text" text-anchor="middle" dominant-baseline="central">${pct}%</text>
+          </svg>`;
+      }
+
+      function renderGrid() {
+        const projects = getRegistry()
+          .slice()
+          .sort((a, b) => (b.lastVisited || 0) - (a.lastVisited || 0));
+        const grid  = document.querySelector("#project-grid");
+        const empty = document.querySelector("#empty-state");
+
+        if (!projects.length) {
+          grid.innerHTML = "";
+          empty.hidden = false;
+          return;
+        }
+
+        empty.hidden = true;
+        grid.innerHTML = projects.map(p => {
+          const pct = Math.min(100, Math.max(0, p.progress ?? 0));
+          return `
+            <a href="project.html?p=${escHtml(p.id)}" class="project-card">
+              <div class="pc-top">
+                ${progressRing(pct)}
+                <div class="pc-info">
+                  <h2 class="pc-name">${escHtml(p.name || "未命名專案")}</h2>
+                  <span class="pc-tasks">${p.taskCount ?? 0} 個任務</span>
+                </div>
+              </div>
+              <p class="pc-date">最後開啟 ${fmtDate(p.lastVisited)}</p>
+            </a>`;
+        }).join("");
+      }
+
+      document.querySelector("#new-project").addEventListener("click", () => {
+        const id = Math.random().toString(36).slice(2, 10);
+        location.href = "project.html?p=" + id;
+      });
+
+      renderGrid();
+    </script>
   </body>
 </html>

@@ -137,6 +137,7 @@ function normalizeTask(task) {
     ...task,
     deps: task.deps || [],
     notes: task.notes || "",
+    changes: task.changes || [],
     status: inferStatus(task)
   };
 }
@@ -148,6 +149,28 @@ function persist() {
     collapsed: [...state.collapsed]
   }, { merge: true }).catch(err => console.error("儲存失敗:", err));
   localStorage.setItem(viewModeKey, state.viewMode);
+}
+
+/** 更新首頁用的專案清單（存 localStorage） */
+function updateProjectRegistry() {
+  try {
+    const key = "projectflow.registry.v1";
+    const registry = JSON.parse(localStorage.getItem(key) || "[]");
+    const idx = registry.findIndex(p => p.id === projectId);
+    const progress = state.tasks.length
+      ? Math.round(state.tasks.reduce((s, t) => s + (t.progress || 0), 0) / state.tasks.length)
+      : 0;
+    const entry = {
+      id:          projectId,
+      name:        state.projectName,
+      taskCount:   state.tasks.length,
+      progress,
+      lastVisited: Date.now()
+    };
+    if (idx >= 0) registry[idx] = entry;
+    else registry.unshift(entry);
+    localStorage.setItem(key, JSON.stringify(registry.slice(0, 50)));
+  } catch { /* ignore */ }
 }
 
 // ── 鎖定 / 解鎖 / 狀態查詢 ─────────────────────────────────────
@@ -173,6 +196,49 @@ function isLockedByOther(taskId) {
   if (Date.now() - lock.ts > LOCK_TTL_MS) return null; // 鎖已逾時
   if (lock.user === userName) return null;              // 自己的鎖
   return lock.user;
+}
+
+// ── 版次紀錄 ──────────────────────────────────────────────────────
+const FIELD_LABELS = {
+  start:    "開始日",
+  end:      "結束日",
+  name:     "名稱",
+  status:   "狀態",
+  progress: "進度",
+  owner:    "負責人"
+};
+
+function renderChangeHistory(task) {
+  const container = document.querySelector("#change-history");
+  if (!container) return;
+  const entries = (task?.changes || []).slice().reverse();
+  if (!entries.length) {
+    container.innerHTML = '<span class="history-empty">尚無紀錄</span>';
+    return;
+  }
+  container.innerHTML = entries.map(e => {
+    const d   = new Date(e.at);
+    const ts  = `${d.getMonth()+1}/${d.getDate()} `
+              + `${String(d.getHours()).padStart(2,"0")}:`
+              + `${String(d.getMinutes()).padStart(2,"0")}`;
+    const diffs = (e.changes || []).map(c => {
+      const lbl = FIELD_LABELS[c.field] || c.field;
+      return `<span class="hc-row">
+        <span class="hc-field">${lbl}</span>
+        <span class="hc-from">${c.from}</span>
+        <span class="hc-arrow">→</span>
+        <span class="hc-to">${c.to}</span>
+      </span>`;
+    }).join("");
+    return `<div class="h-entry">
+      <div class="h-header">
+        <span class="h-version">v${e.v}</span>
+        <span class="h-who">${e.by}</span>
+        <span class="h-when">${ts}</span>
+      </div>
+      <div class="h-diffs">${diffs}</div>
+    </div>`;
+  }).join("");
 }
 
 function parseDate(value) {
@@ -997,6 +1063,7 @@ function openDialog(task = null) {
   }
   els.notes.value = task?.notes ?? "";
   buildDepCascade(task?.deps?.[0] ?? null, task?.id ?? null);
+  renderChangeHistory(task);
   els.dialog.showModal();
 }
 
@@ -1012,18 +1079,51 @@ function upsertTask() {
   const existing = state.tasks.find((item) => item.id === state.editingId);
   const nextLevel = Number(els.level.value);
   const finalStatus = els.isMilestone.checked ? "milestone" : els.isAtRisk.checked ? "at-risk" : els.status.value;
+  const newName    = els.name.value.trim();
+  const newOwner   = els.owner.value.trim();
+  const newStart   = els.start.value;
+  const newEnd     = els.end.value;
+  const newProg    = Number(els.progress.value);
+
+  // ── 建立版次紀錄 ────────────────────────────────────────────
+  const prevChanges = existing?.changes || [];
+  const diffFields  = [];
+  if (existing) {
+    if (newStart !== existing.start)
+      diffFields.push({ field: "start",    from: existing.start,                  to: newStart });
+    if (newEnd   !== existing.end)
+      diffFields.push({ field: "end",      from: existing.end,                    to: newEnd   });
+    if (newName  !== existing.name)
+      diffFields.push({ field: "name",     from: existing.name,                   to: newName  });
+    if (newOwner !== existing.owner)
+      diffFields.push({ field: "owner",    from: existing.owner,                  to: newOwner });
+    if (finalStatus !== existing.status)
+      diffFields.push({ field: "status",   from: existing.status,                 to: finalStatus });
+    if (newProg  !== existing.progress && !hasChildren(existing.id))
+      diffFields.push({ field: "progress", from: String(existing.progress) + "%", to: newProg + "%" });
+  }
+  const newChanges = diffFields.length
+    ? [...prevChanges.slice(-19), {
+        v:       (prevChanges.at(-1)?.v ?? 0) + 1,
+        at:      Date.now(),
+        by:      userName,
+        changes: diffFields
+      }]
+    : prevChanges;
+
   const task = {
     id: state.editingId ?? uid(),
-    name: els.name.value.trim(),
-    owner: els.owner.value.trim(),
-    status: finalStatus,
-    start: els.start.value,
-    end: els.end.value,
-    progress: Number(els.progress.value),
-    level: nextLevel,
+    name:     newName,
+    owner:    newOwner,
+    status:   finalStatus,
+    start:    newStart,
+    end:      newEnd,
+    progress: newProg,
+    level:    nextLevel,
     type: existing?.type === "summary" ? "summary" : els.isMilestone.checked ? "milestone" : "task",
-    deps: getSelectedDepId() ? [getSelectedDepId()] : [],
-    notes: els.notes.value
+    deps:    getSelectedDepId() ? [getSelectedDepId()] : [],
+    notes:   els.notes.value,
+    changes: newChanges
   };
 
   if (state.editingId) {
@@ -1343,6 +1443,7 @@ async function initFromFirestore() {
     state.tasks = seedTasks.map(t => ({ ...t }));
   }
   document.body.classList.remove("db-loading");
+  updateProjectRegistry();
   render();
 
   onSnapshot(projectRef, (snap) => {
@@ -1358,6 +1459,7 @@ async function initFromFirestore() {
     state.locks = remoteLocks;
     if (myEntry && state.editingId) state.locks[state.editingId] = myEntry;
 
+    updateProjectRegistry();
     if (!els.dialog.open) {
       render();
     } else {

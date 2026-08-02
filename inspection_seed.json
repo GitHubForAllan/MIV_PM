@@ -1,0 +1,875 @@
+[
+  {
+    "building": "A",
+    "stationName": "噴漆",
+    "lineNo": null,
+    "sortOrder": 1,
+    "items": [
+      {
+        "itemName": "脫脂劑濃度（噴淋/浸泡）",
+        "category": "製程參數",
+        "inputType": "number",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "皮膜劑濃度",
+        "category": "製程參數",
+        "inputType": "number",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "烤漆/烘乾溫度",
+        "category": "製程參數",
+        "inputType": "number",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "靜電噴塗電壓與出粉量",
+        "category": "製程參數",
+        "inputType": "number",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "膜厚",
+        "category": "製程參數",
+        "inputType": "number",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "零件外觀（無歪斜搖晃）",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "色號/色粉比對",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "噴漆均勻度與死角塗裝",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "附著度測試（百格刀）",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "塞子固定/取下確認",
+        "category": "自主檢查",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "首件檢查",
+        "category": "自主檢查",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "下料外觀（不可流漆、無雜物）",
+        "category": "自主檢查",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "包裝確認",
+        "category": "自主檢查",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      }
+    ]
+  },
+  {
+    "building": "A",
+    "stationName": "沾膠",
+    "lineNo": null,
+    "sortOrder": 2,
+    "items": [
+      {
+        "itemName": "脫脂劑濃度",
+        "category": "製程參數",
+        "inputType": "number",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "磷酸鹽皮膜劑濃度",
+        "category": "製程參數",
+        "inputType": "number",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "烤漆溫度與轉速",
+        "category": "製程參數",
+        "inputType": "number",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "零件外觀（焊渣、生鏽）",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "噴漆均勻度與死角",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "膜厚",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "附著度測試",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "首件檢查",
+        "category": "自主檢查",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "下料檢查（外觀接地、流漆、雜物）",
+        "category": "自主檢查",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "包裝確認",
+        "category": "自主檢查",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      }
+    ]
+  },
+  {
+    "building": "A",
+    "stationName": "PU發泡",
+    "lineNo": null,
+    "sortOrder": 3,
+    "items": [
+      {
+        "itemName": "模具溫度",
+        "category": "製程參數",
+        "inputType": "number",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "原料灌注重量",
+        "category": "製程參數",
+        "inputType": "number",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "倒模角度與流程",
+        "category": "製程參數",
+        "inputType": "number",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "原料標示核對",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "封孔膠帶範圍",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "離型劑/黑漆均勻噴塗",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "鐵件定位與間隙",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "出貨外觀（毛邊/孔洞/碰傷/斷字）",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "各步驟依作業標準執行確認",
+        "category": "自主檢查",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "修毛邊",
+        "category": "自主檢查",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "包裝計量確認",
+        "category": "自主檢查",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      }
+    ]
+  },
+  {
+    "building": "A",
+    "stationName": "CNC",
+    "lineNo": null,
+    "sortOrder": 4,
+    "items": [
+      {
+        "itemName": "刀具規格與抽檢頻率（依規範）",
+        "category": "製程參數",
+        "inputType": "number",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "工件外觀（焊接方向、焊渣、損傷）",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "依圖面重點尺寸檢查",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "同心度",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "加工完成量測合格才取下工件",
+        "category": "自主檢查",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "存放方式（定容定量）",
+        "category": "自主檢查",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      }
+    ]
+  },
+  {
+    "building": "A",
+    "stationName": "焊接",
+    "lineNo": null,
+    "sortOrder": 5,
+    "items": [
+      {
+        "itemName": "焊接電流/電壓/進給速度/線徑（依作業標準設定值）",
+        "category": "製程參數",
+        "inputType": "number",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "依圖面重點尺寸檢查（三次元）",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "焊道滲透度",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "焊接點外觀是否完美",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "工件外觀",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "夾具定位確認",
+        "category": "自主檢查",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "拋光/除渣",
+        "category": "自主檢查",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "包裝存放注意撞傷壓傷變形",
+        "category": "自主檢查",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      }
+    ]
+  },
+  {
+    "building": "B",
+    "stationName": "塑膠射出",
+    "lineNo": null,
+    "sortOrder": 6,
+    "items": [
+      {
+        "itemName": "烘料溫度",
+        "category": "製程參數",
+        "inputType": "number",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "成型溫度/射出速度/射出壓力",
+        "category": "製程參數",
+        "inputType": "number",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "模具保養次數",
+        "category": "製程參數",
+        "inputType": "number",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "原料型號核對（色板）",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "冷卻水路確認",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "外觀（毛邊、變形翹曲、噴射痕、凹陷、短射、包風、澆口痕、過熱變色、頂白拖拉痕，依A級面標準）",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "包裝重量核對",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "首件簽樣比對",
+        "category": "自主檢查",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "模具日期章/保養紀錄/咬花磨耗確認",
+        "category": "自主檢查",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      }
+    ]
+  },
+  {
+    "building": "B",
+    "stationName": "彎管",
+    "lineNo": null,
+    "sortOrder": 7,
+    "items": [
+      {
+        "itemName": "彎管角度/曲度（依檢具Go/Nogo）",
+        "category": "製程參數",
+        "inputType": "number",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "依圖面重點尺寸檢查（進料尺寸、雷射切割孔位、攻牙尺寸、沖壓孔位、鑽孔尺寸）",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "外觀無異常刮痕與凹陷",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "平面度",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "各站量具確認（游標卡尺/檢具/牙規/厚薄規）",
+        "category": "自主檢查",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      }
+    ]
+  },
+  {
+    "building": "B",
+    "stationName": "雷射割管",
+    "lineNo": null,
+    "sortOrder": 8,
+    "items": [
+      {
+        "itemName": "確認原料尺寸",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "確認圖面相關尺寸（依圖面重點尺寸檢查）",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      }
+    ]
+  },
+  {
+    "building": "B",
+    "stationName": "雷射割板",
+    "lineNo": null,
+    "sortOrder": 9,
+    "items": [
+      {
+        "itemName": "確認原料尺寸",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "確認圖面相關尺寸（依圖面重點尺寸檢查）",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      }
+    ]
+  },
+  {
+    "building": "B",
+    "stationName": "3D雷射割管",
+    "lineNo": null,
+    "sortOrder": 10,
+    "items": [
+      {
+        "itemName": "確認原料尺寸",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "確認圖面相關尺寸（依圖面重點尺寸檢查）",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      }
+    ]
+  },
+  {
+    "building": "B",
+    "stationName": "沖床",
+    "lineNo": null,
+    "sortOrder": 11,
+    "items": [
+      {
+        "itemName": "進料材質確認",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "依圖面重點尺寸檢查（沖壓外型及孔位）",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "電鍍層厚度",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "電鍍外觀（水痕沾黏）",
+        "category": "品質抽檢",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "模具定期保養（依保養計畫）",
+        "category": "自主檢查",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "出貨前依圖面全尺寸檢驗",
+        "category": "自主檢查",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      },
+      {
+        "itemName": "包裝數量確認",
+        "category": "自主檢查",
+        "inputType": "checkbox",
+        "unit": null,
+        "standardValue": null,
+        "upperLimit": null,
+        "lowerLimit": null,
+        "required": true
+      }
+    ]
+  },
+  {
+    "building": "C",
+    "stationName": "有氧組裝線",
+    "lineNo": "1",
+    "sortOrder": 12,
+    "items": []
+  },
+  {
+    "building": "C",
+    "stationName": "有氧組裝線",
+    "lineNo": "2",
+    "sortOrder": 13,
+    "items": []
+  },
+  {
+    "building": "C",
+    "stationName": "有氧組裝線",
+    "lineNo": "3",
+    "sortOrder": 14,
+    "items": []
+  },
+  {
+    "building": "C",
+    "stationName": "有氧組裝線",
+    "lineNo": "4",
+    "sortOrder": 15,
+    "items": []
+  },
+  {
+    "building": "C",
+    "stationName": "無氧組裝線",
+    "lineNo": null,
+    "sortOrder": 16,
+    "items": []
+  }
+]

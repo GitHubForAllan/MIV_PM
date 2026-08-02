@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>製程巡檢系統 — 登入 / Đăng nhập Hệ thống Kiểm tra Quy trình</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f5f6fa; --surface: #ffffff; --border: #e2e5ed;
+    --text: #1a1d23; --text-soft: #6b7280;
+    --accent: #2563eb; --accent-hover: #1d4ed8;
+    --danger: #dc2626; --radius: 8px; --shadow: 0 1px 4px rgba(0,0,0,.08);
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg); color: var(--text); min-height: 100vh;
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+  }
+  .bi { display: flex; flex-direction: column; gap: 1px; }
+  .bi .vi { font-size: .72em; color: var(--text-soft); line-height: 1.2; font-style: italic; }
+
+  .login-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    padding: 36px 32px; width: 100%; max-width: 380px; text-align: center;
+    box-shadow: var(--shadow);
+  }
+  .login-card img { height: 56px; object-fit: contain; margin-bottom: 10px; border-radius: 10px; }
+  .login-title { font-size: 1.15rem; font-weight: 700; margin-bottom: 2px; }
+  .login-title .vi { font-size: .78rem; color: var(--text-soft); font-weight: 400; font-style: italic; display: block; margin-top: 2px; }
+  .login-sub { font-size: .8rem; color: var(--text-soft); margin: 6px 0 24px; }
+
+  .pin-input {
+    width: 100%; padding: 14px 16px; background: var(--bg); border: 1.5px solid var(--border);
+    border-radius: 10px; color: var(--text); font-size: 1.5rem; letter-spacing: .4em;
+    text-align: center; margin-bottom: 18px; transition: border-color .15s;
+  }
+  .pin-input.error { border-color: var(--danger); animation: shake .3s ease; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+
+  .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 18px; }
+  .key {
+    padding: 16px; background: #eef1f6; border: none; border-radius: 10px;
+    color: var(--text); font-size: 1.2rem; font-weight: 600; cursor: pointer;
+    transition: background .1s, transform .08s;
+  }
+  .key:hover { background: #e2e6ee; }
+  .key:active { transform: scale(.93); }
+  .key--wide { grid-column: span 2; }
+  .key--del { background: transparent; color: var(--text-soft); }
+  .key--del:hover { background: #eef1f6; }
+
+  .login-btn {
+    width: 100%; padding: 14px; background: var(--accent); color: #fff; border: none;
+    border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer;
+    transition: background .15s, transform .1s;
+  }
+  .login-btn:hover { background: var(--accent-hover); }
+  .login-btn:active { transform: scale(.98); }
+  .login-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  .error-msg { color: var(--danger); font-size: .8rem; margin-top: 12px; min-height: 18px; }
+  .back-link { display: block; margin-top: 18px; color: var(--text-soft); font-size: .8rem; text-decoration: none; }
+  .back-link:hover { color: var(--text); }
+</style>
+</head>
+<body>
+
+  <div class="login-card">
+    <img src="Rexon%20logo.png" alt="REXON VN">
+    <div class="login-title">製程巡檢系統<span class="vi">Hệ thống Kiểm tra Quy trình</span></div>
+    <div class="login-sub">請輸入您的個人 PIN 碼 / Vui lòng nhập mã PIN cá nhân</div>
+
+    <input id="pin-input" class="pin-input" type="password"
+           inputmode="numeric" maxlength="8" placeholder="••••" autocomplete="off" readonly>
+
+    <div class="keypad">
+      <button class="key" data-key="1">1</button>
+      <button class="key" data-key="2">2</button>
+      <button class="key" data-key="3">3</button>
+      <button class="key" data-key="4">4</button>
+      <button class="key" data-key="5">5</button>
+      <button class="key" data-key="6">6</button>
+      <button class="key" data-key="7">7</button>
+      <button class="key" data-key="8">8</button>
+      <button class="key" data-key="9">9</button>
+      <button class="key key--wide" data-key="0">0</button>
+      <button class="key key--del" data-key="del">⌫</button>
+    </div>
+
+    <button class="login-btn" id="login-btn">登入 / Đăng nhập</button>
+    <div class="error-msg" id="error-msg"></div>
+    <a href="index.html" class="back-link">← 返回力山系統首頁 / Về trang chủ</a>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const db = getFirestore(initializeApp({
+      apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs",
+      authDomain: "miv-1426c.firebaseapp.com",
+      projectId: "miv-1426c",
+      storageBucket: "miv-1426c.firebasestorage.app",
+      messagingSenderId: "398934341623",
+      appId: "1:398934341623:web:4af46c057d2e202855a0f2"
+    }));
+    const usersCol = collection(db, "pi_users");
+
+    const returnUrl = new URLSearchParams(location.search).get("return") || "inspection.html";
+    let pinValue = "";
+
+    function updatePinDisplay() { document.getElementById("pin-input").value = "•".repeat(pinValue.length); }
+    function clearError() {
+      document.getElementById("error-msg").textContent = "";
+      document.getElementById("pin-input").classList.remove("error");
+    }
+    function showError(msg) {
+      document.getElementById("error-msg").textContent = msg;
+      const inp = document.getElementById("pin-input");
+      inp.classList.add("error");
+      setTimeout(() => inp.classList.remove("error"), 400);
+    }
+
+    document.querySelectorAll(".key").forEach(key => {
+      key.addEventListener("click", () => {
+        const k = key.dataset.key;
+        if (k === "del") pinValue = pinValue.slice(0, -1);
+        else if (pinValue.length < 8) pinValue += k;
+        updatePinDisplay(); clearError();
+      });
+    });
+    document.addEventListener("keydown", e => {
+      if (e.key === "Backspace") { pinValue = pinValue.slice(0,-1); updatePinDisplay(); clearError(); }
+      else if (/^\d$/.test(e.key) && pinValue.length < 8) { pinValue += e.key; updatePinDisplay(); clearError(); }
+      else if (e.key === "Enter") doLogin();
+    });
+    document.getElementById("login-btn").addEventListener("click", doLogin);
+
+    async function doLogin() {
+      if (!pinValue) { showError("請輸入 PIN 碼 / Vui lòng nhập mã PIN"); return; }
+      const btn = document.getElementById("login-btn");
+      btn.disabled = true; btn.textContent = "驗證中… / Đang kiểm tra…";
+      try {
+        const snap = await getDocs(query(usersCol, where("pin", "==", pinValue), where("isActive", "==", true)));
+        if (snap.empty) {
+          showError("PIN 碼錯誤或帳號未啟用 / Sai mã PIN hoặc tài khoản chưa kích hoạt");
+          pinValue = ""; updatePinDisplay();
+        } else {
+          const u = { uid: snap.docs[0].id, ...snap.docs[0].data() };
+          delete u.pin;
+          sessionStorage.setItem("pi_user", JSON.stringify(u));
+          location.href = returnUrl;
+        }
+      } catch (err) {
+        showError("連線失敗 / Kết nối thất bại：" + err.message);
+      } finally {
+        btn.disabled = false; btn.textContent = "登入 / Đăng nhập";
+      }
+    }
+  </script>
+</body>
+</html>

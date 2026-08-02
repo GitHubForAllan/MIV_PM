@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>異常追蹤看板 / Theo dõi Bất thường</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f5f6fa; --surface: #ffffff; --border: #e2e5ed;
+    --text: #1a1d23; --text-soft: #6b7280;
+    --accent: #2563eb; --accent-hover: #1d4ed8;
+    --danger: #dc2626; --warn: #d97706; --ok: #16a34a; --muted: #64748b;
+    --warn-bg: #fffbeb; --danger-bg: #fef2f2; --ok-bg: #f0fdf4; --muted-bg: #f1f5f9;
+    --radius: 8px; --shadow: 0 1px 4px rgba(0,0,0,.08);
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .bi { display:flex; flex-direction:column; gap:1px; } .bi .vi { font-size:.72em; color:var(--text-soft); font-style:italic; }
+
+  .topbar { background: #1e293b; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,.25); gap: 12px; flex-wrap: wrap; }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .topbar-logo { height: 42px; object-fit: contain; border-radius: 8px; }
+  .topbar h1 { font-size: .95rem; font-weight: 700; color: #fff; }
+  .topbar h1 .vi { display:block; font-size:.68rem; color:rgba(255,255,255,.5); font-weight:400; font-style:italic; }
+  .topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .nav-link { font-size: .78rem; color: rgba(255,255,255,.8); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,.2); text-decoration: none; }
+  .nav-link:hover { background: rgba(255,255,255,.1); }
+  .user-badge { font-size: .78rem; color: #fff; background: rgba(255,255,255,.08); padding: 6px 12px; border-radius: 6px; }
+  .user-badge button { background:none;border:none;color:rgba(255,255,255,.55);cursor:pointer;font-size:.74rem;margin-left:6px; }
+
+  .main { max-width: 1280px; margin: 0 auto; padding: 20px; }
+
+  .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: 12px; margin-bottom: 18px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; cursor: pointer; }
+  .stat-card .lbl { font-size: .7rem; color: var(--text-soft); }
+  .stat-card .val { font-size: 1.5rem; font-weight: 700; margin-top: 2px; }
+  .stat-card.danger { border-left: 4px solid var(--danger); background: var(--danger-bg); }
+  .stat-card.warn { border-left: 4px solid var(--warn); background: var(--warn-bg); }
+  .stat-card.ok { border-left: 4px solid var(--ok); background: var(--ok-bg); }
+
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
+  .search-box { flex: 1; min-width: 180px; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius); font-size: .88rem; }
+  .filter-select { padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius); font-size: .82rem; background: var(--surface); }
+  .view-toggle { display: flex; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .view-toggle button { padding: 8px 14px; border: none; background: var(--surface); font-size: .8rem; cursor: pointer; }
+  .view-toggle button.active { background: var(--accent); color: #fff; }
+
+  /* kanban */
+  .kanban { display: grid; grid-template-columns: repeat(4, minmax(240px,1fr)); gap: 12px; overflow-x: auto; }
+  .kcol { background: #eef1f6; border-radius: 10px; padding: 10px; min-height: 120px; }
+  .kcol h3 { font-size: .8rem; margin-bottom: 8px; color: var(--text-soft); }
+  .kcard { background: var(--surface); border-radius: var(--radius); padding: 10px 12px; margin-bottom: 8px; cursor: pointer; box-shadow: var(--shadow); border-left: 4px solid var(--muted); }
+  .kcard.sev-CR { border-left-color: #b91c1c; } .kcard.sev-MA { border-left-color: #a16207; } .kcard.sev-MI { border-left-color: var(--muted); }
+  .kcard .top { display: flex; justify-content: space-between; gap: 6px; font-size: .68rem; color: var(--text-soft); margin-bottom: 4px; }
+  .kcard .area { font-size: .84rem; font-weight: 700; }
+  .kcard .desc { font-size: .78rem; color: var(--text-soft); margin-top: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+  /* table */
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: .83rem; }
+  thead th { padding: 10px 12px; text-align: left; font-weight: 600; background: #f8f9fc; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  tbody tr { border-bottom: 1px solid var(--border); cursor: pointer; }
+  tbody tr:hover { background: #f8f9fc; }
+  td { padding: 9px 12px; vertical-align: middle; }
+
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 99px; font-size: .7rem; font-weight: 700; white-space: nowrap; }
+  .badge-CR { background: #fee2e2; color: #b91c1c; } .badge-MA { background: #fef9c3; color: #a16207; } .badge-MI { background: #f1f5f9; color: #64748b; }
+  .badge-status { background: var(--muted-bg); color: var(--muted); }
+  .badge-status.st-待處理 { background: var(--danger-bg); color: var(--danger); }
+  .badge-status.st-改善中 { background: var(--warn-bg); color: var(--warn); }
+  .badge-status.st-待複檢（待主管簽核） { background: #e0e7ff; color: #4338ca; }
+  .badge-status.st-已結案 { background: var(--ok-bg); color: var(--ok); }
+
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--text-soft); }
+  .empty-state .icon { font-size: 2.6rem; margin-bottom: 10px; }
+
+  /* modal */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 16px; }
+  .modal-overlay.hidden { display: none; }
+  .modal { background: var(--surface); border-radius: 12px; padding: 24px; width: 100%; max-width: 560px; max-height: 92vh; overflow-y: auto; }
+  .modal h2 { font-size: 1.05rem; margin-bottom: 4px; }
+  .modal .meta { font-size: .78rem; color: var(--text-soft); margin-bottom: 16px; }
+  .detail-row { margin-bottom: 14px; }
+  .detail-row label { display: block; font-size: .74rem; font-weight: 600; color: var(--text-soft); margin-bottom: 4px; }
+  .detail-row .val { font-size: .9rem; white-space: pre-wrap; }
+  .detail-photos { display: flex; flex-wrap: wrap; gap: 8px; }
+  .detail-photos img { width: 76px; height: 76px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; }
+  .modal input, .modal textarea { width: 100%; padding: 9px 10px; border: 1px solid var(--border); border-radius: var(--radius); font-size: .88rem; font-family: inherit; }
+  .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
+  .btn { padding: 9px 16px; border-radius: var(--radius); font-size: .84rem; font-weight: 700; cursor: pointer; border: none; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  .btn-danger { background: var(--danger); color: #fff; }
+
+  .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.85); display: flex; align-items: center; justify-content: center; z-index: 2000; cursor: zoom-out; }
+  .lightbox.hidden { display: none; }
+  .lightbox img { max-width: 92vw; max-height: 88vh; border-radius: 8px; }
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,.85); color: #fff; padding: 12px 22px; border-radius: 24px; font-size: .86rem; opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 999; }
+  .toast.show { opacity: 1; }
+
+  @media (max-width: 760px) { .kanban { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <img src="Rexon%20logo.png" alt="REXON VN" class="topbar-logo">
+    <h1>異常追蹤看板<span class="vi">Theo dõi Bất thường</span></h1>
+  </div>
+  <div class="topbar-right" id="nav-links"></div>
+</header>
+
+<div class="main">
+  <div class="stats-row">
+    <div class="stat-card danger" onclick="setStatusFilter('待處理')"><div class="lbl">待處理</div><div class="val" id="stat-pending">—</div></div>
+    <div class="stat-card warn" onclick="setStatusFilter('改善中')"><div class="lbl">改善中</div><div class="val" id="stat-inprogress">—</div></div>
+    <div class="stat-card" onclick="setStatusFilter('待複檢（待主管簽核）')"><div class="lbl">待複檢（待主管簽核）</div><div class="val" id="stat-review">—</div></div>
+    <div class="stat-card ok" onclick="setStatusFilter('已結案')"><div class="lbl">已結案</div><div class="val" id="stat-closed">—</div></div>
+    <div class="stat-card" onclick="setStatusFilter('')"><div class="lbl">全部異常單</div><div class="val" id="stat-total">—</div></div>
+  </div>
+
+  <div class="toolbar">
+    <input class="search-box" id="search-input" placeholder="搜尋描述 / 站點…" oninput="render()">
+    <select class="filter-select" id="filter-building" onchange="render()">
+      <option value="">所有棟別</option><option value="A">A棟</option><option value="B">B棟</option><option value="C">C棟</option>
+    </select>
+    <select class="filter-select" id="filter-severity" onchange="render()">
+      <option value="">所有等級</option><option value="CR">CR 嚴重</option><option value="MA">MA 主要</option><option value="MI">MI 次要</option>
+    </select>
+    <select class="filter-select" id="filter-status" onchange="render()">
+      <option value="">所有狀態</option><option value="待處理">待處理</option><option value="改善中">改善中</option>
+      <option value="待複檢（待主管簽核）">待複檢（待主管簽核）</option><option value="已結案">已結案</option>
+    </select>
+    <div class="view-toggle">
+      <button id="view-kanban-btn" class="active" onclick="setView('kanban')">看板</button>
+      <button id="view-table-btn" onclick="setView('table')">清單</button>
+    </div>
+  </div>
+
+  <div id="kanban-view"></div>
+  <div id="table-view" style="display:none">
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>等級</th><th>站點</th><th>描述</th><th>負責人</th><th>狀態</th><th>回報時間</th></tr></thead>
+        <tbody id="table-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="empty-state" id="empty-state" style="display:none"><div class="icon">✅</div><p>沒有符合條件的異常紀錄</p></div>
+</div>
+
+<!-- 詳情 Modal -->
+<div class="modal-overlay hidden" id="detail-modal">
+  <div class="modal">
+    <h2 id="d-title"></h2>
+    <div class="meta" id="d-meta"></div>
+    <div class="detail-row"><label>描述</label><div class="val" id="d-desc"></div></div>
+    <div class="detail-row" id="d-photo-row"><label>照片</label><div class="detail-photos" id="d-photos"></div></div>
+    <div class="detail-row"><label>負責人</label>
+      <input id="d-assigned" placeholder="輸入負責改善的人員姓名">
+    </div>
+    <div class="detail-row" id="d-cm-row">
+      <label>改善對策</label>
+      <textarea id="d-countermeasure" rows="2" placeholder="說明採取了什麼改善措施…"></textarea>
+    </div>
+    <div class="detail-row" id="d-cm-info-row" style="display:none">
+      <label>改善對策</label>
+      <div class="val" id="d-cm-info"></div>
+    </div>
+    <div class="detail-row" id="d-review-row" style="display:none">
+      <label>驗證結果</label>
+      <textarea id="d-review-notes" rows="2" placeholder="請描述複檢驗證的結果（例如：已現場確認改善有效）"></textarea>
+    </div>
+    <div class="detail-row" id="d-review-info-row" style="display:none">
+      <label>驗證結果 / 簽核資訊</label>
+      <div class="val" id="d-review-info"></div>
+    </div>
+    <div class="modal-footer" id="d-actions"></div>
+  </div>
+</div>
+
+<div class="lightbox hidden" id="lightbox" onclick="this.classList.add('hidden')"><img id="lightbox-img" src="" alt=""></div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, doc, updateDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs", authDomain: "miv-1426c.firebaseapp.com",
+  projectId: "miv-1426c", storageBucket: "miv-1426c.firebasestorage.app",
+  messagingSenderId: "398934341623", appId: "1:398934341623:web:4af46c057d2e202855a0f2"
+};
+const db = getFirestore(initializeApp(firebaseConfig));
+const issuesCol = collection(db, "pi_issues");
+const areasCol = collection(db, "pi_areas");
+
+const piUser = JSON.parse(sessionStorage.getItem("pi_user") || "null");
+if (!piUser) location.href = "inspection-login.html?return=" + encodeURIComponent(location.pathname);
+
+const ROLE_LABEL = { inspector: "巡檢人員", supervisor: "主管", admin: "系統管理員" };
+function renderNav() {
+  const links = [`<a class="nav-link" href="inspection.html">← 返回巡檢</a>`];
+  if (piUser.role === "supervisor" || piUser.role === "admin") links.push(`<a class="nav-link" href="inspection-dashboard.html">📊 統計報表</a>`);
+  if (piUser.role === "admin") links.push(`<a class="nav-link" href="inspection-admin.html">⚙ 後台管理</a>`);
+  links.push(`<span class="user-badge">👤 ${esc(piUser.name)}（${ROLE_LABEL[piUser.role]||piUser.role}）<button onclick="logout()">登出</button></span>`);
+  document.getElementById("nav-links").innerHTML = links.join("");
+}
+window.logout = () => { sessionStorage.removeItem("pi_user"); location.href = "inspection-login.html"; };
+function esc(s){ return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function canManage(){ return piUser && (piUser.role === "supervisor" || piUser.role === "admin"); }
+
+let issues = {}, areas = {}, currentView = "kanban";
+
+onSnapshot(areasCol, snap => { areas = {}; snap.forEach(d => areas[d.id] = { id: d.id, ...d.data() }); render(); });
+onSnapshot(issuesCol, snap => { issues = {}; snap.forEach(d => issues[d.id] = { id: d.id, ...d.data() }); render(); updateStats(); });
+
+function areaLabel(areaId) {
+  const a = areas[areaId];
+  if (!a) return "（未知站點）";
+  return `${a.building}棟 ${a.stationName}${a.lineNo ? "第" + a.lineNo + "線" : ""}`;
+}
+function fmtTime(ts) { return ts && ts.toDate ? ts.toDate().toLocaleString("zh-TW", { hour12:false }) : "同步中…"; }
+
+window.setView = function(v) {
+  currentView = v;
+  document.getElementById("view-kanban-btn").classList.toggle("active", v === "kanban");
+  document.getElementById("view-table-btn").classList.toggle("active", v === "table");
+  document.getElementById("kanban-view").style.display = v === "kanban" ? "" : "none";
+  document.getElementById("table-view").style.display = v === "table" ? "" : "none";
+  render();
+};
+window.setStatusFilter = function(s) { document.getElementById("filter-status").value = s; render(); };
+
+function updateStats() {
+  const list = Object.values(issues);
+  document.getElementById("stat-total").textContent = list.length;
+  document.getElementById("stat-pending").textContent = list.filter(i => i.status === "待處理").length;
+  document.getElementById("stat-inprogress").textContent = list.filter(i => i.status === "改善中").length;
+  document.getElementById("stat-review").textContent = list.filter(i => i.status === "待複檢（待主管簽核）").length;
+  document.getElementById("stat-closed").textContent = list.filter(i => i.status === "已結案").length;
+}
+
+function filteredList() {
+  const q = (document.getElementById("search-input").value || "").toLowerCase();
+  const bf = document.getElementById("filter-building").value;
+  const sf = document.getElementById("filter-severity").value;
+  const stf = document.getElementById("filter-status").value;
+  return Object.values(issues).filter(i => {
+    if (bf && areas[i.areaId]?.building !== bf) return false;
+    if (sf && i.severity !== sf) return false;
+    if (stf && i.status !== stf) return false;
+    if (q && !((i.description||"") + areaLabel(i.areaId)).toLowerCase().includes(q)) return false;
+    return true;
+  }).sort((a,b) => (b.reportedAt?.toMillis?.()||0) - (a.reportedAt?.toMillis?.()||0));
+}
+
+window.render = function() {
+  const list = filteredList();
+  document.getElementById("empty-state").style.display = list.length ? "none" : "";
+  if (currentView === "kanban") renderKanban(list); else renderTable(list);
+};
+
+const STATUSES = ["待處理", "改善中", "待複檢（待主管簽核）", "已結案"];
+function renderKanban(list) {
+  const cols = {}; STATUSES.forEach(s => cols[s] = []);
+  list.forEach(i => (cols[i.status] || (cols[i.status] = [])).push(i));
+  document.getElementById("kanban-view").innerHTML = `<div class="kanban">${STATUSES.map(s => `
+    <div class="kcol"><h3>${s}（${(cols[s]||[]).length}）</h3>
+      ${(cols[s]||[]).map(i => `
+        <div class="kcard sev-${i.severity}" onclick="openDetail('${i.id}')">
+          <div class="top"><span class="badge badge-${i.severity}">${i.severity}</span><span>${fmtTime(i.reportedAt)}</span></div>
+          <div class="area">${esc(areaLabel(i.areaId))}</div>
+          <div class="desc">${esc(i.itemName ? i.itemName + "：" : "")}${esc(i.description)}</div>
+        </div>`).join("")}
+    </div>`).join("")}</div>`;
+}
+function renderTable(list) {
+  document.getElementById("table-tbody").innerHTML = list.map(i => `
+    <tr onclick="openDetail('${i.id}')">
+      <td><span class="badge badge-${i.severity}">${i.severity}</span></td>
+      <td>${esc(areaLabel(i.areaId))}</td>
+      <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(i.itemName?i.itemName+"：":"")}${esc(i.description)}</td>
+      <td>${esc(i.assignedTo || "—")}</td>
+      <td><span class="badge-status st-${i.status}" style="padding:2px 9px;border-radius:99px;font-size:.72rem;font-weight:700">${i.status}</span></td>
+      <td>${fmtTime(i.reportedAt)}</td>
+    </tr>`).join("");
+}
+
+// ── 詳情 Modal ──
+let detailId = null;
+window.openDetail = function(id) {
+  detailId = id;
+  const i = issues[id]; if (!i) return;
+  document.getElementById("d-title").innerHTML = `<span class="badge badge-${i.severity}">${i.severity}</span> ${esc(areaLabel(i.areaId))}`;
+  document.getElementById("d-meta").textContent = `回報時間：${fmtTime(i.reportedAt)}　狀態：${i.status}`;
+  document.getElementById("d-desc").textContent = (i.itemName ? i.itemName + "：" : "") + (i.description || "");
+  const photoRow = document.getElementById("d-photo-row");
+  if (i.photoUrls && i.photoUrls.length) {
+    photoRow.style.display = "";
+    document.getElementById("d-photos").innerHTML = i.photoUrls.map(src => `<img src="${src}" onclick="openLightbox('${src}')">`).join("");
+  } else photoRow.style.display = "none";
+  document.getElementById("d-assigned").value = i.assignedTo || "";
+  document.getElementById("d-assigned").disabled = !canManage() && i.status === "已結案";
+
+  const cmRow = document.getElementById("d-cm-row");
+  const cmInfoRow = document.getElementById("d-cm-info-row");
+  if (i.status === "已結案") {
+    cmRow.style.display = "none";
+    cmInfoRow.style.display = "";
+    document.getElementById("d-cm-info").textContent = i.countermeasure || "（未填寫）";
+  } else {
+    cmRow.style.display = "";
+    cmInfoRow.style.display = "none";
+    document.getElementById("d-countermeasure").value = i.countermeasure || "";
+  }
+
+  const reviewRow = document.getElementById("d-review-row");
+  const reviewInfoRow = document.getElementById("d-review-info-row");
+  if (i.status === "待複檢（待主管簽核）" && canManage()) { reviewRow.style.display = ""; document.getElementById("d-review-notes").value = ""; }
+  else reviewRow.style.display = "none";
+  if (i.reviewSignedAt) {
+    reviewInfoRow.style.display = "";
+    document.getElementById("d-review-info").textContent = `${i.reviewerId || ""}　${fmtTime(i.reviewSignedAt)}${i.reviewNotes ? "　驗證結果：" + i.reviewNotes : ""}`;
+  } else reviewInfoRow.style.display = "none";
+
+  renderActions(i);
+  document.getElementById("detail-modal").classList.remove("hidden");
+};
+window.closeDetail = () => document.getElementById("detail-modal").classList.add("hidden");
+
+function renderActions(i) {
+  const actions = [];
+  actions.push(`<button class="btn btn-outline" onclick="closeDetail()">關閉</button>`);
+  actions.push(`<button class="btn btn-outline" onclick="saveAssigned()">儲存負責人</button>`);
+  if (i.status !== "已結案") actions.push(`<button class="btn btn-outline" onclick="saveCountermeasure()">儲存改善對策</button>`);
+  if (i.status === "待處理") actions.push(`<button class="btn btn-primary" onclick="advanceStatus('改善中')">開始改善</button>`);
+  else if (i.status === "改善中") actions.push(`<button class="btn btn-primary" onclick="markForReview()">標記待複檢</button>`);
+  else if (i.status === "待複檢（待主管簽核）" && canManage()) {
+    actions.push(`<button class="btn btn-outline" onclick="advanceStatus('改善中')">退回改善中</button>`);
+    actions.push(`<button class="btn btn-primary" onclick="signOffClose()">✅ 簽核結案</button>`);
+  }
+  document.getElementById("d-actions").innerHTML = actions.join("");
+}
+
+window.saveAssigned = async function() {
+  await updateDoc(doc(db, "pi_issues", detailId), { assignedTo: document.getElementById("d-assigned").value.trim() });
+  showToast("✅ 已更新負責人");
+};
+window.saveCountermeasure = async function() {
+  await updateDoc(doc(db, "pi_issues", detailId), { countermeasure: document.getElementById("d-countermeasure").value.trim() });
+  showToast("✅ 已儲存改善對策");
+};
+window.advanceStatus = async function(status) {
+  await updateDoc(doc(db, "pi_issues", detailId), { status });
+  showToast("✅ 狀態已更新為「" + status + "」");
+  closeDetail();
+};
+window.markForReview = async function() {
+  const cm = document.getElementById("d-countermeasure").value.trim();
+  if (!cm) { showToast("⚠️ 請先填寫改善對策才能標記待複檢"); return; }
+  await updateDoc(doc(db, "pi_issues", detailId), { status: "待複檢（待主管簽核）", countermeasure: cm });
+  showToast("✅ 已標記待複檢");
+  closeDetail();
+};
+window.signOffClose = async function() {
+  const notes = document.getElementById("d-review-notes").value.trim();
+  if (!notes) { showToast("⚠️ 請填寫驗證結果才能簽核結案"); return; }
+  await updateDoc(doc(db, "pi_issues", detailId), {
+    status: "已結案",
+    reviewerId: piUser.name,
+    reviewSignedAt: serverTimestamp(),
+    reviewNotes: document.getElementById("d-review-notes").value.trim() || null,
+    resolvedAt: serverTimestamp(),
+  });
+  showToast("✅ 已簽核結案");
+  closeDetail();
+};
+
+window.openLightbox = src => { document.getElementById("lightbox-img").src = src; document.getElementById("lightbox").classList.remove("hidden"); };
+function showToast(msg) {
+  const t = document.getElementById("toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(window._t); window._t = setTimeout(() => t.classList.remove("show"), 2500);
+}
+
+if (piUser) renderNav();
+</script>
+</body>
+</html>

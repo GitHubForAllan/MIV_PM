@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>製程巡檢 — 統計報表 / Báo cáo Thống kê</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f5f6fa; --surface: #ffffff; --border: #e2e5ed;
+    --text: #1a1d23; --text-soft: #6b7280;
+    --accent: #2563eb; --accent-hover: #1d4ed8;
+    --danger: #dc2626; --warn: #d97706; --ok: #16a34a; --muted: #64748b;
+    --warn-bg: #fffbeb; --danger-bg: #fef2f2; --ok-bg: #f0fdf4; --muted-bg: #f1f5f9;
+    --radius: 8px; --shadow: 0 1px 4px rgba(0,0,0,.08);
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  .topbar { background: #1e293b; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,.25); gap: 12px; flex-wrap: wrap; }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .topbar-logo { height: 42px; object-fit: contain; border-radius: 8px; }
+  .topbar h1 { font-size: .95rem; font-weight: 700; color: #fff; }
+  .topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .nav-link { font-size: .78rem; color: rgba(255,255,255,.8); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,.2); text-decoration: none; }
+  .nav-link:hover { background: rgba(255,255,255,.1); }
+  .user-badge { font-size: .78rem; color: #fff; background: rgba(255,255,255,.08); padding: 6px 12px; border-radius: 6px; }
+  .user-badge button { background:none;border:none;color:rgba(255,255,255,.55);cursor:pointer;font-size:.74rem;margin-left:6px; }
+
+  .main { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 18px; }
+  .toolbar input[type=date] { padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius); font-size: .85rem; }
+  .toolbar .presets { display: flex; gap: 6px; }
+  .btn { padding: 8px 16px; border-radius: var(--radius); font-size: .82rem; font-weight: 600; cursor: pointer; border: none; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  .btn-outline:hover { background: #fff; }
+
+  .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 14px; margin-bottom: 22px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; }
+  .stat-card .lbl { font-size: .72rem; color: var(--text-soft); }
+  .stat-card .val { font-size: 1.7rem; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .stat-card.accent { border-left: 4px solid var(--accent); }
+  .stat-card.danger { border-left: 4px solid var(--danger); background: var(--danger-bg); }
+  .stat-card.warn { border-left: 4px solid var(--warn); background: var(--warn-bg); }
+  .stat-card.ok { border-left: 4px solid var(--ok); background: var(--ok-bg); }
+  .stat-card.muted { border-left: 4px solid var(--muted); background: var(--muted-bg); }
+
+  h2.sec-title { font-size: .95rem; margin: 24px 0 10px; }
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: .84rem; }
+  thead th { padding: 10px 12px; text-align: left; font-weight: 600; background: #f8f9fc; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  tbody tr { border-bottom: 1px solid var(--border); }
+  tbody tr:hover { background: #f8f9fc; }
+  td { padding: 9px 12px; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .rate-bar-wrap { display: flex; align-items: center; gap: 8px; }
+  .rate-bar { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; min-width: 60px; }
+  .rate-bar-fill { height: 100%; background: var(--ok); }
+  .rate-bar-fill.low { background: var(--danger); }
+  .rate-bar-fill.mid { background: var(--warn); }
+
+  .loading { text-align: center; padding: 40px; color: var(--text-soft); }
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--text-soft); }
+
+  @media (max-width: 640px) { .main { padding: 12px; } }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <img src="Rexon%20logo.png" alt="REXON VN" class="topbar-logo">
+    <h1>統計報表</h1>
+  </div>
+  <div class="topbar-right" id="nav-links"></div>
+</header>
+
+<div class="main" id="dash-main" style="display:none">
+  <div class="toolbar">
+    <label style="font-size:.8rem;color:var(--text-soft)">起</label>
+    <input type="date" id="f-start">
+    <label style="font-size:.8rem;color:var(--text-soft)">迄</label>
+    <input type="date" id="f-end">
+    <div class="presets">
+      <button class="btn btn-outline" onclick="setRange('today')">今日</button>
+      <button class="btn btn-outline" onclick="setRange('week')">本週</button>
+      <button class="btn btn-outline" onclick="setRange('month')">本月</button>
+    </div>
+    <button class="btn btn-primary" onclick="loadData()">🔄 查詢</button>
+    <button class="btn btn-outline" id="export-btn" onclick="exportExcel()">📊 匯出 Excel</button>
+  </div>
+
+  <div id="loading" class="loading">載入中…</div>
+
+  <div id="content" style="display:none">
+    <div class="stats-row">
+      <div class="stat-card accent"><div class="lbl">總巡檢次數</div><div class="val" id="s-total">—</div></div>
+      <div class="stat-card ok"><div class="lbl">整體達成率</div><div class="val" id="s-rate">—</div></div>
+      <div class="stat-card warn"><div class="lbl">異常率</div><div class="val" id="s-abrate">—</div></div>
+      <div class="stat-card danger"><div class="lbl">CR 嚴重缺點</div><div class="val" id="s-cr">—</div></div>
+      <div class="stat-card warn"><div class="lbl">MA 主要缺點</div><div class="val" id="s-ma">—</div></div>
+      <div class="stat-card muted"><div class="lbl">MI 次要缺點</div><div class="val" id="s-mi">—</div></div>
+      <div class="stat-card danger"><div class="lbl">尚未結案異常</div><div class="val" id="s-open">—</div></div>
+    </div>
+
+    <h2 class="sec-title">依站點統計</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>棟別</th><th>站點</th><th class="num">應巡次數</th><th class="num">實巡次數</th><th style="min-width:140px">達成率</th><th class="num">異常次數</th><th class="num">異常率</th></tr></thead>
+        <tbody id="area-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="empty-state" id="empty-state" style="display:none">此區間尚無巡檢紀錄</div>
+</div>
+
+<div class="empty-state" id="no-access" style="display:none">🚫 此頁面僅限主管/系統管理員使用</div>
+
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, getDocs, query, where, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs", authDomain: "miv-1426c.firebaseapp.com",
+  projectId: "miv-1426c", storageBucket: "miv-1426c.firebasestorage.app",
+  messagingSenderId: "398934341623", appId: "1:398934341623:web:4af46c057d2e202855a0f2"
+};
+const db = getFirestore(initializeApp(firebaseConfig));
+const areasCol = collection(db, "pi_areas");
+const recordsCol = collection(db, "pi_inspection_records");
+const issuesCol = collection(db, "pi_issues");
+
+const piUser = JSON.parse(sessionStorage.getItem("pi_user") || "null");
+if (!piUser) location.href = "inspection-login.html?return=" + encodeURIComponent(location.pathname);
+else if (piUser.role !== "admin" && piUser.role !== "supervisor") {
+  document.getElementById("no-access").style.display = "";
+} else {
+  document.getElementById("dash-main").style.display = "";
+}
+function renderNav() {
+  const links = [`<a class="nav-link" href="inspection.html">← 返回巡檢</a>`, `<a class="nav-link" href="inspection-issues.html">📋 異常追蹤</a>`];
+  if (piUser.role === "admin") links.push(`<a class="nav-link" href="inspection-admin.html">⚙ 後台管理</a>`);
+  links.push(`<span class="user-badge">👤 ${esc(piUser.name)}<button onclick="logout()">登出</button></span>`);
+  document.getElementById("nav-links").innerHTML = links.join("");
+}
+window.logout = () => { sessionStorage.removeItem("pi_user"); location.href = "inspection-login.html"; };
+function esc(s){ return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+function todayStr() { return new Date().toISOString().slice(0,10); }
+function startOfWeekStr() {
+  const d = new Date(); const day = (d.getDay()+6)%7; // Monday=0
+  d.setDate(d.getDate()-day); return d.toISOString().slice(0,10);
+}
+function startOfMonthStr() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`; }
+
+window.setRange = function(kind) {
+  const end = todayStr();
+  let start = end;
+  if (kind === "week") start = startOfWeekStr();
+  else if (kind === "month") start = startOfMonthStr();
+  document.getElementById("f-start").value = start;
+  document.getElementById("f-end").value = end;
+  loadData();
+};
+document.getElementById("f-start").value = startOfMonthStr();
+document.getElementById("f-end").value = todayStr();
+
+let areas = {}, lastRecords = [], lastIssues = [], lastAreaStats = [];
+
+window.loadData = async function() {
+  document.getElementById("loading").style.display = "";
+  document.getElementById("content").style.display = "none";
+  document.getElementById("empty-state").style.display = "none";
+  try {
+    const areaSnap = await getDocs(areasCol);
+    areas = {}; areaSnap.forEach(d => areas[d.id] = { id: d.id, ...d.data() });
+
+    const startDate = new Date(document.getElementById("f-start").value + "T00:00:00");
+    const endDate = new Date(document.getElementById("f-end").value + "T23:59:59");
+    const days = Math.max(1, Math.round((endDate - startDate) / 86400000) + 1);
+
+    const recSnap = await getDocs(query(recordsCol,
+      where("inspectionTime", ">=", Timestamp.fromDate(startDate)),
+      where("inspectionTime", "<=", Timestamp.fromDate(endDate))));
+    lastRecords = recSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    const issueSnap = await getDocs(query(issuesCol,
+      where("reportedAt", ">=", Timestamp.fromDate(startDate)),
+      where("reportedAt", "<=", Timestamp.fromDate(endDate))));
+    lastIssues = issueSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    renderStats(days);
+  } catch (err) {
+    document.getElementById("loading").textContent = "⚠️ 載入失敗：" + err.message;
+    return;
+  }
+  document.getElementById("loading").style.display = "none";
+  document.getElementById("content").style.display = "";
+};
+
+function rateClass(pct) { return pct < 60 ? "low" : pct < 85 ? "mid" : ""; }
+
+function renderStats(days) {
+  const activeAreas = Object.values(areas).filter(a => a.isActive);
+  const expectedTotal = activeAreas.length * 2 * days;
+  const actualTotal = lastRecords.length;
+  const abnormalRecords = lastRecords.filter(r => r.overallStatus === "異常").length;
+
+  document.getElementById("s-total").textContent = actualTotal;
+  document.getElementById("s-rate").textContent = expectedTotal ? Math.round(actualTotal/expectedTotal*100) + "%" : "—";
+  document.getElementById("s-abrate").textContent = actualTotal ? Math.round(abnormalRecords/actualTotal*100) + "%" : "—";
+  document.getElementById("s-cr").textContent = lastIssues.filter(i => i.severity === "CR").length;
+  document.getElementById("s-ma").textContent = lastIssues.filter(i => i.severity === "MA").length;
+  document.getElementById("s-mi").textContent = lastIssues.filter(i => i.severity === "MI").length;
+  document.getElementById("s-open").textContent = lastIssues.filter(i => i.status !== "已結案").length;
+
+  const byArea = {};
+  activeAreas.forEach(a => byArea[a.id] = { area: a, actual: 0, abnormal: 0 });
+  lastRecords.forEach(r => { if (byArea[r.areaId]) { byArea[r.areaId].actual++; if (r.overallStatus === "異常") byArea[r.areaId].abnormal++; } });
+
+  lastAreaStats = Object.values(byArea).sort((a,b) => a.area.building.localeCompare(b.area.building) || (a.area.sortOrder||0)-(b.area.sortOrder||0));
+  const tbody = document.getElementById("area-tbody");
+  if (!lastAreaStats.length) { tbody.innerHTML = ""; document.getElementById("empty-state").style.display = ""; return; }
+  tbody.innerHTML = lastAreaStats.map(s => {
+    const expected = 2 * days;
+    const pct = expected ? Math.round(s.actual/expected*100) : 0;
+    const abPct = s.actual ? Math.round(s.abnormal/s.actual*100) : 0;
+    return `<tr>
+      <td>${esc(s.area.building)}棟</td>
+      <td>${esc(s.area.stationName)}${s.area.lineNo?'第'+esc(s.area.lineNo)+'線':''}</td>
+      <td class="num">${expected}</td>
+      <td class="num">${s.actual}</td>
+      <td><div class="rate-bar-wrap"><div class="rate-bar"><div class="rate-bar-fill ${rateClass(pct)}" style="width:${Math.min(pct,100)}%"></div></div><span>${pct}%</span></div></td>
+      <td class="num">${s.abnormal}</td>
+      <td class="num">${abPct}%</td>
+    </tr>`;
+  }).join("");
+}
+
+window.exportExcel = async function() {
+  if (!lastAreaStats.length && !lastRecords.length) { alert("尚無資料可匯出，請先查詢區間"); return; }
+  const btn = document.getElementById("export-btn");
+  btn.disabled = true; btn.textContent = "⏳ 產生中…";
+  try {
+    const wb = new ExcelJS.Workbook();
+
+    const s1 = wb.addWorksheet("站點統計");
+    s1.columns = [
+      { header: "棟別", key: "b", width: 8 }, { header: "站點", key: "s", width: 16 },
+      { header: "應巡次數", key: "e", width: 10 }, { header: "實巡次數", key: "a", width: 10 },
+      { header: "達成率", key: "r", width: 10 }, { header: "異常次數", key: "ab", width: 10 }, { header: "異常率", key: "ar", width: 10 },
+    ];
+    const days = Math.max(1, Math.round((new Date(document.getElementById("f-end").value) - new Date(document.getElementById("f-start").value)) / 86400000) + 1);
+    lastAreaStats.forEach(s => {
+      const expected = 2*days;
+      s1.addRow({ b: s.area.building+"棟", s: s.area.stationName+(s.area.lineNo?('第'+s.area.lineNo+'線'):''),
+        e: expected, a: s.actual, r: expected?Math.round(s.actual/expected*100)+"%":"—",
+        ab: s.abnormal, ar: s.actual?Math.round(s.abnormal/s.actual*100)+"%":"—" });
+    });
+    styleHeader(s1);
+
+    const s2 = wb.addWorksheet("巡檢紀錄");
+    s2.columns = [
+      { header: "日期時間", key: "t", width: 18 }, { header: "棟別", key: "b", width: 8 }, { header: "站點", key: "s", width: 16 },
+      { header: "班別", key: "sh", width: 8 }, { header: "巡檢人員", key: "insp", width: 12 },
+      { header: "零件/機種", key: "p", width: 14 }, { header: "結果", key: "r", width: 8 },
+    ];
+    lastRecords.sort((a,b) => (b.inspectionTime?.toMillis?.()||0)-(a.inspectionTime?.toMillis?.()||0)).forEach(r => {
+      s2.addRow({ t: r.inspectionTime?.toDate ? r.inspectionTime.toDate().toLocaleString("zh-TW",{hour12:false}) : "",
+        b: r.building+"棟", s: r.stationName+(r.lineNo?('第'+r.lineNo+'線'):''), sh: r.shift, insp: r.inspectorName, p: r.partOrModelNo||"", r: r.overallStatus });
+    });
+    styleHeader(s2);
+
+    const s3 = wb.addWorksheet("異常清單");
+    s3.columns = [
+      { header: "回報時間", key: "t", width: 18 }, { header: "站點", key: "s", width: 16 }, { header: "等級", key: "sev", width: 8 },
+      { header: "項目", key: "item", width: 16 }, { header: "描述", key: "d", width: 32 }, { header: "狀態", key: "st", width: 14 },
+      { header: "負責人", key: "as", width: 12 }, { header: "簽核主管", key: "rv", width: 12 },
+    ];
+    lastIssues.sort((a,b) => (b.reportedAt?.toMillis?.()||0)-(a.reportedAt?.toMillis?.()||0)).forEach(i => {
+      const a = areas[i.areaId];
+      s3.addRow({ t: i.reportedAt?.toDate ? i.reportedAt.toDate().toLocaleString("zh-TW",{hour12:false}) : "",
+        s: a ? a.building+"棟"+a.stationName+(a.lineNo?('第'+a.lineNo+'線'):'') : "", sev: i.severity,
+        item: i.itemName||"", d: i.description||"", st: i.status, as: i.assignedTo||"", rv: i.reviewerId||"" });
+    });
+    styleHeader(s3);
+
+    const buffer = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    const a = Object.assign(document.createElement("a"), {
+      href: URL.createObjectURL(blob),
+      download: `製程巡檢統計_${document.getElementById("f-start").value}_${document.getElementById("f-end").value}.xlsx`
+    });
+    a.click(); URL.revokeObjectURL(a.href);
+  } catch (err) {
+    alert("匯出失敗：" + err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = "📊 匯出 Excel";
+  }
+};
+function styleHeader(sheet) {
+  const row = sheet.getRow(1);
+  row.eachCell(cell => {
+    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1e293b" } };
+    cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
+    cell.alignment = { vertical: "middle", horizontal: "center" };
+  });
+}
+
+if (piUser) { renderNav(); if (piUser.role === "admin" || piUser.role === "supervisor") loadData(); }
+</script>
+</body>
+</html>

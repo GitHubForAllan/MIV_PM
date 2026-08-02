@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>製程巡檢 / Kiểm tra Quy trình</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f5f6fa; --surface: #ffffff; --border: #e2e5ed;
+    --text: #1a1d23; --text-soft: #6b7280;
+    --accent: #2563eb; --accent-hover: #1d4ed8;
+    --danger: #dc2626; --warn: #d97706; --ok: #16a34a; --muted: #64748b;
+    --warn-bg: #fffbeb; --danger-bg: #fef2f2; --ok-bg: #f0fdf4; --muted-bg: #f1f5f9;
+    --radius: 8px; --shadow: 0 1px 4px rgba(0,0,0,.08);
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+         background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 40px; }
+  .bi { display: flex; flex-direction: column; gap: 1px; }
+  .bi .vi { font-size: .72em; color: var(--text-soft); line-height: 1.2; font-style: italic; }
+
+  /* ── 頂欄 ── */
+  .topbar { background: #1e293b; border-bottom: 1px solid rgba(255,255,255,.08); padding: 0 20px; min-height: 64px;
+    display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,.25); gap: 12px; flex-wrap: wrap; padding-top: 8px; padding-bottom: 8px; }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .topbar-logo { height: 42px; object-fit: contain; border-radius: 8px; flex-shrink: 0; }
+  .topbar-title h1 { font-size: .95rem; font-weight: 700; color: #fff; line-height: 1.3; }
+  .topbar-title .vi { font-size: .68rem; color: rgba(255,255,255,.5); font-weight: 400; font-style: italic; }
+  .topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .nav-link { font-size: .78rem; color: rgba(255,255,255,.8); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,.2); text-decoration: none; white-space: nowrap; }
+  .nav-link:hover { background: rgba(255,255,255,.1); }
+  .user-badge { font-size: .78rem; color: #fff; background: rgba(255,255,255,.08); padding: 6px 12px; border-radius: 6px; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .user-badge .role { color: #93c5fd; }
+  .user-badge button { background: none; border: none; color: rgba(255,255,255,.55); cursor: pointer; font-size: .74rem; }
+  .user-badge button:hover { color: #fff; }
+
+  .main { max-width: 760px; margin: 0 auto; padding: 16px; }
+
+  /* ── 棟別 tab ── */
+  .building-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .b-tab { flex: 1; padding: 12px; border-radius: var(--radius); border: 2px solid var(--border); background: var(--surface);
+    font-size: .95rem; font-weight: 700; cursor: pointer; text-align: center; }
+  .b-tab .count { display: block; font-size: .72rem; font-weight: 400; color: var(--text-soft); margin-top: 2px; }
+  .b-tab.active { border-color: var(--accent); background: #eff6ff; color: var(--accent); }
+
+  /* ── 站點卡 ── */
+  .station-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .station-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 12px;
+    text-align: center; cursor: pointer; transition: transform .1s, box-shadow .1s; }
+  .station-card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+  .station-card .icon { font-size: 1.5rem; margin-bottom: 6px; }
+  .station-card .name { font-weight: 700; font-size: .92rem; }
+  .station-card .line { font-size: .72rem; color: var(--text-soft); margin-top: 2px; }
+  .station-card.no-template { opacity: .55; }
+  .station-card.no-template .name::after { content: "（尚無清單）"; display: block; font-size: .66rem; font-weight: 400; color: var(--danger); }
+
+  .empty-state { text-align: center; padding: 50px 20px; color: var(--text-soft); }
+  .empty-state .icon { font-size: 2.6rem; margin-bottom: 10px; }
+
+  /* ── 表單 ── */
+  .form-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 14px; }
+  .form-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+  .form-header h2 { font-size: 1.05rem; }
+  .form-header .sub { font-size: .78rem; color: var(--text-soft); }
+  .shift-toggle { display: flex; gap: 6px; }
+  .shift-btn { padding: 7px 14px; border-radius: 6px; border: 1.5px solid var(--border); background: var(--surface); font-size: .8rem; font-weight: 600; cursor: pointer; }
+  .shift-btn.active { border-color: var(--accent); background: #eff6ff; color: var(--accent); }
+
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: .8rem; font-weight: 600; color: var(--text-soft); margin-bottom: 5px; }
+  .field input[type=text], .field textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); font-size: .92rem; font-family: inherit; outline: none; }
+  .field input:focus, .field textarea:focus { border-color: var(--accent); }
+
+  .cat-header { font-size: .78rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .04em;
+    margin: 18px 0 8px; padding-bottom: 4px; border-bottom: 2px solid #eff6ff; }
+  .cat-header:first-child { margin-top: 0; }
+
+  .item-row { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 8px; }
+  .item-row.item-invalid { border-color: var(--danger); }
+  .item-name { font-size: .9rem; font-weight: 600; margin-bottom: 8px; }
+  .item-num-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .item-num-row input[type=number] { flex: 1; padding: 9px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: .95rem; outline: none; }
+  .item-num-row input:focus { border-color: var(--accent); }
+  .item-unit { font-size: .8rem; color: var(--text-soft); }
+  .auto-badge { font-size: .74rem; font-weight: 700; padding: 3px 10px; border-radius: 99px; white-space: nowrap; }
+  .auto-badge.ok { background: var(--ok-bg); color: var(--ok); }
+  .auto-badge.bad { background: var(--danger-bg); color: var(--danger); }
+  .auto-badge.pending { background: var(--muted-bg); color: var(--muted); }
+
+  .tg-row { display: flex; gap: 8px; }
+  .tg { flex: 1; padding: 9px; border-radius: 6px; border: 2px solid var(--border); background: transparent; font-weight: 700; font-size: .84rem; cursor: pointer; }
+  .tg-ok.active { border-color: var(--ok); background: var(--ok-bg); color: var(--ok); }
+  .tg-bad.active { border-color: var(--danger); background: var(--danger-bg); color: var(--danger); }
+
+  .abn-panel { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); }
+  .abn-panel.hidden { display: none; }
+  .sev-row { display: flex; gap: 6px; margin-bottom: 10px; }
+  .sev-btn { flex: 1; padding: 8px 4px; border-radius: 6px; border: 2px solid var(--border); background: transparent; font-size: .76rem; font-weight: 700; cursor: pointer; line-height: 1.3; }
+  .sev-btn[data-sev=CR].active { border-color: #b91c1c; background: #fee2e2; color: #b91c1c; }
+  .sev-btn[data-sev=MA].active { border-color: #a16207; background: #fef9c3; color: #a16207; }
+  .sev-btn[data-sev=MI].active { border-color: var(--muted); background: var(--muted-bg); color: var(--muted); }
+  .sev-btn .sub { display: block; font-size: .64rem; font-weight: 400; opacity: .8; }
+
+  .photo-btn-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .photo-btn { flex: 1; padding: 10px 6px; border: 1.5px dashed #aac; border-radius: 6px; background: var(--bg); font-size: .78rem; color: var(--text-soft); cursor: pointer; text-align: center; }
+  .photo-btn input { display: none; }
+  .photo-preview-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+  .photo-thumb-wrap { position: relative; width: 64px; height: 64px; }
+  .photo-thumb-wrap img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; }
+  .photo-del { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; border-radius: 50%; background: var(--danger); color: #fff; border: none; cursor: pointer; font-size: .7rem; }
+
+  .btn { padding: 10px 18px; border-radius: var(--radius); font-size: .88rem; font-weight: 700; cursor: pointer; border: none; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  .btn-outline:hover { background: #fff; }
+  .btn-submit { width: 100%; padding: 14px; font-size: 1rem; margin-top: 4px; }
+
+  .banner { background: var(--warn-bg); border: 1px solid #fde68a; color: #92400e; border-radius: var(--radius); padding: 10px 14px; font-size: .8rem; margin-bottom: 14px; }
+
+  .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.85); display: flex; align-items: center; justify-content: center; z-index: 2000; cursor: zoom-out; }
+  .lightbox.hidden { display: none; }
+  .lightbox img { max-width: 92vw; max-height: 88vh; border-radius: 8px; }
+
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,.85); color: #fff;
+    padding: 12px 22px; border-radius: 24px; font-size: .86rem; opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 999; white-space: nowrap; max-width: 90vw; text-overflow: ellipsis; overflow: hidden; }
+  .toast.show { opacity: 1; }
+
+  @media (max-width: 480px) {
+    .topbar-title .vi, .nav-link span.vi { display: none; }
+    .main { padding: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <img src="Rexon%20logo.png" alt="REXON VN" class="topbar-logo">
+    <div class="topbar-title">
+      <h1>製程巡檢<span class="vi">Kiểm tra Quy trình</span></h1>
+    </div>
+  </div>
+  <div class="topbar-right" id="nav-links"></div>
+</header>
+
+<div class="main">
+
+  <div id="view-select">
+    <div class="banner" id="dup-banner" style="display:none"></div>
+    <div class="building-tabs" id="building-tabs"></div>
+    <div class="station-grid" id="station-grid"></div>
+    <div class="empty-state" id="select-empty" style="display:none">
+      <div class="icon">🏭</div>
+      <p>此棟別尚無站點資料，請聯絡系統管理員設定。</p>
+    </div>
+  </div>
+
+  <div id="view-form" style="display:none">
+    <button class="btn btn-outline" onclick="backToSelect()">← 返回選擇站點</button>
+    <div class="form-card" style="margin-top:12px">
+      <div class="form-header">
+        <div>
+          <h2 id="form-station-title"></h2>
+          <div class="sub" id="form-station-sub"></div>
+        </div>
+        <div class="shift-toggle" id="shift-toggle">
+          <button class="shift-btn" data-shift="上午" onclick="setShift('上午')">☀️ 上午班</button>
+          <button class="shift-btn" data-shift="下午" onclick="setShift('下午')">🌤 下午班</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>零件 / 機種編號（選填）</label>
+        <input type="text" id="f-partno" placeholder="例：ABC-1234">
+      </div>
+    </div>
+
+    <div id="items-container"></div>
+
+    <button class="btn btn-primary btn-submit" id="submit-btn" onclick="submitInspection()">送出巡檢紀錄</button>
+  </div>
+
+</div>
+
+<div class="lightbox hidden" id="lightbox" onclick="this.classList.add('hidden')"><img id="lightbox-img" src="" alt=""></div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore, collection, doc, setDoc, updateDoc, addDoc, getDocs, onSnapshot,
+  query, where, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs",
+  authDomain: "miv-1426c.firebaseapp.com",
+  projectId: "miv-1426c",
+  storageBucket: "miv-1426c.firebasestorage.app",
+  messagingSenderId: "398934341623",
+  appId: "1:398934341623:web:4af46c057d2e202855a0f2"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const areasCol = collection(db, "pi_areas");
+const templatesCol = collection(db, "pi_checklist_templates");
+const recordsCol = collection(db, "pi_inspection_records");
+const issuesCol = collection(db, "pi_issues");
+
+// ── 登入檢查 ──
+const piUser = JSON.parse(sessionStorage.getItem("pi_user") || "null");
+if (!piUser) {
+  location.href = "inspection-login.html?return=" + encodeURIComponent(location.pathname);
+}
+
+const ROLE_LABEL = { inspector: "巡檢人員", supervisor: "主管", admin: "系統管理員" };
+function renderNav() {
+  const links = [];
+  links.push(`<a class="nav-link" href="inspection-issues.html"><span>📋 異常追蹤</span><span class="vi"> Theo dõi bất thường</span></a>`);
+  if (piUser.role === "supervisor" || piUser.role === "admin") {
+    links.push(`<a class="nav-link" href="inspection-dashboard.html"><span>📊 統計報表</span><span class="vi"> Báo cáo</span></a>`);
+  }
+  if (piUser.role === "admin") {
+    links.push(`<a class="nav-link" href="inspection-admin.html"><span>⚙ 後台管理</span><span class="vi"> Quản trị</span></a>`);
+  }
+  links.push(`<div class="user-badge">👤 ${esc(piUser.name)}　<span class="role">${ROLE_LABEL[piUser.role] || piUser.role}</span>　<button onclick="logout()">登出</button></div>`);
+  document.getElementById("nav-links").innerHTML = links.join("");
+}
+window.logout = () => { sessionStorage.removeItem("pi_user"); location.href = "inspection-login.html"; };
+
+function esc(s) { return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+// ── 資料載入 ──
+let areas = {};           // areaId -> area
+let templates = {};       // areaId -> active template（站點固定清單）
+let templatesByModel = {}; // modelName -> active template（依機種清單）
+let currentBuilding = "A";
+
+function resolveTemplate(area) {
+  if (!area) return null;
+  return area.currentModel ? templatesByModel[area.currentModel] : templates[area.id];
+}
+
+onSnapshot(query(areasCol, where("isActive", "==", true)), snap => {
+  areas = {};
+  snap.forEach(d => areas[d.id] = { id: d.id, ...d.data() });
+  renderBuildingTabs();
+  renderStationGrid();
+});
+onSnapshot(query(templatesCol, where("isActive", "==", true)), snap => {
+  templates = {}; templatesByModel = {};
+  snap.forEach(d => {
+    const t = { id: d.id, ...d.data() };
+    if (t.modelName) templatesByModel[t.modelName] = t;
+    else templates[t.areaId] = t;
+  });
+  renderStationGrid();
+});
+
+const BUILDING_LABEL = { A: "A棟", B: "B棟", C: "C棟" };
+function renderBuildingTabs() {
+  const counts = { A: 0, B: 0, C: 0 };
+  Object.values(areas).forEach(a => { if (counts[a.building] !== undefined) counts[a.building]++; });
+  document.getElementById("building-tabs").innerHTML = ["A","B","C"].map(b => `
+    <button class="b-tab ${b === currentBuilding ? "active" : ""}" onclick="selectBuilding('${b}')">
+      ${BUILDING_LABEL[b]}<span class="count">${counts[b]} 站點</span>
+    </button>`).join("");
+}
+window.selectBuilding = function(b) { currentBuilding = b; renderBuildingTabs(); renderStationGrid(); };
+
+const STATION_ICON = { 噴漆:"🎨", 沾膠:"🧴", PU發泡:"🫧", CNC:"⚙️", 焊接:"🔥", 塑膠射出:"🧱", 彎管:"🔩",
+  雷射割管:"✂️", 雷射割板:"✂️", "3D雷射割管":"✂️", 沖床:"🛠", 有氧組裝線:"🔵", 無氧組裝線:"⚪" };
+
+function renderStationGrid() {
+  const list = Object.values(areas).filter(a => a.building === currentBuilding).sort((a,b) => (a.sortOrder||0) - (b.sortOrder||0));
+  const grid = document.getElementById("station-grid");
+  const empty = document.getElementById("select-empty");
+  if (!list.length) { grid.innerHTML = ""; empty.style.display = ""; return; }
+  empty.style.display = "none";
+  grid.innerHTML = list.map(a => {
+    const hasTpl = !!resolveTemplate(a);
+    return `<div class="station-card ${hasTpl ? "" : "no-template"}" onclick="openArea('${a.id}')">
+      <div class="icon">${STATION_ICON[a.stationName] || "🏭"}</div>
+      <div class="name">${esc(a.stationName)}</div>
+      ${a.lineNo ? `<div class="line">第 ${esc(a.lineNo)} 線</div>` : ""}
+      ${a.currentModel ? `<div class="line">機種：${esc(a.currentModel)}</div>` : ""}
+    </div>`;
+  }).join("");
+}
+
+// ── 選擇站點 → 表單 ──
+let currentArea = null, currentTemplate = null, itemStates = {}, currentShiftVal = "上午";
+
+window.openArea = async function(areaId) {
+  const area = areas[areaId], tpl = resolveTemplate(area);
+  if (!tpl) { showToast("⚠️ 此站點尚未設定巡檢項目清單，請聯絡系統管理員"); return; }
+  currentArea = area; currentTemplate = tpl;
+  currentShiftVal = new Date().getHours() < 12 ? "上午" : "下午";
+  document.getElementById("form-station-title").textContent =
+    `${BUILDING_LABEL[area.building]} — ${area.stationName}${area.lineNo ? "（第" + area.lineNo + "線）" : ""}${area.currentModel ? "（機種：" + area.currentModel + "）" : ""}`;
+  document.getElementById("form-station-sub").textContent = `清單版本 v${tpl.version}｜${tpl.items.length} 項`;
+  document.getElementById("f-partno").value = "";
+  await checkDuplicate(areaId, currentShiftVal);
+  setShift(currentShiftVal);
+  renderItems();
+  document.getElementById("view-select").style.display = "none";
+  document.getElementById("view-form").style.display = "";
+  window.scrollTo({ top: 0 });
+};
+window.backToSelect = function() {
+  document.getElementById("view-form").style.display = "none";
+  document.getElementById("view-select").style.display = "";
+};
+
+async function checkDuplicate(areaId, shift) {
+  const banner = document.getElementById("dup-banner");
+  banner.style.display = "none";
+  try {
+    const snap = await getDocs(query(recordsCol, where("areaId", "==", areaId), where("shift", "==", shift)));
+    const todayStr = new Date().toDateString();
+    const todays = snap.docs
+      .map(d => d.data())
+      .filter(r => r.inspectionTime && r.inspectionTime.toDate && r.inspectionTime.toDate().toDateString() === todayStr);
+    if (todays.length) {
+      banner.textContent = `⚠️ 本站點今日「${shift}」已完成 ${todays.length} 次巡檢紀錄，仍可繼續填寫新的一筆。`;
+      banner.style.display = "";
+    }
+  } catch (err) { /* 略過重複檢查，不阻擋巡檢流程 */ }
+}
+
+window.setShift = function(s) {
+  currentShiftVal = s;
+  document.querySelectorAll(".shift-btn").forEach(b => b.classList.toggle("active", b.dataset.shift === s));
+  if (currentArea) checkDuplicate(currentArea.id, s);
+};
+
+// ── 渲染巡檢項目 ──
+function renderItems() {
+  itemStates = {};
+  (currentTemplate.items || []).forEach(item => {
+    itemStates[item.itemId] = { value: null, isAbnormal: null, desc: "", severity: item.defaultSeverity || "MI", photos: [] };
+  });
+  const cats = ["製程參數", "品質抽檢", "自主檢查"];
+  const byCat = {}; cats.forEach(c => byCat[c] = []);
+  (currentTemplate.items || []).forEach(it => (byCat[it.category] || (byCat[it.category] = [])).push(it));
+
+  let html = "";
+  cats.filter(c => byCat[c] && byCat[c].length).forEach(cat => {
+    html += `<div class="cat-header">${esc(cat)}</div>`;
+    byCat[cat].forEach(item => { html += renderItemRow(item); });
+  });
+  document.getElementById("items-container").innerHTML = html;
+}
+
+function isAutoJudged(item) { return item.upperLimit != null || item.lowerLimit != null; }
+
+function renderItemRow(item) {
+  const id = item.itemId;
+  let body = "";
+  if (item.inputType === "number") {
+    body += `<div class="item-num-row">
+      <input type="number" step="any" id="in-${id}" oninput="onNumberInput('${id}')">
+      ${item.unit ? `<span class="item-unit">${esc(item.unit)}</span>` : ""}
+      ${isAutoJudged(item) ? `<span class="auto-badge pending" id="badge-${id}">未填寫</span>` : ""}
+    </div>`;
+    if (!isAutoJudged(item)) body += toggleRow(id);
+  } else if (item.inputType === "text") {
+    body += `<div class="field" style="margin-bottom:8px"><input type="text" id="in-${id}" oninput="onTextInput('${id}')"></div>`;
+    body += toggleRow(id);
+  } else {
+    body += toggleRow(id);
+  }
+  body += `<div class="abn-panel hidden" id="abn-${id}">${abnormalPanel(item)}</div>`;
+  return `<div class="item-row" id="row-${id}">
+    <div class="item-name">${esc(item.itemName)}${item.required ? "" : "（選填）"}</div>
+    ${body}
+  </div>`;
+}
+
+function toggleRow(id) {
+  return `<div class="tg-row">
+    <button class="tg tg-ok" id="tgok-${id}" onclick="setAbnormal('${id}', false)">✓ 正常</button>
+    <button class="tg tg-bad" id="tgbad-${id}" onclick="setAbnormal('${id}', true)">✕ 異常</button>
+  </div>`;
+}
+
+function abnormalPanel(item) {
+  const id = item.itemId;
+  const def = item.defaultSeverity || "MI";
+  return `
+    <div class="sev-row">
+      <button class="sev-btn ${def==='CR'?'active':''}" data-sev="CR" onclick="setSeverity('${id}','CR')">CR<span class="sub">嚴重缺點</span></button>
+      <button class="sev-btn ${def==='MA'?'active':''}" data-sev="MA" onclick="setSeverity('${id}','MA')">MA<span class="sub">主要缺點</span></button>
+      <button class="sev-btn ${def==='MI'?'active':''}" data-sev="MI" onclick="setSeverity('${id}','MI')">MI<span class="sub">次要缺點</span></button>
+    </div>
+    <textarea placeholder="請簡述異常狀況…" rows="2" oninput="onDescInput('${id}', this.value)"></textarea>
+    <div class="photo-btn-row" style="margin-top:8px">
+      <label class="photo-btn">📷 拍照<input type="file" accept="image/*" capture="environment" onchange="onPhotoSelect('${id}', this)"></label>
+      <label class="photo-btn">📁 從相簿選取<input type="file" accept="image/*" onchange="onPhotoSelect('${id}', this)"></label>
+    </div>
+    <div class="photo-preview-row" id="photos-${id}"></div>
+  `;
+}
+
+window.onNumberInput = function(id) {
+  const item = currentTemplate.items.find(i => i.itemId === id);
+  const raw = document.getElementById(`in-${id}`).value;
+  const v = raw === "" ? null : parseFloat(raw);
+  itemStates[id].value = v;
+  if (isAutoJudged(item)) {
+    const badge = document.getElementById(`badge-${id}`);
+    if (v === null || isNaN(v)) {
+      itemStates[id].isAbnormal = null;
+      badge.textContent = "未填寫"; badge.className = "auto-badge pending";
+      document.getElementById(`abn-${id}`).classList.add("hidden");
+      return;
+    }
+    const bad = (item.upperLimit != null && v > item.upperLimit) || (item.lowerLimit != null && v < item.lowerLimit);
+    itemStates[id].isAbnormal = bad;
+    badge.textContent = bad ? "✕ 異常" : "✓ 正常";
+    badge.className = "auto-badge " + (bad ? "bad" : "ok");
+    document.getElementById(`abn-${id}`).classList.toggle("hidden", !bad);
+  }
+};
+window.onTextInput = function(id) { itemStates[id].value = document.getElementById(`in-${id}`).value; };
+window.onDescInput = function(id, val) { itemStates[id].desc = val; };
+window.setSeverity = function(id, sev) {
+  itemStates[id].severity = sev;
+  document.querySelectorAll(`#abn-${id} .sev-btn`).forEach(b => b.classList.toggle("active", b.dataset.sev === sev));
+};
+window.setAbnormal = function(id, isAbnormal) {
+  itemStates[id].isAbnormal = isAbnormal;
+  const item = currentTemplate.items.find(i => i.itemId === id);
+  if (item.inputType !== "number") itemStates[id].value = !isAbnormal;
+  document.getElementById(`tgok-${id}`)?.classList.toggle("active", !isAbnormal);
+  document.getElementById(`tgbad-${id}`)?.classList.toggle("active", isAbnormal);
+  document.getElementById(`abn-${id}`).classList.toggle("hidden", !isAbnormal);
+};
+
+// ── 照片處理 ──
+function compressToBase64(file, maxPx, quality) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let w = img.width, h = img.height;
+      if (w > maxPx || h > maxPx) {
+        if (w >= h) { h = Math.round(h * maxPx / w); w = maxPx; }
+        else { w = Math.round(w * maxPx / h); h = maxPx; }
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL("image/jpeg", quality));
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+window.onPhotoSelect = async function(id, input) {
+  const file = input.files[0];
+  input.value = "";
+  if (!file) return;
+  if (itemStates[id].photos.length >= 3) { showToast("⚠️ 每個異常項目最多上傳 3 張照片"); return; }
+  const base64 = await compressToBase64(file, 640, 0.6);
+  itemStates[id].photos.push(base64);
+  renderPhotoPreview(id);
+};
+function renderPhotoPreview(id) {
+  document.getElementById(`photos-${id}`).innerHTML = itemStates[id].photos.map((src, i) => `
+    <div class="photo-thumb-wrap">
+      <img src="${src}" onclick="openLightbox('${src}')">
+      <button class="photo-del" onclick="removePhoto('${id}', ${i})">✕</button>
+    </div>`).join("");
+}
+window.removePhoto = function(id, i) { itemStates[id].photos.splice(i, 1); renderPhotoPreview(id); };
+window.openLightbox = function(src) {
+  document.getElementById("lightbox-img").src = src;
+  document.getElementById("lightbox").classList.remove("hidden");
+};
+
+// ── 驗證與送出 ──
+function validate() {
+  let firstInvalid = null;
+  for (const item of currentTemplate.items || []) {
+    const id = item.itemId, st = itemStates[id];
+    const row = document.getElementById(`row-${id}`);
+    let invalid = false;
+    if (item.inputType === "number") {
+      if (st.value === null) invalid = true;
+      else if (!isAutoJudged(item) && st.isAbnormal === null) invalid = true;
+    } else {
+      if (st.isAbnormal === null) invalid = true;
+    }
+    if (!invalid && st.isAbnormal && !st.desc.trim()) invalid = true;
+    row.classList.toggle("item-invalid", invalid);
+    if (invalid && !firstInvalid) firstInvalid = row;
+  }
+  if (firstInvalid) { firstInvalid.scrollIntoView({ behavior: "smooth", block: "center" }); return false; }
+  return true;
+}
+
+window.submitInspection = async function() {
+  if (!currentArea || !currentTemplate) return;
+  if (!validate()) { showToast("⚠️ 請完成所有必填項目（異常項目需填寫描述）"); return; }
+  const btn = document.getElementById("submit-btn");
+  btn.disabled = true; btn.textContent = "送出中…";
+  try {
+    const results = currentTemplate.items.map(item => ({
+      itemId: item.itemId,
+      itemName: item.itemName,
+      value: itemStates[item.itemId].value,
+      isAbnormal: !!itemStates[item.itemId].isAbnormal,
+    }));
+    const overallStatus = results.some(r => r.isAbnormal) ? "異常" : "正常";
+
+    const recordRef = doc(recordsCol);
+    await setDoc(recordRef, {
+      areaId: currentArea.id,
+      building: currentArea.building,
+      stationName: currentArea.stationName,
+      lineNo: currentArea.lineNo || null,
+      shift: currentShiftVal,
+      inspectionTime: serverTimestamp(),
+      inspectorId: piUser.uid,
+      inspectorName: piUser.name,
+      partOrModelNo: document.getElementById("f-partno").value.trim(),
+      modelName: currentArea.currentModel || null,
+      templateVersion: currentTemplate.version,
+      results,
+      overallStatus,
+      issueIds: [],
+    });
+
+    const issueIds = [];
+    for (const item of currentTemplate.items) {
+      const st = itemStates[item.itemId];
+      if (!st.isAbnormal) continue;
+      const issueRef = await addDoc(issuesCol, {
+        recordId: recordRef.id,
+        areaId: currentArea.id,
+        itemName: item.itemName,
+        severity: st.severity,
+        needsSupervisorNotify: st.severity === "CR" || st.severity === "MA",
+        description: st.desc.trim(),
+        photoUrls: st.photos,
+        status: "待處理",
+        assignedTo: null,
+        reportedAt: serverTimestamp(),
+        resolvedAt: null,
+        reviewerId: null,
+        reviewSignedAt: null,
+        reviewNotes: null,
+      });
+      issueIds.push(issueRef.id);
+    }
+    if (issueIds.length) await updateDoc(recordRef, { issueIds });
+
+    showToast(overallStatus === "異常" ? `✅ 已送出，${issueIds.length} 項異常已建立追蹤單` : "✅ 巡檢紀錄已送出");
+    backToSelect();
+  } catch (err) {
+    showToast("⚠️ 送出失敗：" + err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = "送出巡檢紀錄";
+  }
+};
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.remove("show"), 3000);
+}
+
+if (piUser) renderNav();
+</script>
+</body>
+</html>

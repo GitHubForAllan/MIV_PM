@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>製程巡檢 — 後台管理 / Quản trị Hệ thống Kiểm tra</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f5f6fa; --surface: #ffffff; --border: #e2e5ed;
+    --text: #1a1d23; --text-soft: #6b7280;
+    --accent: #2563eb; --accent-hover: #1d4ed8;
+    --danger: #dc2626; --warn: #d97706; --ok: #16a34a; --muted: #64748b;
+    --warn-bg: #fffbeb; --danger-bg: #fef2f2; --ok-bg: #f0fdf4; --muted-bg: #f1f5f9;
+    --radius: 8px; --shadow: 0 1px 4px rgba(0,0,0,.08);
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  .topbar { background: #1e293b; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,.25); gap: 12px; flex-wrap: wrap; }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .topbar-logo { height: 42px; object-fit: contain; border-radius: 8px; }
+  .topbar h1 { font-size: .95rem; font-weight: 700; color: #fff; }
+  .topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .nav-link { font-size: .78rem; color: rgba(255,255,255,.8); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,.2); text-decoration: none; }
+  .nav-link:hover { background: rgba(255,255,255,.1); }
+  .user-badge { font-size: .78rem; color: #fff; background: rgba(255,255,255,.08); padding: 6px 12px; border-radius: 6px; }
+  .user-badge button { background:none;border:none;color:rgba(255,255,255,.55);cursor:pointer;font-size:.74rem;margin-left:6px; }
+
+  .main { max-width: 1200px; margin: 0 auto; padding: 20px; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tab-btn { padding: 9px 18px; border-radius: var(--radius); border: 1.5px solid var(--border); background: var(--surface); font-size: .86rem; font-weight: 600; cursor: pointer; }
+  .tab-btn.active { border-color: var(--accent); background: #eff6ff; color: var(--accent); }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; justify-content: space-between; }
+  .btn { padding: 8px 16px; border-radius: var(--radius); font-size: .82rem; font-weight: 600; cursor: pointer; border: none; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  .btn-outline:hover { background: var(--bg); }
+  .btn-sm { padding: 5px 12px; font-size: .78rem; }
+  .btn-icon { padding: 4px 8px; font-size: .9rem; background: transparent; border: none; cursor: pointer; color: var(--text-soft); }
+  .btn-icon:hover { color: var(--accent); }
+  .btn-danger { background: var(--danger); color: #fff; }
+
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+  thead th { padding: 10px 12px; text-align: left; font-weight: 600; background: #f8f9fc; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  tbody tr { border-bottom: 1px solid var(--border); }
+  tbody tr:hover { background: #f8f9fc; }
+  td { padding: 9px 12px; vertical-align: middle; }
+
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 99px; font-size: .72rem; font-weight: 700; }
+  .badge-ok { background: var(--ok-bg); color: var(--ok); }
+  .badge-muted { background: var(--muted-bg); color: var(--muted); }
+
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 16px; }
+  .modal-overlay.hidden { display: none; }
+  .modal { background: var(--surface); border-radius: 12px; padding: 24px; width: 100%; max-width: 520px; max-height: 92vh; overflow-y: auto; }
+  .modal.wide { max-width: 780px; }
+  .modal h2 { font-size: 1rem; margin-bottom: 18px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-grid .full { grid-column: 1/-1; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group label { font-size: .76rem; font-weight: 600; color: var(--text-soft); }
+  .form-group input, .form-group select, .form-group textarea { padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius); font-size: .88rem; font-family: inherit; }
+  .checkbox-row { display: flex; align-items: center; gap: 8px; font-size: .85rem; }
+  .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+
+  /* 清單管理 */
+  .tpl-layout { display: grid; grid-template-columns: 260px 1fr; gap: 16px; }
+  .area-list { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; max-height: 640px; overflow-y: auto; }
+  .area-list-item { padding: 10px 14px; border-bottom: 1px solid var(--border); cursor: pointer; font-size: .84rem; }
+  .area-list-item:hover { background: var(--bg); }
+  .area-list-item.active { background: #eff6ff; color: var(--accent); font-weight: 700; }
+  .area-list-item .n { display: block; font-size: .7rem; color: var(--text-soft); font-weight: 400; }
+  .tpl-group-hdr { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; font-size: .7rem; font-weight: 700; color: var(--text-soft); text-transform: uppercase; letter-spacing: .04em; background: var(--bg); border-bottom: 1px solid var(--border); }
+  .tpl-group-hdr .btn-icon { font-size: .9rem; padding: 0 4px; }
+  .tpl-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; }
+  .tpl-empty { text-align: center; padding: 60px 20px; color: var(--text-soft); }
+  .item-edit-row { display: grid; grid-template-columns: 1.4fr .85fr .7fr .65fr .55fr .55fr .55fr .45fr auto auto; gap: 6px; align-items: center; margin-bottom: 8px; padding: 8px; background: var(--bg); border-radius: 6px; }
+  .item-edit-row input, .item-edit-row select { padding: 6px 7px; border: 1px solid var(--border); border-radius: 5px; font-size: .78rem; width: 100%; }
+  .item-edit-row .rm { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 1rem; }
+  .item-move { display: flex; gap: 2px; }
+  .item-move button { background: none; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; font-size: .78rem; padding: 2px 5px; color: var(--text-soft); }
+  .item-move button:disabled { opacity: .3; cursor: not-allowed; }
+  .item-move button:not(:disabled):hover { color: var(--accent); border-color: var(--accent); }
+  .item-cols-hdr { display: grid; grid-template-columns: 1.4fr .85fr .7fr .65fr .55fr .55fr .55fr .45fr auto auto; gap: 6px; font-size: .68rem; color: var(--text-soft); font-weight: 700; margin-bottom: 6px; padding: 0 8px; }
+
+  .empty-state { text-align: center; padding: 50px 20px; color: var(--text-soft); }
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,.85); color: #fff; padding: 12px 22px; border-radius: 24px; font-size: .86rem; opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 999; }
+  .toast.show { opacity: 1; }
+
+  @media (max-width: 760px) {
+    .tpl-layout { grid-template-columns: 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    .item-edit-row, .item-cols-hdr { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <img src="Rexon%20logo.png" alt="REXON VN" class="topbar-logo">
+    <h1>製程巡檢 — 後台管理</h1>
+  </div>
+  <div class="topbar-right" id="nav-links"></div>
+</header>
+
+<div class="main" id="admin-main" style="display:none">
+  <div class="toolbar">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="areas" onclick="setTab('areas')">🏭 站點管理</button>
+      <button class="tab-btn" data-tab="templates" onclick="setTab('templates')">📋 巡檢清單管理</button>
+      <button class="tab-btn" data-tab="users" onclick="setTab('users')">👤 人員管理</button>
+    </div>
+    <button class="btn btn-outline" onclick="importSeed()">📥 匯入初始站點與清單</button>
+    <button class="btn btn-outline" onclick="importModelSeed()">📥 匯入機種清單範本（BU25VS/BR25VS）</button>
+  </div>
+
+  <!-- 站點管理 -->
+  <div class="panel active" id="panel-areas">
+    <div class="toolbar"><div></div><button class="btn btn-primary" onclick="openAreaModal(null)">＋ 新增站點</button></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>棟別</th><th>站點</th><th>線別</th><th>目前機種</th><th>排序</th><th>狀態</th><th></th></tr></thead>
+        <tbody id="areas-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 巡檢清單管理 -->
+  <div class="panel" id="panel-templates">
+    <div class="tpl-layout">
+      <div class="area-list" id="tpl-area-list"></div>
+      <div class="tpl-panel" id="tpl-panel">
+        <div class="tpl-empty">← 請先從左側選擇站點</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 人員管理 -->
+  <div class="panel" id="panel-users">
+    <div class="toolbar"><div></div><button class="btn btn-primary" onclick="openUserModal(null)">＋ 新增人員</button></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>姓名</th><th>角色</th><th>PIN</th><th>狀態</th><th></th></tr></thead>
+        <tbody id="users-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="empty-state" id="no-access" style="display:none">🚫 此頁面僅限系統管理員使用</div>
+
+<!-- 站點 Modal -->
+<div class="modal-overlay hidden" id="area-modal">
+  <div class="modal">
+    <h2 id="area-modal-title">新增站點</h2>
+    <div class="form-grid">
+      <div class="form-group"><label>棟別 *</label>
+        <select id="a-building"><option value="A">A棟</option><option value="B">B棟</option><option value="C">C棟</option></select>
+      </div>
+      <div class="form-group"><label>排序</label><input type="number" id="a-sort" value="1"></div>
+      <div class="form-group full"><label>站點名稱 *</label><input id="a-name" placeholder="例：CNC"></div>
+      <div class="form-group"><label>線別（選填）</label><input id="a-line" placeholder="例：1"></div>
+      <div class="form-group full">
+        <label>目前生產機種（選填）</label>
+        <input id="a-model" placeholder="例：BU25VS — 填寫後此站改用「依機種」清單，不再使用站點固定清單">
+      </div>
+      <div class="form-group"><label style="visibility:hidden">狀態</label>
+        <div class="checkbox-row"><input type="checkbox" id="a-active" checked><label for="a-active">啟用中</label></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeAreaModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveArea()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 人員 Modal -->
+<div class="modal-overlay hidden" id="user-modal">
+  <div class="modal">
+    <h2 id="user-modal-title">新增人員</h2>
+    <div class="form-grid">
+      <div class="form-group full"><label>姓名 *</label><input id="u-name"></div>
+      <div class="form-group"><label>角色 *</label>
+        <select id="u-role"><option value="inspector">巡檢人員</option><option value="supervisor">主管</option><option value="admin">系統管理員</option></select>
+      </div>
+      <div class="form-group"><label>PIN 碼 * (4-6碼數字)</label><input id="u-pin" inputmode="numeric" maxlength="6" placeholder="例：1234"></div>
+      <div class="form-group full">
+        <div class="checkbox-row"><input type="checkbox" id="u-active" checked><label for="u-active">啟用中</label></div>
+      </div>
+    </div>
+    <div id="u-error" style="color:var(--danger);font-size:.8rem;margin-top:6px"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeUserModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveUser()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, addDoc, getDocs, onSnapshot, query, where
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs", authDomain: "miv-1426c.firebaseapp.com",
+  projectId: "miv-1426c", storageBucket: "miv-1426c.firebasestorage.app",
+  messagingSenderId: "398934341623", appId: "1:398934341623:web:4af46c057d2e202855a0f2"
+};
+const db = getFirestore(initializeApp(firebaseConfig));
+const areasCol = collection(db, "pi_areas");
+const templatesCol = collection(db, "pi_checklist_templates");
+const usersCol = collection(db, "pi_users");
+
+const piUser = JSON.parse(sessionStorage.getItem("pi_user") || "null");
+if (!piUser) location.href = "inspection-login.html?return=" + encodeURIComponent(location.pathname);
+else if (piUser.role !== "admin") {
+  document.getElementById("no-access").style.display = "";
+} else {
+  document.getElementById("admin-main").style.display = "";
+}
+
+function renderNav() {
+  const links = [`<a class="nav-link" href="inspection.html">← 返回巡檢</a>`, `<a class="nav-link" href="inspection-issues.html">📋 異常追蹤</a>`, `<a class="nav-link" href="inspection-dashboard.html">📊 統計報表</a>`];
+  links.push(`<span class="user-badge">👤 ${esc(piUser.name)}<button onclick="logout()">登出</button></span>`);
+  document.getElementById("nav-links").innerHTML = links.join("");
+}
+window.logout = () => { sessionStorage.removeItem("pi_user"); location.href = "inspection-login.html"; };
+function esc(s){ return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function showToast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(window._t); window._t=setTimeout(()=>t.classList.remove("show"),2500); }
+
+window.setTab = function(tab) {
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+  document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === "panel-" + tab));
+};
+
+// ══════════════ 站點管理 ══════════════
+let areas = {};
+onSnapshot(areasCol, snap => {
+  areas = {};
+  snap.forEach(d => areas[d.id] = { id: d.id, ...d.data() });
+  renderAreasTable();
+  renderTplAreaList();
+});
+function renderAreasTable() {
+  const list = Object.values(areas).sort((a,b) => a.building.localeCompare(b.building) || (a.sortOrder||0)-(b.sortOrder||0));
+  document.getElementById("areas-tbody").innerHTML = list.map(a => `
+    <tr>
+      <td>${esc(a.building)}棟</td><td>${esc(a.stationName)}</td><td>${a.lineNo ? "第"+esc(a.lineNo)+"線" : "—"}</td>
+      <td>${a.currentModel ? `<span class="badge" style="background:var(--accent-soft, #eff6ff);color:var(--accent)">${esc(a.currentModel)}</span>` : "—"}</td>
+      <td>${a.sortOrder||0}</td>
+      <td><span class="badge ${a.isActive?'badge-ok':'badge-muted'}">${a.isActive?'啟用中':'已停用'}</span></td>
+      <td style="white-space:nowrap">
+        <button class="btn-icon" title="編輯" onclick="openAreaModal('${a.id}')">✏️</button>
+        <button class="btn-icon" title="刪除" onclick="deleteArea('${a.id}')">🗑️</button>
+      </td>
+    </tr>`).join("") || `<tr><td colspan="7" style="text-align:center;color:var(--text-soft);padding:24px">尚無站點資料，請新增或匯入初始資料</td></tr>`;
+}
+let editingAreaId = null;
+window.openAreaModal = function(id) {
+  editingAreaId = id;
+  const a = id ? areas[id] : null;
+  document.getElementById("area-modal-title").textContent = id ? "編輯站點" : "新增站點";
+  document.getElementById("a-building").value = a?.building || "A";
+  document.getElementById("a-name").value = a?.stationName || "";
+  document.getElementById("a-line").value = a?.lineNo || "";
+  document.getElementById("a-model").value = a?.currentModel || "";
+  document.getElementById("a-sort").value = a?.sortOrder ?? 1;
+  document.getElementById("a-active").checked = a ? !!a.isActive : true;
+  document.getElementById("area-modal").classList.remove("hidden");
+};
+window.closeAreaModal = () => document.getElementById("area-modal").classList.add("hidden");
+window.saveArea = async function() {
+  const stationName = document.getElementById("a-name").value.trim();
+  if (!stationName) { showToast("⚠️ 請輸入站點名稱"); return; }
+  const data = {
+    building: document.getElementById("a-building").value,
+    stationName,
+    lineNo: document.getElementById("a-line").value.trim() || null,
+    currentModel: document.getElementById("a-model").value.trim() || null,
+    sortOrder: Number(document.getElementById("a-sort").value) || 0,
+    isActive: document.getElementById("a-active").checked,
+  };
+  if (editingAreaId) await updateDoc(doc(db, "pi_areas", editingAreaId), data);
+  else await addDoc(areasCol, data);
+  closeAreaModal();
+  showToast("✅ 已儲存");
+};
+window.deleteArea = async function(id) {
+  const a = areas[id];
+  if (!confirm(`確定刪除站點「${a.stationName}」？相關巡檢清單將保留但不再對應此站點。`)) return;
+  await deleteDoc(doc(db, "pi_areas", id));
+  showToast("已刪除");
+};
+
+// ══════════════ 巡檢清單管理 ══════════════
+let templatesByArea = {};  // areaId -> active template（站點固定清單）
+let templatesByModel = {}; // modelName -> active template（依機種清單）
+let currentTplTarget = null; // {type:'area', id} | {type:'model', name}
+let editingItems = [];
+
+onSnapshot(query(templatesCol, where("isActive", "==", true)), snap => {
+  templatesByArea = {}; templatesByModel = {};
+  snap.forEach(d => {
+    const t = { id: d.id, ...d.data() };
+    if (t.modelName) templatesByModel[t.modelName] = t;
+    else templatesByArea[t.areaId] = t;
+  });
+  renderTplAreaList();
+  renderTplPanel();
+});
+
+function allModelNames() {
+  const set = new Set(Object.keys(templatesByModel));
+  Object.values(areas).forEach(a => { if (a.currentModel) set.add(a.currentModel); });
+  return [...set].sort();
+}
+
+function renderTplAreaList() {
+  const stationAreas = Object.values(areas).filter(a => !a.currentModel)
+    .sort((a,b) => a.building.localeCompare(b.building) || (a.sortOrder||0)-(b.sortOrder||0));
+  const modelAreas = Object.values(areas).filter(a => a.currentModel);
+  const models = allModelNames();
+
+  let html = `<div class="tpl-group-hdr">依站點清單</div>`;
+  html += stationAreas.map(a => {
+    const tpl = templatesByArea[a.id];
+    const active = currentTplTarget?.type === "area" && currentTplTarget.id === a.id;
+    return `<div class="area-list-item ${active?'active':''}" onclick="selectTplTarget('area','${a.id}')">
+      ${esc(a.building)}棟 ${esc(a.stationName)}${a.lineNo?'第'+esc(a.lineNo)+'線':''}
+      <span class="n">${tpl ? 'v'+tpl.version+'｜'+tpl.items.length+' 項' : '尚無清單'}</span>
+    </div>`;
+  }).join("") || `<div style="padding:10px 14px;color:var(--text-soft);font-size:.8rem">（無）</div>`;
+
+  html += `<div class="tpl-group-hdr">依機種清單<button class="btn-icon" title="新增機種" onclick="promptNewModel()">＋</button></div>`;
+  html += models.map(m => {
+    const tpl = templatesByModel[m];
+    const usedBy = modelAreas.filter(a => a.currentModel === m)
+      .map(a => `${a.building}棟${a.stationName}${a.lineNo?'('+a.lineNo+')':''}`).join('、');
+    const active = currentTplTarget?.type === "model" && currentTplTarget.name === m;
+    return `<div class="area-list-item ${active?'active':''}" onclick="selectTplTarget('model','${esc(m)}')">
+      ${esc(m)}
+      <span class="n">${tpl ? 'v'+tpl.version+'｜'+tpl.items.length+' 項' : '尚無清單'}${usedBy?'　套用於：'+esc(usedBy):''}</span>
+    </div>`;
+  }).join("") || `<div style="padding:10px 14px;color:var(--text-soft);font-size:.8rem">尚無機種清單，可於站點設定「目前生產機種」或按上方＋新增</div>`;
+
+  document.getElementById("tpl-area-list").innerHTML = html;
+}
+
+window.promptNewModel = function() {
+  const name = prompt("輸入新機種名稱（例如 BU25VS）：");
+  if (!name || !name.trim()) return;
+  window.selectTplTarget("model", name.trim());
+};
+
+window.selectTplTarget = function(type, key) {
+  currentTplTarget = type === "area" ? { type, id: key } : { type, name: key };
+  renderTplAreaList();
+  renderTplPanel();
+};
+
+const CATS = ["製程參數", "品質抽檢", "自主檢查"];
+const ITYPES = [["checkbox","勾選"],["number","數值"],["text","文字"]];
+const SEVS = [["","（不預設）"],["CR","CR"],["MA","MA"],["MI","MI"]];
+
+function renderTplPanel() {
+  const panel = document.getElementById("tpl-panel");
+  if (!currentTplTarget) { panel.innerHTML = `<div class="tpl-empty">← 請先從左側選擇站點或機種</div>`; return; }
+  let title, tpl;
+  if (currentTplTarget.type === "area") {
+    const a = areas[currentTplTarget.id];
+    if (!a) { currentTplTarget = null; panel.innerHTML = `<div class="tpl-empty">← 請先從左側選擇站點或機種</div>`; return; }
+    title = `${a.building}棟 ${a.stationName}${a.lineNo?'第'+a.lineNo+'線':''}`;
+    tpl = templatesByArea[a.id];
+  } else {
+    title = `機種：${currentTplTarget.name}`;
+    tpl = templatesByModel[currentTplTarget.name];
+  }
+  editingItems = tpl ? JSON.parse(JSON.stringify(tpl.items)) : [];
+  panel.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+      <div><b>${esc(title)}</b>
+        <span style="color:var(--text-soft);font-size:.8rem">　${tpl ? '目前版本 v'+tpl.version : '尚無清單，新增項目後將建立第一版'}</span></div>
+      <button class="btn btn-primary btn-sm" onclick="addItemRow()">＋ 新增項目</button>
+    </div>
+    <div class="item-cols-hdr"><div>項目名稱</div><div>分類</div><div>類型</div><div>預設等級</div><div>單位</div><div>下限</div><div>上限</div><div>必填</div><div></div><div></div></div>
+    <div id="item-rows"></div>
+    <div class="modal-footer" style="margin-top:16px">
+      <button class="btn btn-primary" onclick="saveTemplate()">💾 儲存為新版本</button>
+    </div>`;
+  renderItemRows();
+}
+
+function renderItemRows() {
+  const wrap = document.getElementById("item-rows");
+  if (!editingItems.length) { wrap.innerHTML = `<div style="text-align:center;color:var(--text-soft);padding:20px;font-size:.85rem">尚無項目，點擊右上「＋ 新增項目」開始建立</div>`; return; }
+  wrap.innerHTML = editingItems.map((it, i) => `
+    <div class="item-edit-row">
+      <input value="${esc(it.itemName)}" placeholder="項目名稱" oninput="setItemField(${i},'itemName',this.value)">
+      <select onchange="setItemField(${i},'category',this.value)">${CATS.map(c=>`<option value="${c}" ${it.category===c?'selected':''}>${c}</option>`).join('')}</select>
+      <select onchange="setItemField(${i},'inputType',this.value,true)">${ITYPES.map(([v,l])=>`<option value="${v}" ${it.inputType===v?'selected':''}>${l}</option>`).join('')}</select>
+      <select title="標記異常時預設帶入的等級，巡檢人員仍可改選" onchange="setItemField(${i},'defaultSeverity',this.value||null)">${SEVS.map(([v,l])=>`<option value="${v}" ${(it.defaultSeverity||'')===v?'selected':''}>${l}</option>`).join('')}</select>
+      <input value="${esc(it.unit||'')}" placeholder="單位" oninput="setItemField(${i},'unit',this.value||null)">
+      <input type="number" value="${it.lowerLimit ?? ''}" placeholder="下限" ${it.inputType!=='number'?'disabled':''} oninput="setItemField(${i},'lowerLimit',this.value===''?null:Number(this.value))">
+      <input type="number" value="${it.upperLimit ?? ''}" placeholder="上限" ${it.inputType!=='number'?'disabled':''} oninput="setItemField(${i},'upperLimit',this.value===''?null:Number(this.value))">
+      <input type="checkbox" ${it.required!==false?'checked':''} onchange="setItemField(${i},'required',this.checked)" style="width:18px;height:18px;justify-self:center">
+      <div class="item-move">
+        <button onclick="moveItemRow(${i},-1)" title="上移" ${i===0?'disabled':''}>↑</button>
+        <button onclick="moveItemRow(${i},1)" title="下移" ${i===editingItems.length-1?'disabled':''}>↓</button>
+      </div>
+      <button class="rm" onclick="removeItemRow(${i})" title="移除">🗑️</button>
+    </div>`).join("");
+}
+window.setItemField = function(i, field, value, rerender) {
+  if (!editingItems[i]) return;
+  editingItems[i][field] = value;
+  if (rerender) renderItemRows();
+};
+window.addItemRow = function() {
+  editingItems.push({ itemId: "it_" + Date.now().toString(36) + Math.random().toString(36).slice(2,6), itemName: "", category: "品質抽檢", inputType: "checkbox", unit: null, standardValue: null, upperLimit: null, lowerLimit: null, defaultSeverity: null, required: true });
+  renderItemRows();
+};
+window.removeItemRow = function(i) { editingItems.splice(i,1); renderItemRows(); };
+window.moveItemRow = function(i, dir) {
+  const j = i + dir;
+  if (j < 0 || j >= editingItems.length) return;
+  [editingItems[i], editingItems[j]] = [editingItems[j], editingItems[i]];
+  renderItemRows();
+};
+
+window.saveTemplate = async function() {
+  if (!currentTplTarget) return;
+  const cleaned = editingItems.filter(it => it.itemName.trim());
+  if (!cleaned.length) { showToast("⚠️ 請至少新增一個項目"); return; }
+  let prev, payload;
+  if (currentTplTarget.type === "area") {
+    prev = templatesByArea[currentTplTarget.id];
+    payload = { areaId: currentTplTarget.id, modelName: null };
+  } else {
+    prev = templatesByModel[currentTplTarget.name];
+    payload = { areaId: null, modelName: currentTplTarget.name };
+  }
+  const nextVersion = prev ? prev.version + 1 : 1;
+  if (prev) await updateDoc(doc(db, "pi_checklist_templates", prev.id), { isActive: false });
+  await addDoc(templatesCol, { ...payload, version: nextVersion, isActive: true, items: cleaned });
+  showToast(`✅ 已儲存為 v${nextVersion}`);
+};
+
+// ══════════════ 人員管理 ══════════════
+let users = {};
+onSnapshot(usersCol, snap => { users = {}; snap.forEach(d => users[d.id] = { id: d.id, ...d.data() }); renderUsersTable(); });
+const ROLE_LABEL = { inspector: "巡檢人員", supervisor: "主管", admin: "系統管理員" };
+function renderUsersTable() {
+  const list = Object.values(users).sort((a,b) => (a.name||'').localeCompare(b.name||'', 'zh-TW'));
+  document.getElementById("users-tbody").innerHTML = list.map(u => `
+    <tr>
+      <td>${esc(u.name)}</td><td>${ROLE_LABEL[u.role]||u.role}</td><td style="font-family:monospace">${'•'.repeat((u.pin||'').length)}</td>
+      <td><span class="badge ${u.isActive?'badge-ok':'badge-muted'}">${u.isActive?'啟用中':'已停用'}</span></td>
+      <td style="white-space:nowrap">
+        <button class="btn-icon" title="編輯" onclick="openUserModal('${u.id}')">✏️</button>
+        <button class="btn-icon" title="刪除" onclick="deleteUser('${u.id}')">🗑️</button>
+      </td>
+    </tr>`).join("") || `<tr><td colspan="5" style="text-align:center;color:var(--text-soft);padding:24px">尚無人員資料</td></tr>`;
+}
+let editingUserId = null;
+window.openUserModal = function(id) {
+  editingUserId = id;
+  const u = id ? users[id] : null;
+  document.getElementById("user-modal-title").textContent = id ? "編輯人員" : "新增人員";
+  document.getElementById("u-name").value = u?.name || "";
+  document.getElementById("u-role").value = u?.role || "inspector";
+  document.getElementById("u-pin").value = u?.pin || "";
+  document.getElementById("u-active").checked = u ? !!u.isActive : true;
+  document.getElementById("u-error").textContent = "";
+  document.getElementById("user-modal").classList.remove("hidden");
+};
+window.closeUserModal = () => document.getElementById("user-modal").classList.add("hidden");
+window.saveUser = async function() {
+  const name = document.getElementById("u-name").value.trim();
+  const pin = document.getElementById("u-pin").value.trim();
+  const errEl = document.getElementById("u-error");
+  if (!name) { errEl.textContent = "請輸入姓名"; return; }
+  if (!/^\d{4,6}$/.test(pin)) { errEl.textContent = "PIN 碼須為 4-6 碼數字"; return; }
+  const dup = Object.values(users).some(u => u.pin === pin && u.id !== editingUserId);
+  if (dup) { errEl.textContent = "此 PIN 碼已被使用，請更換"; return; }
+  const data = { name, role: document.getElementById("u-role").value, pin, isActive: document.getElementById("u-active").checked, assignedAreas: [] };
+  if (editingUserId) await updateDoc(doc(db, "pi_users", editingUserId), data);
+  else await addDoc(usersCol, data);
+  closeUserModal();
+  showToast("✅ 已儲存");
+};
+window.deleteUser = async function(id) {
+  const u = users[id];
+  if (!confirm(`確定刪除人員「${u.name}」？`)) return;
+  await deleteDoc(doc(db, "pi_users", id));
+  showToast("已刪除");
+};
+
+// ══════════════ 匯入初始站點與清單 ══════════════
+window.importSeed = async function() {
+  if (!confirm("將從 inspection_seed.json 匯入初始站點與巡檢清單，已存在相同棟別/站點/線別者將跳過。是否繼續？")) return;
+  try {
+    const seed = await (await fetch("inspection_seed.json")).json();
+    let created = 0, skipped = 0;
+    for (const entry of seed) {
+      const exists = Object.values(areas).some(a => a.building === entry.building && a.stationName === entry.stationName && (a.lineNo || null) === (entry.lineNo || null));
+      if (exists) { skipped++; continue; }
+      const areaRef = await addDoc(areasCol, {
+        building: entry.building, stationName: entry.stationName, lineNo: entry.lineNo || null,
+        sortOrder: entry.sortOrder || 0, isActive: true,
+      });
+      if (entry.items && entry.items.length) {
+        const items = entry.items.map((it, i) => ({ ...it, itemId: "it_" + areaRef.id.slice(0,6) + "_" + i }));
+        await addDoc(templatesCol, { areaId: areaRef.id, version: 1, isActive: true, items });
+      }
+      created++;
+    }
+    showToast(`✅ 匯入完成：新增 ${created} 個站點，跳過 ${skipped} 個已存在站點`);
+  } catch (err) {
+    showToast("⚠️ 匯入失敗：" + err.message);
+  }
+};
+
+// ══════════════ 匯入機種清單範本 ══════════════
+window.importModelSeed = async function() {
+  if (!confirm("將從 inspection_model_seed.json 匯入 BU25VS / BR25VS 機種清單範本（依你提供的巡檢表整理），已存在同機種名稱的清單將跳過。是否繼續？")) return;
+  try {
+    const seed = await (await fetch("inspection_model_seed.json")).json();
+    let created = 0, skipped = 0;
+    for (const entry of seed) {
+      if (templatesByModel[entry.modelName]) { skipped++; continue; }
+      const items = entry.items.map((it, i) => ({ ...it, itemId: "it_" + entry.modelName + "_" + i }));
+      await addDoc(templatesCol, { areaId: null, modelName: entry.modelName, version: 1, isActive: true, items });
+      created++;
+    }
+    showToast(`✅ 匯入完成：新增 ${created} 份機種清單，跳過 ${skipped} 份已存在的清單`);
+  } catch (err) {
+    showToast("⚠️ 匯入失敗：" + err.message);
+  }
+};
+
+if (piUser) renderNav();
+</script>
+</body>
+</html>

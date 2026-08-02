@@ -3,110 +3,74 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>力山工業專案管制表</title>
-    <link rel="stylesheet" href="styles.css?v=17">
-  </head>
+    <title>越南力山工業廠務系統</title>
+    <link rel="stylesheet" href="styles.css?v=19">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
+</head>
   <body>
+    <script type="module" src="auth-guard.js?v=2"></script>
+
     <!-- 向下相容：舊版分享連結 index.html?p=xxx 自動跳轉 -->
     <script>
       const _p = new URLSearchParams(location.search).get("p");
       if (_p) location.replace("project.html?p=" + _p);
     </script>
 
-    <main class="home-shell">
-      <header class="home-topbar">
-        <div>
-          <p class="eyebrow">ProjectFlow</p>
-          <h1>力山工業專案管制表</h1>
+    <main class="hub-shell">
+      <header class="hub-banner">
+        <img src="Rexon%20logo.png" alt="REXON VN" class="hub-logo">
+        <div class="hub-title-group">
+          <p class="eyebrow">Rexon Industrial Vietnam</p>
+          <h1>越南力山工業廠務系統</h1>
         </div>
-        <button id="new-project" class="primary-button" type="button">
-          <span aria-hidden="true">+</span>
-          <span>建立新專案</span>
-        </button>
       </header>
 
-      <section id="project-grid" class="project-grid" aria-label="專案列表">
-        <!-- JS rendered -->
+      <section class="hub-grid" aria-label="系統列表">
+        <a href="andon.html" class="hub-tile hub-tile--red">
+          <span class="hub-tile-icon">🚨</span>
+          <span class="hub-tile-name">安燈系統</span>
+          <span class="hub-tile-sub">Andon</span>
+          <span class="hub-tile-desc">即時異常通報與看板</span>
+        </a>
+        <a href="toolroom.html" class="hub-tile hub-tile--amber">
+          <span class="hub-tile-icon">🧰</span>
+          <span class="hub-tile-name">工具室系統</span>
+          <span class="hub-tile-sub">Toolroom</span>
+          <span class="hub-tile-desc">工具借用與庫存管理</span>
+        </a>
+        <a href="calibration.html" class="hub-tile hub-tile--blue">
+          <span class="hub-tile-icon">🗓️</span>
+          <span class="hub-tile-name">校驗管理</span>
+          <span class="hub-tile-sub">Calibration</span>
+          <span class="hub-tile-desc">儀器校驗排程與紀錄</span>
+        </a>
+        <a href="projects.html" class="hub-tile hub-tile--green">
+          <span class="hub-tile-icon">📊</span>
+          <span class="hub-tile-name">專案管制表</span>
+          <span class="hub-tile-sub">ProjectFlow</span>
+          <span class="hub-tile-desc">專案排程與甘特圖</span>
+        </a>
+        <a href="issue-report.html" class="hub-tile hub-tile--purple">
+          <span class="hub-tile-icon">📋</span>
+          <span class="hub-tile-name">問題反映系統</span>
+          <span class="hub-tile-sub">Issue Report</span>
+          <span class="hub-tile-desc">建築物問題回報</span>
+        </a>
+        <a href="inspection.html" class="hub-tile hub-tile--indigo">
+          <span class="hub-tile-icon">🔍</span>
+          <span class="hub-tile-name">製程巡檢系統</span>
+          <span class="hub-tile-sub">Process Inspection</span>
+          <span class="hub-tile-desc">產線製程巡迴檢驗與異常追蹤</span>
+        </a>
+        <a href="https://rexon-lab.web.app/" target="_blank" rel="noopener noreferrer" class="hub-tile hub-tile--teal">
+          <span class="hub-tile-icon">🧪</span>
+          <span class="hub-tile-name">實驗室管理系統</span>
+          <span class="hub-tile-sub">Lab Management ↗</span>
+          <span class="hub-tile-desc">實驗室樣品與設備管理</span>
+        </a>
       </section>
-
-      <p id="empty-state" class="home-empty" hidden>
-        還沒有任何專案。點擊右上角「建立新專案」開始。
-      </p>
     </main>
-
-    <script>
-      const REGISTRY_KEY = "projectflow.registry.v1";
-
-      function getRegistry() {
-        try { return JSON.parse(localStorage.getItem(REGISTRY_KEY) || "[]"); }
-        catch { return []; }
-      }
-
-      function escHtml(str) {
-        return String(str)
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;");
-      }
-
-      function fmtDate(ts) {
-        if (!ts) return "—";
-        return new Intl.DateTimeFormat("zh-Hant", {
-          month: "numeric", day: "numeric",
-          hour: "2-digit", minute: "2-digit"
-        }).format(new Date(ts));
-      }
-
-      function progressRing(pct) {
-        const r = 16, c = 2 * Math.PI * r;
-        const fill = c - (pct / 100) * c;
-        return `
-          <svg class="progress-ring" viewBox="0 0 40 40" aria-hidden="true">
-            <circle cx="20" cy="20" r="${r}" class="ring-bg"/>
-            <circle cx="20" cy="20" r="${r}" class="ring-fill"
-              stroke-dasharray="${c}" stroke-dashoffset="${fill}"
-              transform="rotate(-90 20 20)"/>
-            <text x="20" y="20" class="ring-text" text-anchor="middle" dominant-baseline="central">${pct}%</text>
-          </svg>`;
-      }
-
-      function renderGrid() {
-        const projects = getRegistry()
-          .slice()
-          .sort((a, b) => (b.lastVisited || 0) - (a.lastVisited || 0));
-        const grid  = document.querySelector("#project-grid");
-        const empty = document.querySelector("#empty-state");
-
-        if (!projects.length) {
-          grid.innerHTML = "";
-          empty.hidden = false;
-          return;
-        }
-
-        empty.hidden = true;
-        grid.innerHTML = projects.map(p => {
-          const pct = Math.min(100, Math.max(0, p.progress ?? 0));
-          return `
-            <a href="project.html?p=${escHtml(p.id)}" class="project-card">
-              <div class="pc-top">
-                ${progressRing(pct)}
-                <div class="pc-info">
-                  <h2 class="pc-name">${escHtml(p.name || "未命名專案")}</h2>
-                  <span class="pc-tasks">${p.taskCount ?? 0} 個任務</span>
-                </div>
-              </div>
-              <p class="pc-date">最後開啟 ${fmtDate(p.lastVisited)}</p>
-            </a>`;
-        }).join("");
-      }
-
-      document.querySelector("#new-project").addEventListener("click", () => {
-        const id = Math.random().toString(36).slice(2, 10);
-        location.href = "project.html?p=" + id;
-      });
-
-      renderGrid();
-    </script>
   </body>
 </html>

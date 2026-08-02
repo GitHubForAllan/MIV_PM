@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>製程巡檢 — 統計報表 / Báo cáo Thống kê</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -68,6 +71,7 @@
 </style>
 </head>
 <body>
+<script type="module" src="auth-guard.js?v=2"></script>
 
 <header class="topbar">
   <div class="topbar-left">
@@ -116,12 +120,13 @@
   <div class="empty-state" id="empty-state" style="display:none">此區間尚無巡檢紀錄</div>
 </div>
 
-<div class="empty-state" id="no-access" style="display:none">🚫 此頁面僅限主管/系統管理員使用</div>
+<div class="empty-state" id="no-access" style="display:none">🚫 此頁面僅限品保（quality）/系統管理員使用</div>
 
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, getDocs, query, where, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { mivAuthReady } from "./auth-guard.js?v=2";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs", authDomain: "miv-1426c.firebaseapp.com",
@@ -133,9 +138,8 @@ const areasCol = collection(db, "pi_areas");
 const recordsCol = collection(db, "pi_inspection_records");
 const issuesCol = collection(db, "pi_issues");
 
-const piUser = JSON.parse(sessionStorage.getItem("pi_user") || "null");
-if (!piUser) location.href = "inspection-login.html?return=" + encodeURIComponent(location.pathname);
-else if (piUser.role !== "admin" && piUser.role !== "supervisor") {
+const piUser = await mivAuthReady;
+if (piUser.role !== "admin" && piUser.role !== "quality") {
   document.getElementById("no-access").style.display = "";
 } else {
   document.getElementById("dash-main").style.display = "";
@@ -143,10 +147,8 @@ else if (piUser.role !== "admin" && piUser.role !== "supervisor") {
 function renderNav() {
   const links = [`<a class="nav-link" href="inspection.html">← 返回巡檢</a>`, `<a class="nav-link" href="inspection-issues.html">📋 異常追蹤</a>`];
   if (piUser.role === "admin") links.push(`<a class="nav-link" href="inspection-admin.html">⚙ 後台管理</a>`);
-  links.push(`<span class="user-badge">👤 ${esc(piUser.name)}<button onclick="logout()">登出</button></span>`);
   document.getElementById("nav-links").innerHTML = links.join("");
 }
-window.logout = () => { sessionStorage.removeItem("pi_user"); location.href = "inspection-login.html"; };
 function esc(s){ return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 
 function todayStr() { return new Date().toISOString().slice(0,10); }
@@ -310,7 +312,8 @@ function styleHeader(sheet) {
   });
 }
 
-if (piUser) { renderNav(); if (piUser.role === "admin" || piUser.role === "supervisor") loadData(); }
+renderNav();
+if (piUser.role === "admin" || piUser.role === "quality") loadData();
 </script>
 </body>
 </html>

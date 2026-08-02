@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>異常追蹤看板 / Theo dõi Bất thường</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -103,6 +106,7 @@
 </style>
 </head>
 <body>
+<script type="module" src="auth-guard.js?v=2"></script>
 
 <header class="topbar">
   <div class="topbar-left">
@@ -187,6 +191,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, doc, updateDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { mivAuthReady } from "./auth-guard.js?v=2";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs", authDomain: "miv-1426c.firebaseapp.com",
@@ -197,20 +202,16 @@ const db = getFirestore(initializeApp(firebaseConfig));
 const issuesCol = collection(db, "pi_issues");
 const areasCol = collection(db, "pi_areas");
 
-const piUser = JSON.parse(sessionStorage.getItem("pi_user") || "null");
-if (!piUser) location.href = "inspection-login.html?return=" + encodeURIComponent(location.pathname);
+const piUser = await mivAuthReady;
 
-const ROLE_LABEL = { inspector: "巡檢人員", supervisor: "主管", admin: "系統管理員" };
 function renderNav() {
   const links = [`<a class="nav-link" href="inspection.html">← 返回巡檢</a>`];
-  if (piUser.role === "supervisor" || piUser.role === "admin") links.push(`<a class="nav-link" href="inspection-dashboard.html">📊 統計報表</a>`);
+  links.push(`<a class="nav-link" href="inspection-dashboard.html">📊 統計報表</a>`);
   if (piUser.role === "admin") links.push(`<a class="nav-link" href="inspection-admin.html">⚙ 後台管理</a>`);
-  links.push(`<span class="user-badge">👤 ${esc(piUser.name)}（${ROLE_LABEL[piUser.role]||piUser.role}）<button onclick="logout()">登出</button></span>`);
   document.getElementById("nav-links").innerHTML = links.join("");
 }
-window.logout = () => { sessionStorage.removeItem("pi_user"); location.href = "inspection-login.html"; };
 function esc(s){ return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
-function canManage(){ return piUser && (piUser.role === "supervisor" || piUser.role === "admin"); }
+function canManage(){ return piUser.role === "quality" || piUser.role === "admin"; }
 
 let issues = {}, areas = {}, currentView = "kanban";
 
@@ -370,7 +371,7 @@ window.signOffClose = async function() {
   if (!notes) { showToast("⚠️ 請填寫驗證結果才能簽核結案"); return; }
   await updateDoc(doc(db, "pi_issues", detailId), {
     status: "已結案",
-    reviewerId: piUser.name,
+    reviewerId: piUser.name || piUser.employeeId,
     reviewSignedAt: serverTimestamp(),
     reviewNotes: document.getElementById("d-review-notes").value.trim() || null,
     resolvedAt: serverTimestamp(),
@@ -385,7 +386,7 @@ function showToast(msg) {
   clearTimeout(window._t); window._t = setTimeout(() => t.classList.remove("show"), 2500);
 }
 
-if (piUser) renderNav();
+renderNav();
 </script>
 </body>
 </html>

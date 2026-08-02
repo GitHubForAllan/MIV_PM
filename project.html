@@ -4,13 +4,17 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ProjectFlow Gantt Planner</title>
-    <link rel="stylesheet" href="styles.css?v=17">
-  </head>
+    <link rel="stylesheet" href="styles.css?v=19">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
+</head>
   <body>
+    <script type="module" src="auth-guard.js?v=2"></script>
     <main class="app-shell">
       <header class="topbar">
         <div>
-          <p class="eyebrow"><a href="index.html" class="home-link" title="返回首頁">ProjectFlow</a></p>
+          <p class="eyebrow"><a href="projects.html" class="home-link" title="返回專案列表">ProjectFlow</a></p>
           <h1 id="project-title" contenteditable="true" spellcheck="false" title="Click to rename project">Project schedule</h1>
         </div>
         <div class="toolbar" aria-label="Project tools">

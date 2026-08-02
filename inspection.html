@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>製程巡檢 / Kiểm tra Quy trình</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -135,6 +138,7 @@
 </style>
 </head>
 <body>
+<script type="module" src="auth-guard.js?v=2"></script>
 
 <header class="topbar">
   <div class="topbar-left">
@@ -193,6 +197,7 @@ import {
   getFirestore, collection, doc, setDoc, updateDoc, addDoc, getDocs, onSnapshot,
   query, where, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { mivAuthReady } from "./auth-guard.js?v=2";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs",
@@ -209,26 +214,28 @@ const templatesCol = collection(db, "pi_checklist_templates");
 const recordsCol = collection(db, "pi_inspection_records");
 const issuesCol = collection(db, "pi_issues");
 
-// ── 登入檢查 ──
-const piUser = JSON.parse(sessionStorage.getItem("pi_user") || "null");
-if (!piUser) {
-  location.href = "inspection-login.html?return=" + encodeURIComponent(location.pathname);
+// ── 登入檢查（共用工號登入，角色來自 users 集合）──
+const piUser = await mivAuthReady;
+if (piUser.role !== "quality" && piUser.role !== "admin") {
+  document.body.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:center;min-height:80vh;flex-direction:column;gap:10px;color:#374151;text-align:center;padding:24px">
+      <p style="font-size:1.2rem;font-weight:700">權限不足</p>
+      <p style="color:#64748b">製程巡檢僅限品保（quality）或管理員（admin）角色使用，請聯絡系統管理員指派權限。</p>
+      <a href="index.html" style="color:#2563eb">← 返回首頁</a>
+      <button onclick="window.mivLogout()" style="margin-top:6px;padding:6px 16px;border:1px solid #cbd5e1;background:transparent;border-radius:8px;color:#64748b;cursor:pointer">登出</button>
+    </div>`;
+  throw new Error("insufficient permission for inspection.html");
 }
 
-const ROLE_LABEL = { inspector: "巡檢人員", supervisor: "主管", admin: "系統管理員" };
 function renderNav() {
   const links = [];
   links.push(`<a class="nav-link" href="inspection-issues.html"><span>📋 異常追蹤</span><span class="vi"> Theo dõi bất thường</span></a>`);
-  if (piUser.role === "supervisor" || piUser.role === "admin") {
-    links.push(`<a class="nav-link" href="inspection-dashboard.html"><span>📊 統計報表</span><span class="vi"> Báo cáo</span></a>`);
-  }
+  links.push(`<a class="nav-link" href="inspection-dashboard.html"><span>📊 統計報表</span><span class="vi"> Báo cáo</span></a>`);
   if (piUser.role === "admin") {
     links.push(`<a class="nav-link" href="inspection-admin.html"><span>⚙ 後台管理</span><span class="vi"> Quản trị</span></a>`);
   }
-  links.push(`<div class="user-badge">👤 ${esc(piUser.name)}　<span class="role">${ROLE_LABEL[piUser.role] || piUser.role}</span>　<button onclick="logout()">登出</button></div>`);
   document.getElementById("nav-links").innerHTML = links.join("");
 }
-window.logout = () => { sessionStorage.removeItem("pi_user"); location.href = "inspection-login.html"; };
 
 function esc(s) { return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 
@@ -525,8 +532,8 @@ window.submitInspection = async function() {
       lineNo: currentArea.lineNo || null,
       shift: currentShiftVal,
       inspectionTime: serverTimestamp(),
-      inspectorId: piUser.uid,
-      inspectorName: piUser.name,
+      inspectorId: piUser.employeeId,
+      inspectorName: piUser.name || piUser.employeeId,
       partOrModelNo: document.getElementById("f-partno").value.trim(),
       modelName: currentArea.currentModel || null,
       templateVersion: currentTemplate.version,
@@ -575,7 +582,7 @@ function showToast(msg) {
   window._toastTimer = setTimeout(() => t.classList.remove("show"), 3000);
 }
 
-if (piUser) renderNav();
+renderNav();
 </script>
 </body>
 </html>

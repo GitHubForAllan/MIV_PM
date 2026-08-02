@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>製程巡檢 — 後台管理 / Quản trị Hệ thống Kiểm tra</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -101,6 +104,7 @@
 </style>
 </head>
 <body>
+<script type="module" src="auth-guard.js?v=2"></script>
 
 <header class="topbar">
   <div class="topbar-left">
@@ -115,7 +119,6 @@
     <div class="tabs">
       <button class="tab-btn active" data-tab="areas" onclick="setTab('areas')">🏭 站點管理</button>
       <button class="tab-btn" data-tab="templates" onclick="setTab('templates')">📋 巡檢清單管理</button>
-      <button class="tab-btn" data-tab="users" onclick="setTab('users')">👤 人員管理</button>
     </div>
     <button class="btn btn-outline" onclick="importSeed()">📥 匯入初始站點與清單</button>
     <button class="btn btn-outline" onclick="importModelSeed()">📥 匯入機種清單範本（BU25VS/BR25VS）</button>
@@ -142,16 +145,6 @@
     </div>
   </div>
 
-  <!-- 人員管理 -->
-  <div class="panel" id="panel-users">
-    <div class="toolbar"><div></div><button class="btn btn-primary" onclick="openUserModal(null)">＋ 新增人員</button></div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>姓名</th><th>角色</th><th>PIN</th><th>狀態</th><th></th></tr></thead>
-        <tbody id="users-tbody"></tbody>
-      </table>
-    </div>
-  </div>
 </div>
 
 <div class="empty-state" id="no-access" style="display:none">🚫 此頁面僅限系統管理員使用</div>
@@ -182,28 +175,6 @@
   </div>
 </div>
 
-<!-- 人員 Modal -->
-<div class="modal-overlay hidden" id="user-modal">
-  <div class="modal">
-    <h2 id="user-modal-title">新增人員</h2>
-    <div class="form-grid">
-      <div class="form-group full"><label>姓名 *</label><input id="u-name"></div>
-      <div class="form-group"><label>角色 *</label>
-        <select id="u-role"><option value="inspector">巡檢人員</option><option value="supervisor">主管</option><option value="admin">系統管理員</option></select>
-      </div>
-      <div class="form-group"><label>PIN 碼 * (4-6碼數字)</label><input id="u-pin" inputmode="numeric" maxlength="6" placeholder="例：1234"></div>
-      <div class="form-group full">
-        <div class="checkbox-row"><input type="checkbox" id="u-active" checked><label for="u-active">啟用中</label></div>
-      </div>
-    </div>
-    <div id="u-error" style="color:var(--danger);font-size:.8rem;margin-top:6px"></div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeUserModal()">取消</button>
-      <button class="btn btn-primary" onclick="saveUser()">儲存</button>
-    </div>
-  </div>
-</div>
-
 <div class="toast" id="toast"></div>
 
 <script type="module">
@@ -211,6 +182,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import {
   getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, addDoc, getDocs, onSnapshot, query, where
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { mivAuthReady } from "./auth-guard.js?v=2";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs", authDomain: "miv-1426c.firebaseapp.com",
@@ -220,11 +192,9 @@ const firebaseConfig = {
 const db = getFirestore(initializeApp(firebaseConfig));
 const areasCol = collection(db, "pi_areas");
 const templatesCol = collection(db, "pi_checklist_templates");
-const usersCol = collection(db, "pi_users");
 
-const piUser = JSON.parse(sessionStorage.getItem("pi_user") || "null");
-if (!piUser) location.href = "inspection-login.html?return=" + encodeURIComponent(location.pathname);
-else if (piUser.role !== "admin") {
+const piUser = await mivAuthReady;
+if (piUser.role !== "admin") {
   document.getElementById("no-access").style.display = "";
 } else {
   document.getElementById("admin-main").style.display = "";
@@ -232,10 +202,8 @@ else if (piUser.role !== "admin") {
 
 function renderNav() {
   const links = [`<a class="nav-link" href="inspection.html">← 返回巡檢</a>`, `<a class="nav-link" href="inspection-issues.html">📋 異常追蹤</a>`, `<a class="nav-link" href="inspection-dashboard.html">📊 統計報表</a>`];
-  links.push(`<span class="user-badge">👤 ${esc(piUser.name)}<button onclick="logout()">登出</button></span>`);
   document.getElementById("nav-links").innerHTML = links.join("");
 }
-window.logout = () => { sessionStorage.removeItem("pi_user"); location.href = "inspection-login.html"; };
 function esc(s){ return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 function showToast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(window._t); window._t=setTimeout(()=>t.classList.remove("show"),2500); }
 
@@ -456,56 +424,6 @@ window.saveTemplate = async function() {
   showToast(`✅ 已儲存為 v${nextVersion}`);
 };
 
-// ══════════════ 人員管理 ══════════════
-let users = {};
-onSnapshot(usersCol, snap => { users = {}; snap.forEach(d => users[d.id] = { id: d.id, ...d.data() }); renderUsersTable(); });
-const ROLE_LABEL = { inspector: "巡檢人員", supervisor: "主管", admin: "系統管理員" };
-function renderUsersTable() {
-  const list = Object.values(users).sort((a,b) => (a.name||'').localeCompare(b.name||'', 'zh-TW'));
-  document.getElementById("users-tbody").innerHTML = list.map(u => `
-    <tr>
-      <td>${esc(u.name)}</td><td>${ROLE_LABEL[u.role]||u.role}</td><td style="font-family:monospace">${'•'.repeat((u.pin||'').length)}</td>
-      <td><span class="badge ${u.isActive?'badge-ok':'badge-muted'}">${u.isActive?'啟用中':'已停用'}</span></td>
-      <td style="white-space:nowrap">
-        <button class="btn-icon" title="編輯" onclick="openUserModal('${u.id}')">✏️</button>
-        <button class="btn-icon" title="刪除" onclick="deleteUser('${u.id}')">🗑️</button>
-      </td>
-    </tr>`).join("") || `<tr><td colspan="5" style="text-align:center;color:var(--text-soft);padding:24px">尚無人員資料</td></tr>`;
-}
-let editingUserId = null;
-window.openUserModal = function(id) {
-  editingUserId = id;
-  const u = id ? users[id] : null;
-  document.getElementById("user-modal-title").textContent = id ? "編輯人員" : "新增人員";
-  document.getElementById("u-name").value = u?.name || "";
-  document.getElementById("u-role").value = u?.role || "inspector";
-  document.getElementById("u-pin").value = u?.pin || "";
-  document.getElementById("u-active").checked = u ? !!u.isActive : true;
-  document.getElementById("u-error").textContent = "";
-  document.getElementById("user-modal").classList.remove("hidden");
-};
-window.closeUserModal = () => document.getElementById("user-modal").classList.add("hidden");
-window.saveUser = async function() {
-  const name = document.getElementById("u-name").value.trim();
-  const pin = document.getElementById("u-pin").value.trim();
-  const errEl = document.getElementById("u-error");
-  if (!name) { errEl.textContent = "請輸入姓名"; return; }
-  if (!/^\d{4,6}$/.test(pin)) { errEl.textContent = "PIN 碼須為 4-6 碼數字"; return; }
-  const dup = Object.values(users).some(u => u.pin === pin && u.id !== editingUserId);
-  if (dup) { errEl.textContent = "此 PIN 碼已被使用，請更換"; return; }
-  const data = { name, role: document.getElementById("u-role").value, pin, isActive: document.getElementById("u-active").checked, assignedAreas: [] };
-  if (editingUserId) await updateDoc(doc(db, "pi_users", editingUserId), data);
-  else await addDoc(usersCol, data);
-  closeUserModal();
-  showToast("✅ 已儲存");
-};
-window.deleteUser = async function(id) {
-  const u = users[id];
-  if (!confirm(`確定刪除人員「${u.name}」？`)) return;
-  await deleteDoc(doc(db, "pi_users", id));
-  showToast("已刪除");
-};
-
 // ══════════════ 匯入初始站點與清單 ══════════════
 window.importSeed = async function() {
   if (!confirm("將從 inspection_seed.json 匯入初始站點與巡檢清單，已存在相同棟別/站點/線別者將跳過。是否繼續？")) return;
@@ -549,7 +467,7 @@ window.importModelSeed = async function() {
   }
 };
 
-if (piUser) renderNav();
+renderNav();
 </script>
 </body>
 </html>

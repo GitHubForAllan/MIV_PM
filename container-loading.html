@@ -265,7 +265,11 @@ class MaxRectsBin {
     }
     this.freeRects = out;
   }
-  insert(w, h, meta) {
+  // heuristic "short" (Best Short Side Fit) picks the tightest local fit — good in general,
+  // but it can greedily wedge an item into a cramped leftover strip instead of using open
+  // space beside it. heuristic "long" (Best Long Side Fit) instead minimizes the larger
+  // leftover dimension, which tends to keep big open areas intact for later items.
+  insert(w, h, meta, heuristic = "short") {
     let best = null;
     for (const free of this.freeRects) {
       for (const [ow, oh] of w === h ? [[w, h]] : [[w, h], [h, w]]) {
@@ -273,8 +277,10 @@ class MaxRectsBin {
           const leftoverH = free.w - ow, leftoverV = free.h - oh;
           const shortFit = Math.min(leftoverH, leftoverV);
           const longFit = Math.max(leftoverH, leftoverV);
-          if (!best || shortFit < best.shortFit - 1e-9 || (Math.abs(shortFit - best.shortFit) < 1e-9 && longFit < best.longFit)) {
-            best = { free, ow, oh, shortFit, longFit };
+          const primary = heuristic === "long" ? longFit : shortFit;
+          const secondary = heuristic === "long" ? shortFit : longFit;
+          if (!best || primary < best.primary - 1e-9 || (Math.abs(primary - best.primary) < 1e-9 && secondary < best.secondary)) {
+            best = { free, ow, oh, primary, secondary };
           }
         }
       }
@@ -288,32 +294,154 @@ class MaxRectsBin {
     this.prune();
     return placedRect;
   }
+  // Places as many same-size items as possible from `remaining` (mutated: placed items are
+  // shift()ed off the front) as ONE grid block in a single free rectangle, instead of
+  // inserting them one at a time. One-at-a-time insertion is what causes the "wedge into a
+  // tiny leftover strip" failure: item 2 greedily takes the tightest-fitting gap next to
+  // item 1 instead of the open space that would let item 3 sit in the same row. Packing the
+  // whole run as a grid up front finds that open space because it optimizes for "most items
+  // per rectangle" rather than "tightest single fit". Returns how many were placed.
+  insertBatch(remaining, heuristic = "short") {
+    if (remaining.length === 0) return 0;
+    const w = remaining[0].w, h = remaining[0].h;
+    let best = null;
+    for (const free of this.freeRects) {
+      for (const [ow, oh] of w === h ? [[w, h]] : [[w, h], [h, w]]) {
+        if (ow > free.w + 1e-6 || oh > free.h + 1e-6) continue;
+        const cols = Math.floor((free.w + 1e-6) / ow);
+        const rows = Math.floor((free.h + 1e-6) / oh);
+        const maxFit = Math.min(remaining.length, cols * rows);
+        if (maxFit <= 0) continue;
+        let gridCols = Math.min(cols, maxFit);
+        let gridRows = Math.ceil(maxFit / gridCols);
+        if (gridRows > rows) { gridRows = rows; gridCols = Math.ceil(maxFit / gridRows); }
+        const leftoverH = free.w - gridCols * ow, leftoverV = free.h - gridRows * oh;
+        const shortFit = Math.min(leftoverH, leftoverV);
+        const longFit = Math.max(leftoverH, leftoverV);
+        const primary = heuristic === "long" ? longFit : shortFit;
+        const secondary = heuristic === "long" ? shortFit : longFit;
+        if (
+          !best || maxFit > best.maxFit ||
+          (maxFit === best.maxFit && (primary < best.primary - 1e-9 || (Math.abs(primary - best.primary) < 1e-9 && secondary < best.secondary)))
+        ) {
+          best = { free, ow, oh, gridCols, gridRows, maxFit, primary, secondary };
+        }
+      }
+    }
+    if (!best) return 0;
+    let placedCount = 0;
+    outer:
+    for (let r = 0; r < best.gridRows; r++) {
+      for (let c = 0; c < best.gridCols; c++) {
+        if (placedCount >= best.maxFit) break outer;
+        const col = remaining.shift();
+        this.placed.push({
+          x: best.free.x + c * best.ow, y: best.free.y + r * best.oh,
+          w: best.ow, h: best.oh, meta: col.meta,
+        });
+        placedCount++;
+      }
+    }
+    const usedBlock = { x: best.free.x, y: best.free.y, w: best.gridCols * best.ow, h: best.gridRows * best.oh };
+    const nextFree = [];
+    for (const fr of this.freeRects) nextFree.push(...MaxRectsBin.split(fr, usedBlock));
+    this.freeRects = nextFree.filter(fr => fr.w > 1e-6 && fr.h > 1e-6);
+    this.prune();
+    return placedCount;
+  }
 }
 
-function packStacksIntoContainers(stacks, planeLen, planeWid) {
-  const sorted = [...stacks].sort((a, b) => (b.w * b.h) - (a.w * a.h));
+// Each MaxRectsBin.insert() already tries both orientations (0°/90°) and keeps whichever
+// fits best for that one placement — but that's a per-item, greedy decision. The item
+// processing ORDER also affects the final layout (a different order can leave free space
+// shaped so a later rotation isn't needed at all), and greedy insertion can't backtrack.
+// So here we run the whole packing several times with different sort orders and keep
+// whichever run uses the fewest containers / highest floor utilization.
+function packOnce(columns, planeLen, planeWid, compareFn, heuristic) {
+  const sorted = [...columns].sort(compareFn);
   const bins = [];
   const unplaced = [];
-  for (const st of sorted) {
-    let placed = null;
-    for (const bin of bins) {
-      placed = bin.insert(st.w, st.h, st.meta);
-      if (placed) break;
-    }
-    if (!placed) {
+
+  // Same-size columns (always true for pallets of the same code, since they share a
+  // footprint) are grouped and placed together via insertBatch — see its comment for why
+  // one-at-a-time insertion of a run of identical items produces bad layouts.
+  const groupOrder = [];
+  const groups = new Map();
+  for (const col of sorted) {
+    const key = `${col.w}x${col.h}`;
+    if (!groups.has(key)) { groups.set(key, []); groupOrder.push(key); }
+    groups.get(key).push(col);
+  }
+
+  for (const key of groupOrder) {
+    const remaining = groups.get(key);
+    while (remaining.length > 0) {
+      let placedThisRound = 0;
+      for (const bin of bins) {
+        placedThisRound += bin.insertBatch(remaining, heuristic);
+        if (remaining.length === 0) break;
+      }
+      if (remaining.length === 0) break;
       const bin = new MaxRectsBin(planeLen, planeWid);
-      placed = bin.insert(st.w, st.h, st.meta);
-      if (placed) { bins.push(bin); }
-      else { unplaced.push(st); }
+      const placedCount = bin.insertBatch(remaining, heuristic);
+      if (placedCount > 0) {
+        bins.push(bin);
+      } else {
+        unplaced.push(...remaining);
+        remaining.length = 0;
+      }
     }
   }
-  return { bins, unplaced };
+  // Placed area is the same total regardless of arrangement (same items always sum to the
+  // same area), so it can't tell a compact layout from a wasteful one. The bounding box each
+  // bin actually occupies (its furthest placed edge in each direction) can: a layout that
+  // spreads items into extra rows/columns it didn't need shows up as a bigger bounding box.
+  const boundingArea = bins.reduce((s, b) => {
+    if (!b.placed.length) return s;
+    const maxX = Math.max(...b.placed.map(p => p.x + p.w));
+    const maxY = Math.max(...b.placed.map(p => p.y + p.h));
+    return s + maxX * maxY;
+  }, 0);
+  return { bins, unplaced, boundingArea };
 }
 
-function buildStacks(orderItems, planeLen, planeWid, containerH) {
-  const stacks = [];
+// Tries several (sort order × fit heuristic) combinations and keeps whichever produces
+// the fewest containers / most compact layout — see the Best Long Side Fit note on
+// MaxRectsBin.insert() for why the fit heuristic alone can leave large open areas unused.
+function packStacksIntoContainers(columns, planeLen, planeWid) {
+  const sortStrategies = [
+    (a, b) => (b.w * b.h) - (a.w * a.h),
+    (a, b) => (Math.max(b.w, b.h) - Math.max(a.w, a.h)) || (Math.min(b.w, b.h) - Math.min(a.w, a.h)),
+    (a, b) => (Math.min(b.w, b.h) - Math.min(a.w, a.h)) || (Math.max(b.w, b.h) - Math.max(a.w, a.h)),
+    (a, b) => (b.w + b.h) - (a.w + a.h),
+  ];
+  let best = null;
+  for (const cmp of sortStrategies) {
+    for (const heuristic of ["short", "long"]) {
+      const result = packOnce(columns, planeLen, planeWid, cmp, heuristic);
+      if (
+        !best ||
+        result.unplaced.length < best.unplaced.length ||
+        (result.unplaced.length === best.unplaced.length && result.bins.length < best.bins.length) ||
+        (result.unplaced.length === best.unplaced.length && result.bins.length === best.bins.length && result.boundingArea < best.boundingArea)
+      ) {
+        best = result;
+      }
+    }
+  }
+  return { bins: best.bins, unplaced: best.unplaced };
+}
+
+// Groups pallets by matching footprint (only pallets with the same L×W can physically
+// share a column), then within each footprint group bin-packs pallets by height
+// (First-Fit-Decreasing, capacity = container height) to build mixed-model vertical
+// columns. Weight is ignored per business decision; only container height and each
+// model's 可堆疊／最大疊板層數 constrain what can go in a column.
+function buildColumns(orderItems, planeLen, planeWid, containerH) {
   const errors = [];
   const shipSummary = [];
+  const pallets = [];
+
   for (const it of orderItems) {
     if (!it.qty || it.qty <= 0) continue;
     const unitsPerPallet = it.unitsPerPallet && it.unitsPerPallet > 0 ? it.unitsPerPallet : 1;
@@ -333,16 +461,56 @@ function buildStacks(orderItems, planeLen, planeWid, containerH) {
       errors.push(`${it.code}：棧板長寬尺寸（${it.l}×${it.w}mm）超過貨櫃可用底面長寬，無法裝入`);
       continue;
     }
-    const rawMaxLayers = it.stackable ? Math.max(1, Math.floor(containerH / it.h)) : 1;
-    const maxLayers = it.stackable && it.maxLayersLimit ? Math.min(rawMaxLayers, it.maxLayersLimit) : rawMaxLayers;
-    let remaining = palletsNeeded;
-    while (remaining > 0) {
-      const palletLayers = Math.min(maxLayers, remaining);
-      stacks.push({ w: it.l, h: it.w, meta: { code: it.code, name: it.name, palletLayers, unitsPerPallet, weight: it.weight || 0 } });
-      remaining -= palletLayers;
+    for (let i = 0; i < palletsNeeded; i++) {
+      pallets.push({
+        code: it.code, name: it.name, l: it.l, w: it.w, h: it.h,
+        weight: it.weight || 0, unitsPerPallet,
+        stackable: !!it.stackable, maxLayersLimit: it.maxLayersLimit || null,
+      });
     }
   }
-  return { stacks, errors, shipSummary };
+
+  const footprintKey = p => {
+    const a = Math.round(p.l), b = Math.round(p.w);
+    return a <= b ? `${a}x${b}` : `${b}x${a}`;
+  };
+  const groups = new Map();
+  for (const p of pallets) {
+    const key = footprintKey(p);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(p);
+  }
+
+  const columns = [];
+  for (const items of groups.values()) {
+    const rep = items[0];
+    for (const p of items.filter(p => !p.stackable)) {
+      columns.push({ w: rep.l, h: rep.w, meta: { layers: [p] } });
+    }
+    const sorted = items.filter(p => p.stackable).sort((a, b) => b.h - a.h);
+    const bins = [];
+    for (const p of sorted) {
+      let target = null;
+      for (const bin of bins) {
+        const codeCount = bin.codeCounts.get(p.code) || 0;
+        const capOk = !p.maxLayersLimit || codeCount < p.maxLayersLimit;
+        if (capOk && bin.usedHeight + p.h <= containerH + 1e-6) { target = bin; break; }
+      }
+      if (!target) {
+        target = { usedHeight: 0, layers: [], codeCounts: new Map() };
+        bins.push(target);
+      }
+      target.layers.push(p);
+      target.usedHeight += p.h;
+      target.codeCounts.set(p.code, (target.codeCounts.get(p.code) || 0) + 1);
+    }
+    for (const bin of bins) {
+      const layers = [...bin.layers].sort((a, b) => b.h - a.h);
+      columns.push({ w: rep.l, h: rep.w, meta: { layers } });
+    }
+  }
+
+  return { columns, errors, shipSummary };
 }
 
 const PALETTE = ["#1479b8","#20a66a","#f1ad24","#d93f3f","#7c5cbf","#0c8f83","#c2185b","#5b7fdb","#8d6e42","#37505f","#a3439a","#4c8c2b"];
@@ -404,11 +572,15 @@ function renderBinSVG(bin, planeLen, planeWid) {
   const scale = Math.min(maxW / planeLen, 260 / planeWid);
   const svgW = Math.round(planeLen * scale), svgH = Math.round(planeWid * scale);
   let rects = `<rect x="0" y="0" width="${svgW}" height="${svgH}" fill="#ffffff" stroke="#b8c7d1" stroke-width="2"/>`;
-  for (const p of bin.placed) {
+  bin.placed.forEach((p, idx) => {
     const x = p.x * scale, y = p.y * scale, w = p.w * scale, h = p.h * scale;
-    const color = colorForCode(p.meta.code);
-    const totalUnits = p.meta.palletLayers * p.meta.unitsPerPallet;
-    const label = p.meta.palletLayers > 1 ? `${p.meta.code} ${p.meta.palletLayers}板/${totalUnits}台` : `${p.meta.code} ${totalUnits}台`;
+    const layers = p.meta.layers;
+    const uniqueCodes = [...new Set(layers.map(l => l.code))];
+    const totalUnits = layers.reduce((s, l) => s + l.unitsPerPallet, 0);
+    const color = colorForCode(uniqueCodes[0]);
+    const label = uniqueCodes.length === 1
+      ? (layers.length > 1 ? `${uniqueCodes[0]} ${layers.length}板/${totalUnits}台` : `${uniqueCodes[0]} ${totalUnits}台`)
+      : `混${uniqueCodes.length}型 ${layers.length}板/${totalUnits}台`;
     let textEl = "";
     if (w >= 10 && h >= 10) {
       const { lines, fontSize, lineHeight } = fitLabelLines(label, w, h);
@@ -419,13 +591,50 @@ function renderBinSVG(bin, planeLen, planeWid) {
       ).join("");
       textEl = `<text text-anchor="middle" dominant-baseline="middle" font-size="${fontSize}" fill="#fff" style="pointer-events:none;font-weight:700">${tspans}</text>`;
     }
+    const badgeEl = (w >= 16 && h >= 16)
+      ? `<text x="${(x + 3).toFixed(1)}" y="${(y + 9).toFixed(1)}" font-size="8" fill="#fff" opacity="0.85" style="pointer-events:none">#${idx + 1}</text>`
+      : "";
+    const tooltipDetail = layers.map(l => `${l.code}${l.name ? " " + l.name : ""}：高${Math.round(l.h)}mm／${l.unitsPerPallet}台`).join("\n");
     rects += `<g>
       <rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" fill="${color}" fill-opacity="0.82" stroke="#ffffff" stroke-width="1.5"/>
-      <title>${esc(p.meta.code)}${p.meta.name ? " " + esc(p.meta.name) : ""} — ${Math.round(p.w)}×${Math.round(p.h)}mm，${p.meta.palletLayers}板（${totalUnits}台）</title>
+      <title>#${idx + 1} — ${Math.round(p.w)}×${Math.round(p.h)}mm 底面，共${layers.length}板／${totalUnits}台\n${tooltipDetail}</title>
       ${textEl}
+      ${badgeEl}
     </g>`;
-  }
+  });
   return `<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}" xmlns="http://www.w3.org/2000/svg">${rects}</svg>`;
+}
+
+// Separate elevation view: one vertical bar per footprint column (matching the #N badges
+// in the top view), scaled to the container's real height, with each pallet drawn as a
+// stacked band bottom-to-top and any unused height shown as a dashed outline.
+function renderSideViewSVG(bin, containerH) {
+  const barW = 50, gap = 8, chartH = 190, labelH = 16;
+  const scale = chartH / containerH;
+  let content = "";
+  bin.placed.forEach((p, idx) => {
+    const x = idx * (barW + gap);
+    const layers = p.meta.layers;
+    let cursorFromBottom = 0;
+    layers.forEach(l => {
+      const bandPx = l.h * scale;
+      const yTop = chartH - cursorFromBottom - bandPx;
+      const color = colorForCode(l.code);
+      content += `<rect x="${x}" y="${yTop.toFixed(1)}" width="${barW}" height="${bandPx.toFixed(1)}" fill="${color}" fill-opacity="0.85" stroke="#ffffff" stroke-width="1"/>`;
+      if (bandPx >= 11) {
+        content += `<text x="${x + barW / 2}" y="${(yTop + bandPx / 2).toFixed(1)}" font-size="8" fill="#fff" text-anchor="middle" dominant-baseline="middle" style="font-weight:700">${esc(l.code)}</text>`;
+      }
+      content += `<title>${esc(l.code)}${l.name ? " " + esc(l.name) : ""} — 高${Math.round(l.h)}mm／${l.unitsPerPallet}台</title>`;
+      cursorFromBottom += bandPx;
+    });
+    if (cursorFromBottom < chartH - 0.5) {
+      content += `<rect x="${x}" y="0" width="${barW}" height="${(chartH - cursorFromBottom).toFixed(1)}" fill="none" stroke="#c7d3da" stroke-dasharray="3,2" stroke-width="1"/>`;
+    }
+    content += `<rect x="${x}" y="0" width="${barW}" height="${chartH}" fill="none" stroke="#8fa3ae" stroke-width="1.2"/>`;
+    content += `<text x="${x + barW / 2}" y="${chartH + 13}" font-size="10" fill="#495a66" text-anchor="middle">#${idx + 1}</text>`;
+  });
+  const totalW = Math.max(bin.placed.length * (barW + gap) - gap, barW);
+  return `<svg width="${totalW}" height="${chartH + labelH}" viewBox="0 0 ${totalW} ${chartH + labelH}" xmlns="http://www.w3.org/2000/svg">${content}</svg>`;
 }
 
 /* ============ 頁面主邏輯 ============ */
@@ -661,14 +870,14 @@ function initPage() {
       return;
     }
 
-    const { stacks, errors, shipSummary } = buildStacks(orderItems, planeLen, planeWid, planeH);
-    if (stacks.length === 0) {
+    const { columns, errors, shipSummary } = buildColumns(orderItems, planeLen, planeWid, planeH);
+    if (columns.length === 0) {
       msg.className = "row-msg msg-err"; msg.textContent = "沒有任何機種可裝入所選貨櫃類型，請確認尺寸或改選其他類型";
       renderErrors(resultSection, errors);
       return;
     }
-    const { bins, unplaced } = packStacksIntoContainers(stacks, planeLen, planeWid);
-    renderResults(resultSection, bins, unplaced, errors, shipSummary, planeLen, planeWid, payload);
+    const { bins, unplaced } = packStacksIntoContainers(columns, planeLen, planeWid);
+    renderResults(resultSection, bins, unplaced, errors, shipSummary, planeLen, planeWid, planeH, payload);
     msg.className = "row-msg msg-ok"; msg.textContent = "✓ 計算完成";
   });
 
@@ -710,19 +919,19 @@ function initPage() {
     container.appendChild(table);
   }
 
-  function renderResults(container, bins, unplaced, errors, shipSummary, planeLen, planeWid, payload) {
+  function renderResults(container, bins, unplaced, errors, shipSummary, planeLen, planeWid, planeH, payload) {
     renderShipSummary(container, shipSummary);
     renderErrors(container, errors);
     if (unplaced.length) {
       const box = document.createElement("div");
       box.className = "warn-box";
-      box.innerHTML = `<strong>⚠ 有 ${unplaced.length} 個棧板即使開新貨櫃也放不下，請檢查棧板尺寸資料是否正確。</strong>`;
+      box.innerHTML = `<strong>⚠ 有 ${unplaced.length} 組棧板即使開新貨櫃也放不下，請檢查棧板尺寸資料是否正確。</strong>`;
       container.appendChild(box);
     }
 
     const totalArea = planeLen * planeWid;
     let totalUsedArea = 0, totalWeight = 0;
-    bins.forEach(b => { b.placed.forEach(p => { totalUsedArea += p.w * p.h; totalWeight += (p.meta.weight || 0) * p.meta.palletLayers; }); });
+    bins.forEach(b => { b.placed.forEach(p => { totalUsedArea += p.w * p.h; p.meta.layers.forEach(l => totalWeight += l.weight || 0); }); });
     const avgUtil = bins.length ? (totalUsedArea / (bins.length * totalArea) * 100) : 0;
 
     const summary = document.createElement("div");
@@ -740,24 +949,28 @@ function initPage() {
     bins.forEach((bin, idx) => {
       const usedArea = bin.placed.reduce((s, p) => s + p.w * p.h, 0);
       const util = (usedArea / totalArea * 100).toFixed(1);
-      const weight = bin.placed.reduce((s, p) => s + (p.meta.weight || 0) * p.meta.palletLayers, 0);
+      let weight = 0;
       const grouped = {};
       bin.placed.forEach(p => {
-        const key = p.meta.code;
-        if (!grouped[key]) grouped[key] = { code: p.meta.code, name: p.meta.name, qty: 0, pallets: 0, stacks: 0 };
-        grouped[key].qty += p.meta.palletLayers * p.meta.unitsPerPallet;
-        grouped[key].pallets += p.meta.palletLayers;
-        grouped[key].stacks += 1;
+        p.meta.layers.forEach(l => {
+          weight += l.weight || 0;
+          if (!grouped[l.code]) grouped[l.code] = { code: l.code, name: l.name, qty: 0, pallets: 0, columns: new Set() };
+          grouped[l.code].qty += l.unitsPerPallet;
+          grouped[l.code].pallets += 1;
+        });
       });
       const card = document.createElement("div");
       card.className = "bin-card";
       const legendHtml = Object.values(grouped).map(g => `
-        <span class="legend-chip"><span class="legend-swatch" style="background:${colorForCode(g.code)}"></span>${esc(g.code)}：${g.qty} 台（${g.pallets} 板，${g.stacks} 組佔位）</span>
+        <span class="legend-chip"><span class="legend-swatch" style="background:${colorForCode(g.code)}"></span>${esc(g.code)}：${g.qty} 台（${g.pallets} 板）</span>
       `).join("");
       card.innerHTML = `
         <h3>貨櫃 #${idx + 1}</h3>
         <p class="bin-sub">底面積使用率 ${util}%　${weight ? `｜預估毛重 ${weight.toLocaleString()} kg` : ""}</p>
+        <p class="bin-sub" style="margin-bottom:6px">俯視圖（底面排列，色塊上的 #N 對應下方側視圖）</p>
         <div class="bin-layout">${renderBinSVG(bin, planeLen, planeWid)}</div>
+        <p class="bin-sub" style="margin:12px 0 6px">分層側視圖（依棧板高度，每欄對應一個底面位置）</p>
+        <div class="bin-layout">${renderSideViewSVG(bin, planeH)}</div>
         <div>${legendHtml}</div>
       `;
       container.appendChild(card);

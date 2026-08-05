@@ -1,0 +1,769 @@
+<!doctype html>
+<html lang="zh-Hant" data-page-key="container-loading">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>裝櫃計算工具</title>
+<link rel="stylesheet" href="styles.css?v=21">
+<style>
+  :root { color-scheme: light; }
+  body { padding: 24px; }
+  .wrap { width: min(1180px, 100%); margin: 0 auto; }
+  .page-title { font-size: 1.5rem; font-weight: 800; margin: 0 0 4px; }
+  .page-sub { color: var(--muted); font-size: .88rem; margin: 0 0 24px; line-height: 1.6; }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+    padding: 20px 22px; margin-bottom: 22px; box-shadow: var(--shadow);
+  }
+  .card h2 { font-size: 1.05rem; margin: 0 0 4px; }
+  .card .card-sub { color: var(--muted); font-size: .8rem; margin: 0 0 14px; }
+  details.card summary { cursor: pointer; font-size: 1.05rem; font-weight: 700; list-style: none; display:flex; align-items:center; gap:8px; }
+  details.card summary::-webkit-details-marker { display: none; }
+  details.card summary::before { content: "▸"; font-size: .8rem; color: var(--muted); transition: transform .15s; }
+  details.card[open] summary::before { transform: rotate(90deg); }
+  details.card .card-sub { margin-top: 6px; }
+  details.card .card-body { margin-top: 14px; }
+
+  .field label { display: block; font-size: .78rem; color: var(--muted); margin-bottom: 5px; }
+  .field input, .field select, .field textarea {
+    width: 100%; padding: 9px 10px; border: 1px solid var(--line-strong); border-radius: 7px;
+    font-size: .88rem; background: #fff; color: var(--text); font-family: inherit;
+  }
+  .btn { padding: 9px 18px; border: 0; border-radius: 7px; font-size: .85rem; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .btn-primary { background: var(--blue); color: #fff; }
+  .btn-primary:hover { background: var(--blue-dark); }
+  .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-ghost { background: #edf3f7; color: var(--text); }
+  .btn-ghost:hover { background: #dfeaf1; }
+  .btn-danger { background: #fee9e9; color: #ad2727; }
+  .btn-sm { padding: 6px 12px; font-size: .78rem; }
+
+  table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+  th, td { padding: 9px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; }
+  th { color: var(--muted); font-weight: 700; font-size: .74rem; text-transform: uppercase; white-space: nowrap; }
+  .empty-state { text-align: center; color: var(--muted); padding: 26px 0; font-size: .85rem; }
+  .hidden { display: none !important; }
+  .row-msg { font-size: .78rem; margin-top: 8px; min-height: 1em; }
+  .msg-ok { color: var(--green); }
+  .msg-err { color: #ad2727; }
+
+  .add-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.1fr .8fr .8fr .8fr 1fr .8fr .7fr .8fr 1.1fr auto;
+    gap: 8px; align-items: end; margin-bottom: 10px;
+  }
+  .add-grid .field label { font-size: .72rem; }
+  .mini-table input[type="text"], .mini-table input[type="number"] { padding: 5px 7px; border: 1px solid var(--line-strong); border-radius: 5px; font-size: .82rem; width: 100%; }
+  .mini-table select { padding: 5px 7px; border: 1px solid var(--line-strong); border-radius: 5px; font-size: .82rem; width: 100%; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.code-col { font-weight: 700; }
+
+  .bulk-import { display: none; margin-top: 12px; padding-top: 14px; border-top: 1px dashed var(--line); }
+  .bulk-import.open { display: block; }
+  .bulk-import textarea { min-height: 110px; font-family: ui-monospace, Consolas, monospace; font-size: .8rem; }
+  .bulk-hint { font-size: .76rem; color: var(--muted); margin: 6px 0 10px; line-height: 1.6; }
+
+  .type-grid { display: grid; grid-template-columns: 1.3fr .9fr .9fr .9fr 1fr; gap: 10px; align-items: end; }
+
+  .order-row { display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px; align-items: end; margin-bottom: 8px; }
+  #order-rows { margin-bottom: 10px; }
+
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 6px; }
+  .stat { background: #f4f8fb; border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .stat .stat-label { font-size: .74rem; color: var(--muted); margin-bottom: 4px; }
+  .stat .stat-value { font-size: 1.4rem; font-weight: 800; color: var(--text); }
+  .stat .stat-value.warn { color: #ad6a12; }
+
+  .warn-box { background: #fff8e8; border: 1px solid #f0d488; color: #8a5c10; border-radius: 8px; padding: 12px 14px; font-size: .82rem; line-height: 1.7; margin-bottom: 16px; }
+
+  .bin-card { border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 16px; background: #fbfdfe; }
+  .bin-card h3 { font-size: .95rem; margin: 0 0 2px; }
+  .bin-card .bin-sub { font-size: .78rem; color: var(--muted); margin-bottom: 12px; }
+  .bin-layout { overflow-x: auto; margin-bottom: 12px; background: #eef3f6; border-radius: 8px; padding: 10px; }
+  .bin-layout svg { display: block; }
+  .legend-chip { display: inline-flex; align-items: center; gap: 5px; font-size: .76rem; margin-right: 12px; margin-bottom: 4px; }
+  .legend-swatch { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+
+  #denied, #loading { text-align: center; padding: 80px 20px; color: var(--muted); }
+  .col-actions { display: flex; gap: 6px; }
+</style>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
+</head>
+<body>
+
+<div id="loading">載入中…</div>
+
+<div class="wrap hidden" id="app">
+  <p class="page-title">裝櫃計算工具</p>
+  <p class="page-sub">
+    以「棧板」為裝櫃單位：輸入各機種客戶下單台數，工具會先依「每板台數（最小出貨單位）」換算成需要幾個棧板（無法整板時自動向上取整，並提示實際會多出貨幾台），再試算需要幾個貨櫃／車輛、每個貨櫃裝哪些棧板，並產生底面俯視排列示意圖。<br>
+    演算法採 2D 矩形裝箱（底面積優先，允許 90° 旋轉），假設棧板單層擺放、僅在「可堆疊」勾選時才會疊板；不含跨機型零件互相搭配等人工特殊合併邏輯，那類情況仍需人工微調。
+  </p>
+
+  <details class="card" id="master-card">
+    <summary>① 機種主檔（棧板尺寸／每板台數）</summary>
+    <p class="card-sub">請填「棧板」實際尺寸（含貨物＋棧板本身的外形長寬高），不是單台外箱尺寸；「每板台數」＝最小出貨單位。所有需要計算裝櫃的機種請先在這裡建檔一次，之後每次試算直接從清單挑選即可。可用「機種主檔範本.xlsx」離線收集資料後，用下方「批次貼上匯入」一次貼進來。</p>
+    <div class="card-body">
+      <div class="add-grid">
+        <div class="field"><label>機種代號</label><input id="m-code" placeholder="例：E25VS"></div>
+        <div class="field"><label>機種名稱</label><input id="m-name" placeholder="選填"></div>
+        <div class="field"><label>棧板長 L (mm)</label><input id="m-l" type="number" min="1"></div>
+        <div class="field"><label>棧板寬 W (mm)</label><input id="m-w" type="number" min="1"></div>
+        <div class="field"><label>棧板高 H (mm)</label><input id="m-h" type="number" min="1"></div>
+        <div class="field"><label>每板台數（最小出貨單位）</label><input id="m-pallet-qty" type="number" min="1" placeholder="例：15"></div>
+        <div class="field"><label>每板重量 (kg)</label><input id="m-weight" type="number" min="0"></div>
+        <div class="field"><label>可堆疊</label>
+          <select id="m-stack"><option value="0">否</option><option value="1">是</option></select>
+        </div>
+        <div class="field"><label>最大疊板層數</label><input id="m-layers" type="number" min="1" placeholder="選填"></div>
+        <div class="field"><label>備註</label><input id="m-note" placeholder="選填"></div>
+        <button class="btn btn-primary" id="btn-add-model">新增／更新</button>
+      </div>
+      <p class="row-msg" id="model-msg"></p>
+
+      <button class="btn btn-ghost btn-sm" id="btn-toggle-bulk" type="button">📋 批次貼上匯入（從 Excel 複製）</button>
+      <button class="btn btn-ghost btn-sm" id="btn-seed-demo" type="button">📐 帶入你原本 6 個機型代號＋每板台數（棧板尺寸需自行補上）</button>
+      <div class="bulk-import" id="bulk-import">
+        <p class="bulk-hint">
+          從 Excel 範本選取資料列（不含標題列）直接複製，貼到下方文字框，每列 10 欄、以 Tab 分隔：<br>
+          機種代號、機種名稱、棧板長L(mm)、棧板寬W(mm)、棧板高H(mm)、每板台數(最小出貨單位)、每板重量(kg)、可堆疊(是/否)、最大疊板層數、備註。
+        </p>
+        <textarea id="bulk-text" placeholder="貼上 Excel 複製的內容…"></textarea>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn btn-primary btn-sm" id="btn-bulk-import">解析並匯入</button>
+          <button class="btn btn-ghost btn-sm" id="btn-bulk-cancel" type="button">取消</button>
+        </div>
+        <p class="row-msg" id="bulk-msg"></p>
+      </div>
+
+      <table style="margin-top:16px">
+        <thead>
+          <tr><th>代號</th><th>名稱</th><th>棧板長</th><th>棧板寬</th><th>棧板高</th><th>每板台數</th><th>每板重量</th><th>可堆疊</th><th>最大層數</th><th>備註</th><th style="width:110px">操作</th></tr>
+        </thead>
+        <tbody id="model-rows" class="mini-table"></tbody>
+      </table>
+      <div class="empty-state hidden" id="model-empty">尚未建立任何機種主檔，請先在上方新增，或用批次貼上匯入。</div>
+    </div>
+  </details>
+
+  <div class="card">
+    <h2>② 貨櫃／車型設定</h2>
+    <p class="card-sub">選擇本次要用的貨櫃或車型，內裝尺寸可依實際情況調整。最大載重為業界常見參考值，請以實際合約噸位為準，僅供試算重量參考，不影響底面積排列結果。</p>
+    <div class="type-grid">
+      <div class="field"><label>類型</label>
+        <select id="type-select">
+          <option value="20gp">20尺標準櫃 (20GP)</option>
+          <option value="40hc" selected>40尺高櫃 (40HC)</option>
+          <option value="17t">17噸歐翼車</option>
+          <option value="custom">自訂</option>
+        </select>
+      </div>
+      <div class="field"><label>內裝長 L (mm)</label><input id="type-l" type="number" min="1"></div>
+      <div class="field"><label>內裝寬 W (mm)</label><input id="type-w" type="number" min="1"></div>
+      <div class="field"><label>內裝高 H (mm)</label><input id="type-h" type="number" min="1"></div>
+      <div class="field"><label>參考最大載重 (kg，選填)</label><input id="type-payload" type="number" min="0"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>③ 訂單數量輸入</h2>
+    <p class="card-sub">依客戶訂單，逐一選擇機種並輸入下單數量，可新增多列。</p>
+    <div id="order-rows"></div>
+    <button class="btn btn-ghost btn-sm" id="btn-add-order-row" type="button">＋ 新增機種列</button>
+    <div style="margin-top:16px;display:flex;gap:10px;align-items:center">
+      <button class="btn btn-primary" id="btn-calc">開始計算裝櫃</button>
+      <p class="row-msg" id="calc-msg" style="margin-top:0"></p>
+    </div>
+  </div>
+
+  <div id="result-section"></div>
+</div>
+
+<div id="denied" class="hidden">
+  <p style="font-size:1.1rem;font-weight:700;color:var(--text)">請先登入</p>
+  <p><a href="index.html">← 返回首頁</a></p>
+</div>
+
+<script type="module">
+import { mivAuthReady } from "./auth-guard.js?v=2";
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs",
+  authDomain: "miv-1426c.firebaseapp.com",
+  projectId: "miv-1426c",
+  storageBucket: "miv-1426c.firebasestorage.app",
+  messagingSenderId: "398934341623",
+  appId: "1:398934341623:web:4af46c057d2e202855a0f2"
+};
+const fbApp = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+const db = getFirestore(fbApp);
+const modelsCol = collection(db, "containerModels");
+
+function esc(s) {
+  return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function sanitizeId(code) {
+  return String(code).trim().replace(/[\/#\[\]\.\s]+/g, "_");
+}
+function num(v) {
+  if (v === "" || v === null || v === undefined) return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+mivAuthReady.then(() => {
+  document.getElementById("loading").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+  initPage();
+});
+
+/* ============ 貨櫃類型預設 ============ */
+const TYPE_PRESETS = {
+  "20gp":  { l: 5900,  w: 2343, h: 2270, payload: 28200 },
+  "40hc":  { l: 12000, w: 2343, h: 2585, payload: 26000 },
+  "17t":   { l: 7870,  w: 2380, h: 2380, payload: 17000 },
+  "custom":{ l: "",    w: "",   h: "",   payload: "" },
+};
+
+/* ============ MaxRects 2D 裝箱演算法 ============ */
+class MaxRectsBin {
+  constructor(w, h) {
+    this.w = w; this.h = h;
+    this.freeRects = [{ x: 0, y: 0, w, h }];
+    this.placed = [];
+  }
+  static intersects(a, b) {
+    return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+  }
+  static contains(a, b) { // is a fully inside b
+    return a.x >= b.x && a.y >= b.y && a.x + a.w <= b.x + b.w && a.y + a.h <= b.y + b.h;
+  }
+  static split(free, used) {
+    if (!MaxRectsBin.intersects(free, used)) return [free];
+    const out = [];
+    if (used.x > free.x) out.push({ x: free.x, y: free.y, w: used.x - free.x, h: free.h });
+    if (used.x + used.w < free.x + free.w) out.push({ x: used.x + used.w, y: free.y, w: (free.x + free.w) - (used.x + used.w), h: free.h });
+    if (used.y > free.y) out.push({ x: free.x, y: free.y, w: free.w, h: used.y - free.y });
+    if (used.y + used.h < free.y + free.h) out.push({ x: free.x, y: used.y + used.h, w: free.w, h: (free.y + free.h) - (used.y + used.h) });
+    return out;
+  }
+  prune() {
+    const list = this.freeRects;
+    const out = [];
+    for (let i = 0; i < list.length; i++) {
+      let contained = false;
+      for (let j = 0; j < list.length; j++) {
+        if (i !== j && MaxRectsBin.contains(list[i], list[j])) { contained = true; break; }
+      }
+      if (!contained) out.push(list[i]);
+    }
+    this.freeRects = out;
+  }
+  insert(w, h, meta) {
+    let best = null;
+    for (const free of this.freeRects) {
+      for (const [ow, oh] of w === h ? [[w, h]] : [[w, h], [h, w]]) {
+        if (ow <= free.w + 1e-6 && oh <= free.h + 1e-6) {
+          const leftoverH = free.w - ow, leftoverV = free.h - oh;
+          const shortFit = Math.min(leftoverH, leftoverV);
+          const longFit = Math.max(leftoverH, leftoverV);
+          if (!best || shortFit < best.shortFit - 1e-9 || (Math.abs(shortFit - best.shortFit) < 1e-9 && longFit < best.longFit)) {
+            best = { free, ow, oh, shortFit, longFit };
+          }
+        }
+      }
+    }
+    if (!best) return null;
+    const placedRect = { x: best.free.x, y: best.free.y, w: best.ow, h: best.oh, meta };
+    this.placed.push(placedRect);
+    const nextFree = [];
+    for (const fr of this.freeRects) nextFree.push(...MaxRectsBin.split(fr, placedRect));
+    this.freeRects = nextFree.filter(fr => fr.w > 1e-6 && fr.h > 1e-6);
+    this.prune();
+    return placedRect;
+  }
+}
+
+function packStacksIntoContainers(stacks, planeLen, planeWid) {
+  const sorted = [...stacks].sort((a, b) => (b.w * b.h) - (a.w * a.h));
+  const bins = [];
+  const unplaced = [];
+  for (const st of sorted) {
+    let placed = null;
+    for (const bin of bins) {
+      placed = bin.insert(st.w, st.h, st.meta);
+      if (placed) break;
+    }
+    if (!placed) {
+      const bin = new MaxRectsBin(planeLen, planeWid);
+      placed = bin.insert(st.w, st.h, st.meta);
+      if (placed) { bins.push(bin); }
+      else { unplaced.push(st); }
+    }
+  }
+  return { bins, unplaced };
+}
+
+function buildStacks(orderItems, planeLen, planeWid, containerH) {
+  const stacks = [];
+  const errors = [];
+  const shipSummary = [];
+  for (const it of orderItems) {
+    if (!it.qty || it.qty <= 0) continue;
+    const unitsPerPallet = it.unitsPerPallet && it.unitsPerPallet > 0 ? it.unitsPerPallet : 1;
+    const palletsNeeded = Math.ceil(it.qty / unitsPerPallet);
+    const shippedQty = palletsNeeded * unitsPerPallet;
+    shipSummary.push({
+      code: it.code, name: it.name, orderedQty: it.qty, unitsPerPallet,
+      palletsNeeded, shippedQty, overship: shippedQty - it.qty,
+    });
+
+    if (it.h > containerH + 1e-6) {
+      errors.push(`${it.code}：棧板高度 ${it.h}mm 超過貨櫃內高 ${containerH}mm，無法裝入此類型，需改選其他貨櫃或人工特殊處理`);
+      continue;
+    }
+    const fits = (it.l <= planeLen && it.w <= planeWid) || (it.w <= planeLen && it.l <= planeWid);
+    if (!fits) {
+      errors.push(`${it.code}：棧板長寬尺寸（${it.l}×${it.w}mm）超過貨櫃可用底面長寬，無法裝入`);
+      continue;
+    }
+    const rawMaxLayers = it.stackable ? Math.max(1, Math.floor(containerH / it.h)) : 1;
+    const maxLayers = it.stackable && it.maxLayersLimit ? Math.min(rawMaxLayers, it.maxLayersLimit) : rawMaxLayers;
+    let remaining = palletsNeeded;
+    while (remaining > 0) {
+      const palletLayers = Math.min(maxLayers, remaining);
+      stacks.push({ w: it.l, h: it.w, meta: { code: it.code, name: it.name, palletLayers, unitsPerPallet, weight: it.weight || 0 } });
+      remaining -= palletLayers;
+    }
+  }
+  return { stacks, errors, shipSummary };
+}
+
+const PALETTE = ["#1479b8","#20a66a","#f1ad24","#d93f3f","#7c5cbf","#0c8f83","#c2185b","#5b7fdb","#8d6e42","#37505f","#a3439a","#4c8c2b"];
+function colorForCode(code) {
+  let h = 0;
+  for (let i = 0; i < code.length; i++) h = (h * 31 + code.charCodeAt(i)) >>> 0;
+  return PALETTE[h % PALETTE.length];
+}
+
+let _measureCtx = null;
+function measureTextWidth(text, fontSize) {
+  if (!_measureCtx) _measureCtx = document.createElement("canvas").getContext("2d");
+  _measureCtx.font = `700 ${fontSize}px "Segoe UI","Noto Sans TC",Arial,sans-serif`;
+  return _measureCtx.measureText(text).width;
+}
+
+// Wraps `text` to fit inside a box of `boxW`×`boxH` px: shrinks font size first, then
+// breaks into multiple lines (per-character, since labels mix CJK/Latin with no spaces),
+// and truncates with an ellipsis as a last resort if it still overflows vertically.
+function fitLabelLines(text, boxW, boxH) {
+  const pad = 4;
+  const maxWidth = Math.max(boxW - pad, 2);
+  const maxHeight = Math.max(boxH - pad, 2);
+  const minFont = 6, maxFont = 10;
+  let fontSize = maxFont, lines = [text];
+
+  for (fontSize = maxFont; fontSize >= minFont; fontSize--) {
+    lines = [];
+    let current = "";
+    for (const ch of text) {
+      const test = current + ch;
+      if (current && measureTextWidth(test, fontSize) > maxWidth) {
+        lines.push(current);
+        current = ch;
+      } else {
+        current = test;
+      }
+    }
+    if (current) lines.push(current);
+    const lineHeight = fontSize * 1.15;
+    if (lines.length * lineHeight <= maxHeight) break;
+  }
+
+  const lineHeight = fontSize * 1.15;
+  const maxLines = Math.max(1, Math.floor(maxHeight / lineHeight));
+  if (lines.length > maxLines) {
+    lines = lines.slice(0, maxLines);
+    let last = lines[maxLines - 1];
+    while (last.length > 1 && measureTextWidth(last + "…", fontSize) > maxWidth) {
+      last = last.slice(0, -1);
+    }
+    lines[maxLines - 1] = last + "…";
+  }
+  return { lines, fontSize, lineHeight };
+}
+
+function renderBinSVG(bin, planeLen, planeWid) {
+  const maxW = 900;
+  const scale = Math.min(maxW / planeLen, 260 / planeWid);
+  const svgW = Math.round(planeLen * scale), svgH = Math.round(planeWid * scale);
+  let rects = `<rect x="0" y="0" width="${svgW}" height="${svgH}" fill="#ffffff" stroke="#b8c7d1" stroke-width="2"/>`;
+  for (const p of bin.placed) {
+    const x = p.x * scale, y = p.y * scale, w = p.w * scale, h = p.h * scale;
+    const color = colorForCode(p.meta.code);
+    const totalUnits = p.meta.palletLayers * p.meta.unitsPerPallet;
+    const label = p.meta.palletLayers > 1 ? `${p.meta.code} ${p.meta.palletLayers}板/${totalUnits}台` : `${p.meta.code} ${totalUnits}台`;
+    let textEl = "";
+    if (w >= 10 && h >= 10) {
+      const { lines, fontSize, lineHeight } = fitLabelLines(label, w, h);
+      const cx = x + w / 2;
+      const startY = (y + h / 2) - ((lines.length - 1) * lineHeight) / 2;
+      const tspans = lines.map((line, i) =>
+        `<tspan x="${cx.toFixed(1)}" y="${(startY + i * lineHeight).toFixed(1)}">${esc(line)}</tspan>`
+      ).join("");
+      textEl = `<text text-anchor="middle" dominant-baseline="middle" font-size="${fontSize}" fill="#fff" style="pointer-events:none;font-weight:700">${tspans}</text>`;
+    }
+    rects += `<g>
+      <rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" fill="${color}" fill-opacity="0.82" stroke="#ffffff" stroke-width="1.5"/>
+      <title>${esc(p.meta.code)}${p.meta.name ? " " + esc(p.meta.name) : ""} — ${Math.round(p.w)}×${Math.round(p.h)}mm，${p.meta.palletLayers}板（${totalUnits}台）</title>
+      ${textEl}
+    </g>`;
+  }
+  return `<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}" xmlns="http://www.w3.org/2000/svg">${rects}</svg>`;
+}
+
+/* ============ 頁面主邏輯 ============ */
+function initPage() {
+  let models = {}; // code -> {code,name,l,w,h,weight,stackable,maxLayers,note}
+
+  /* ---- 機種主檔：即時同步 ---- */
+  onSnapshot(modelsCol, snap => {
+    snap.docChanges().forEach(c => {
+      if (c.type === "removed") delete models[c.doc.id];
+      else models[c.doc.id] = { id: c.doc.id, ...c.doc.data() };
+    });
+    renderModelRows();
+    renderOrderRowOptions();
+  });
+
+  function renderModelRows() {
+    const tbody = document.getElementById("model-rows");
+    const empty = document.getElementById("model-empty");
+    const list = Object.values(models).sort((a, b) => (a.code || "").localeCompare(b.code || ""));
+    empty.classList.toggle("hidden", list.length > 0);
+    tbody.innerHTML = list.map(m => `
+      <tr data-id="${esc(m.id)}">
+        <td class="code-col">${esc(m.code)}</td>
+        <td>${esc(m.name || "")}</td>
+        <td class="num">${m.l ?? ""}</td>
+        <td class="num">${m.w ?? ""}</td>
+        <td class="num">${m.h ?? ""}</td>
+        <td class="num">${m.palletQty ? m.palletQty : `<span style="color:#ad2727" title="這筆資料還沒設定每板台數，目前會被當成 1 板 1 台計算，請點編輯補上正確數字">⚠ 1（未設定）</span>`}</td>
+        <td class="num">${m.weight ?? ""}</td>
+        <td>${m.stackable ? "是" : "否"}</td>
+        <td class="num">${m.stackable ? (m.maxLayers ?? "不限") : "-"}</td>
+        <td>${esc(m.note || "")}</td>
+        <td class="col-actions">
+          <button class="btn btn-ghost btn-sm btn-edit-model">編輯</button>
+          <button class="btn btn-danger btn-sm btn-del-model">刪除</button>
+        </td>
+      </tr>
+    `).join("");
+
+    tbody.querySelectorAll("tr[data-id]").forEach(tr => {
+      const id = tr.dataset.id;
+      tr.querySelector(".btn-edit-model").addEventListener("click", () => {
+        const m = models[id];
+        document.getElementById("m-code").value = m.code || "";
+        document.getElementById("m-name").value = m.name || "";
+        document.getElementById("m-l").value = m.l ?? "";
+        document.getElementById("m-w").value = m.w ?? "";
+        document.getElementById("m-h").value = m.h ?? "";
+        document.getElementById("m-pallet-qty").value = m.palletQty ?? "";
+        document.getElementById("m-weight").value = m.weight ?? "";
+        document.getElementById("m-stack").value = m.stackable ? "1" : "0";
+        document.getElementById("m-layers").value = m.maxLayers ?? "";
+        document.getElementById("m-note").value = m.note || "";
+        document.getElementById("master-card").open = true;
+        document.getElementById("m-code").scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+      tr.querySelector(".btn-del-model").addEventListener("click", async () => {
+        if (!confirm(`確定要刪除機種「${models[id].code}」嗎？`)) return;
+        await deleteDoc(doc(db, "containerModels", id));
+      });
+    });
+  }
+
+  document.getElementById("btn-add-model").addEventListener("click", async () => {
+    const msg = document.getElementById("model-msg");
+    const code = document.getElementById("m-code").value.trim();
+    const l = num(document.getElementById("m-l").value);
+    const w = num(document.getElementById("m-w").value);
+    const h = num(document.getElementById("m-h").value);
+    const palletQty = num(document.getElementById("m-pallet-qty").value);
+    if (!code || !l || !w || !h || !palletQty) {
+      msg.className = "row-msg msg-err"; msg.textContent = "請填寫機種代號、棧板長／寬／高，以及每板台數（非整板出貨的機種請填 1）";
+      return;
+    }
+    const data = {
+      code,
+      name: document.getElementById("m-name").value.trim(),
+      l, w, h, palletQty,
+      weight: num(document.getElementById("m-weight").value),
+      stackable: document.getElementById("m-stack").value === "1",
+      maxLayers: num(document.getElementById("m-layers").value),
+      note: document.getElementById("m-note").value.trim(),
+    };
+    try {
+      await setDoc(doc(db, "containerModels", sanitizeId(code)), data, { merge: true });
+      msg.className = "row-msg msg-ok"; msg.textContent = "✓ 已儲存";
+      ["m-code","m-name","m-l","m-w","m-h","m-pallet-qty","m-weight","m-layers","m-note"].forEach(id => document.getElementById(id).value = "");
+      document.getElementById("m-stack").value = "0";
+      setTimeout(() => msg.textContent = "", 2500);
+    } catch (e) {
+      msg.className = "row-msg msg-err"; msg.textContent = "儲存失敗：" + e.message;
+    }
+  });
+
+  /* ---- 批次貼上匯入 ---- */
+  document.getElementById("btn-toggle-bulk").addEventListener("click", () => {
+    document.getElementById("bulk-import").classList.toggle("open");
+  });
+  document.getElementById("btn-bulk-cancel").addEventListener("click", () => {
+    document.getElementById("bulk-import").classList.remove("open");
+    document.getElementById("bulk-text").value = "";
+  });
+  async function importLines(lines) {
+    let ok = 0, skip = 0, permissionDenied = false;
+    for (const line of lines) {
+      const cols = line.split("\t");
+      if (cols.length < 5) { skip++; continue; }
+      const [code, name, lStr, wStr, hStr, palletQtyStr, weightStr, stackStr, layersStr, note] = cols;
+      if (!code || /^機種代號$/.test(code.trim())) { skip++; continue; }
+      const l = num(lStr), w = num(wStr), h = num(hStr);
+      const palletQty = num(palletQtyStr);
+      if (!l || !w || !h || !palletQty) { skip++; continue; }
+      const stackable = /^(是|1|true|yes)$/i.test((stackStr || "").trim());
+      const data = {
+        code: code.trim(), name: (name || "").trim(), l, w, h, palletQty,
+        weight: num(weightStr), stackable, maxLayers: num(layersStr), note: (note || "").trim(),
+      };
+      try {
+        await setDoc(doc(db, "containerModels", sanitizeId(data.code)), data, { merge: true });
+        ok++;
+      } catch (e) {
+        skip++;
+        if (String(e.code || e.message || "").includes("permission")) permissionDenied = true;
+      }
+    }
+    return { ok, skip, permissionDenied };
+  }
+
+  document.getElementById("btn-bulk-import").addEventListener("click", async () => {
+    const msg = document.getElementById("bulk-msg");
+    const raw = document.getElementById("bulk-text").value;
+    const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    const { ok, skip, permissionDenied } = await importLines(lines);
+    msg.className = "row-msg " + (ok > 0 ? "msg-ok" : "msg-err");
+    msg.textContent = permissionDenied
+      ? "儲存失敗：帳號沒有寫入權限，請聯絡系統管理員確認 Firestore 權限設定"
+      : `匯入完成：成功 ${ok} 筆，略過 ${skip} 筆（格式不符或缺長寬高）`;
+    if (ok > 0) document.getElementById("bulk-text").value = "";
+  });
+
+  // 棧板實際長寬高尚未取得實測資料，故留白由使用者補上；每板台數／備註為你提供的已知資訊。
+  const DEMO_MODELS_TSV = [
+    "BU25VS\t\t\t\t\t15\t\t否\t\t每板3層，共15台/板",
+    "BR25VS\t\t\t\t\t15\t\t否\t\t每板15台",
+    "TM25VS\t\t\t\t\t5\t\t否\t\t大箱+小箱同板出貨，每板5台",
+    "TM25VS1\t\t\t\t\t5\t\t否\t\t大箱+小箱同板出貨，每板5台",
+    "E25VS\t\t\t\t\t3\t\t否\t\t每板3台",
+    "E25VS1\t\t\t\t\t3\t\t否\t\t每板3台",
+  ].join("\n");
+  document.getElementById("btn-seed-demo").addEventListener("click", () => {
+    document.getElementById("bulk-import").classList.add("open");
+    document.getElementById("bulk-text").value = DEMO_MODELS_TSV;
+    const msg = document.getElementById("bulk-msg");
+    msg.className = "row-msg";
+    msg.textContent = "已帶入代號／每板台數／備註，棧板長寬高欄位仍是空的，請量測後補齊每一列再按「解析並匯入」（缺長寬高的列會被略過）。";
+    document.getElementById("bulk-text").scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+
+  /* ---- 貨櫃類型 ---- */
+  function applyTypePreset(key) {
+    const p = TYPE_PRESETS[key];
+    document.getElementById("type-l").value = p.l;
+    document.getElementById("type-w").value = p.w;
+    document.getElementById("type-h").value = p.h;
+    document.getElementById("type-payload").value = p.payload;
+  }
+  document.getElementById("type-select").addEventListener("change", e => applyTypePreset(e.target.value));
+  applyTypePreset(document.getElementById("type-select").value);
+
+  /* ---- 訂單數量輸入 ---- */
+  let orderRowSeq = 0;
+  function addOrderRow() {
+    const id = "order-row-" + (orderRowSeq++);
+    const wrap = document.createElement("div");
+    wrap.className = "order-row";
+    wrap.id = id;
+    wrap.innerHTML = `
+      <div class="field"><label>機種</label><select class="order-model"></select></div>
+      <div class="field"><label>客戶下單台數</label><input type="number" class="order-qty" min="1" placeholder="台數"></div>
+      <button class="btn btn-danger btn-sm btn-remove-row" type="button">移除</button>
+    `;
+    document.getElementById("order-rows").appendChild(wrap);
+    fillModelSelect(wrap.querySelector(".order-model"));
+    wrap.querySelector(".btn-remove-row").addEventListener("click", () => wrap.remove());
+  }
+  function fillModelSelect(sel) {
+    const current = sel.value;
+    const list = Object.values(models).sort((a, b) => (a.code || "").localeCompare(b.code || ""));
+    sel.innerHTML = `<option value="">請選擇機種…</option>` + list.map(m =>
+      `<option value="${esc(m.id)}">${esc(m.code)}${m.name ? " - " + esc(m.name) : ""}</option>`
+    ).join("");
+    if (current) sel.value = current;
+  }
+  function renderOrderRowOptions() {
+    document.querySelectorAll("#order-rows .order-model").forEach(fillModelSelect);
+  }
+  document.getElementById("btn-add-order-row").addEventListener("click", addOrderRow);
+  addOrderRow();
+  addOrderRow();
+
+  /* ---- 計算 ---- */
+  document.getElementById("btn-calc").addEventListener("click", () => {
+    const msg = document.getElementById("calc-msg");
+    const resultSection = document.getElementById("result-section");
+    resultSection.innerHTML = "";
+    msg.textContent = "";
+
+    const planeLen = num(document.getElementById("type-l").value);
+    const planeWid = num(document.getElementById("type-w").value);
+    const planeH = num(document.getElementById("type-h").value);
+    const payload = num(document.getElementById("type-payload").value);
+    if (!planeLen || !planeWid || !planeH) {
+      msg.className = "row-msg msg-err"; msg.textContent = "請先完整填寫貨櫃內裝長／寬／高";
+      return;
+    }
+
+    const orderItems = [];
+    document.querySelectorAll("#order-rows .order-row").forEach(row => {
+      const modelId = row.querySelector(".order-model").value;
+      const qty = num(row.querySelector(".order-qty").value);
+      if (!modelId || !qty || qty <= 0) return;
+      const m = models[modelId];
+      if (!m) return;
+      orderItems.push({
+        code: m.code, name: m.name, l: m.l, w: m.w, h: m.h,
+        weight: m.weight, stackable: m.stackable, maxLayersLimit: m.maxLayers,
+        unitsPerPallet: m.palletQty, qty,
+      });
+    });
+    if (orderItems.length === 0) {
+      msg.className = "row-msg msg-err"; msg.textContent = "請至少選擇一個機種並輸入下單數量";
+      return;
+    }
+
+    const { stacks, errors, shipSummary } = buildStacks(orderItems, planeLen, planeWid, planeH);
+    if (stacks.length === 0) {
+      msg.className = "row-msg msg-err"; msg.textContent = "沒有任何機種可裝入所選貨櫃類型，請確認尺寸或改選其他類型";
+      renderErrors(resultSection, errors);
+      return;
+    }
+    const { bins, unplaced } = packStacksIntoContainers(stacks, planeLen, planeWid);
+    renderResults(resultSection, bins, unplaced, errors, shipSummary, planeLen, planeWid, payload);
+    msg.className = "row-msg msg-ok"; msg.textContent = "✓ 計算完成";
+  });
+
+  function renderErrors(container, errors) {
+    if (!errors.length) return;
+    const box = document.createElement("div");
+    box.className = "warn-box";
+    box.innerHTML = `<strong>⚠ 以下機種無法裝入所選貨櫃類型：</strong><br>` + errors.map(e => esc(e)).join("<br>");
+    container.appendChild(box);
+  }
+
+  function renderShipSummary(container, shipSummary) {
+    const overshipped = shipSummary.filter(s => s.overship > 0);
+    if (overshipped.length) {
+      const box = document.createElement("div");
+      box.className = "warn-box";
+      box.innerHTML = `<strong>⚠ 以下機種下單數量不是整板倍數，已自動向上取整為整板出貨：</strong><br>` +
+        overshipped.map(s => esc(`${s.code}：客戶下單 ${s.orderedQty} 台，每板 ${s.unitsPerPallet} 台，將出貨 ${s.shippedQty} 台（${s.palletsNeeded} 板，多出 ${s.overship} 台）`)).join("<br>");
+      container.appendChild(box);
+    }
+
+    const table = document.createElement("div");
+    table.className = "card";
+    table.innerHTML = `
+      <h2>訂單彙總（依整板換算）</h2>
+      <table>
+        <thead><tr><th>機種</th><th>客戶下單台數</th><th>每板台數</th><th>需要板數</th><th>實際出貨台數</th></tr></thead>
+        <tbody>${shipSummary.map(s => `
+          <tr>
+            <td class="code-col">${esc(s.code)}</td>
+            <td class="num">${s.orderedQty}</td>
+            <td class="num">${s.unitsPerPallet}</td>
+            <td class="num">${s.palletsNeeded}</td>
+            <td class="num">${s.shippedQty}${s.overship > 0 ? ` <span style="color:#ad6a12">(+${s.overship})</span>` : ""}</td>
+          </tr>`).join("")}
+        </tbody>
+      </table>
+    `;
+    container.appendChild(table);
+  }
+
+  function renderResults(container, bins, unplaced, errors, shipSummary, planeLen, planeWid, payload) {
+    renderShipSummary(container, shipSummary);
+    renderErrors(container, errors);
+    if (unplaced.length) {
+      const box = document.createElement("div");
+      box.className = "warn-box";
+      box.innerHTML = `<strong>⚠ 有 ${unplaced.length} 個棧板即使開新貨櫃也放不下，請檢查棧板尺寸資料是否正確。</strong>`;
+      container.appendChild(box);
+    }
+
+    const totalArea = planeLen * planeWid;
+    let totalUsedArea = 0, totalWeight = 0;
+    bins.forEach(b => { b.placed.forEach(p => { totalUsedArea += p.w * p.h; totalWeight += (p.meta.weight || 0) * p.meta.palletLayers; }); });
+    const avgUtil = bins.length ? (totalUsedArea / (bins.length * totalArea) * 100) : 0;
+
+    const summary = document.createElement("div");
+    summary.className = "card";
+    summary.innerHTML = `
+      <h2>計算結果</h2>
+      <div class="summary-grid">
+        <div class="stat"><div class="stat-label">需要貨櫃／車輛數</div><div class="stat-value">${bins.length} 個</div></div>
+        <div class="stat"><div class="stat-label">平均底面積使用率</div><div class="stat-value">${avgUtil.toFixed(1)}%</div></div>
+        <div class="stat"><div class="stat-label">總重量（若有填每板重量）</div><div class="stat-value ${payload && totalWeight > payload * bins.length ? "warn" : ""}">${totalWeight ? totalWeight.toLocaleString() + " kg" : "未提供"}</div></div>
+      </div>
+    `;
+    container.appendChild(summary);
+
+    bins.forEach((bin, idx) => {
+      const usedArea = bin.placed.reduce((s, p) => s + p.w * p.h, 0);
+      const util = (usedArea / totalArea * 100).toFixed(1);
+      const weight = bin.placed.reduce((s, p) => s + (p.meta.weight || 0) * p.meta.palletLayers, 0);
+      const grouped = {};
+      bin.placed.forEach(p => {
+        const key = p.meta.code;
+        if (!grouped[key]) grouped[key] = { code: p.meta.code, name: p.meta.name, qty: 0, pallets: 0, stacks: 0 };
+        grouped[key].qty += p.meta.palletLayers * p.meta.unitsPerPallet;
+        grouped[key].pallets += p.meta.palletLayers;
+        grouped[key].stacks += 1;
+      });
+      const card = document.createElement("div");
+      card.className = "bin-card";
+      const legendHtml = Object.values(grouped).map(g => `
+        <span class="legend-chip"><span class="legend-swatch" style="background:${colorForCode(g.code)}"></span>${esc(g.code)}：${g.qty} 台（${g.pallets} 板，${g.stacks} 組佔位）</span>
+      `).join("");
+      card.innerHTML = `
+        <h3>貨櫃 #${idx + 1}</h3>
+        <p class="bin-sub">底面積使用率 ${util}%　${weight ? `｜預估毛重 ${weight.toLocaleString()} kg` : ""}</p>
+        <div class="bin-layout">${renderBinSVG(bin, planeLen, planeWid)}</div>
+        <div>${legendHtml}</div>
+      `;
+      container.appendChild(card);
+    });
+  }
+}
+</script>
+</body>
+</html>

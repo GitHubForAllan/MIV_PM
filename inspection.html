@@ -556,6 +556,8 @@ window.submitInspection = async function() {
         photoUrls: st.photos,
         status: "待處理",
         assignedTo: null,
+        reportedBy: piUser.name || piUser.employeeId,
+        reportedById: piUser.employeeId,
         reportedAt: serverTimestamp(),
         resolvedAt: null,
         reviewerId: null,

@@ -194,7 +194,7 @@ const areasCol = collection(db, "pi_areas");
 const templatesCol = collection(db, "pi_checklist_templates");
 
 const piUser = await mivAuthReady;
-if (piUser.role !== "admin") {
+if (piUser.role !== "admin" && piUser.role !== "quality") {
   document.getElementById("no-access").style.display = "";
 } else {
   document.getElementById("admin-main").style.display = "";

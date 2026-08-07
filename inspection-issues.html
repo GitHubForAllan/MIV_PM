@@ -58,6 +58,9 @@
   .kcard .top { display: flex; justify-content: space-between; gap: 6px; font-size: .68rem; color: var(--text-soft); margin-bottom: 4px; }
   .kcard .area { font-size: .84rem; font-weight: 700; }
   .kcard .desc { font-size: .78rem; color: var(--text-soft); margin-top: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .kcard-people { display: flex; justify-content: space-between; gap: 6px; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); font-size: .72rem; color: var(--text-soft); }
+  .kcard-people span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .kcard-people span.unassigned { color: var(--danger); font-weight: 700; }
 
   /* table */
   .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: auto; }
@@ -147,7 +150,7 @@
   <div id="table-view" style="display:none">
     <div class="table-wrap">
       <table>
-        <thead><tr><th>等級</th><th>站點</th><th>描述</th><th>負責人</th><th>狀態</th><th>回報時間</th></tr></thead>
+        <thead><tr><th>等級</th><th>站點</th><th>描述</th><th>回報人</th><th>負責人</th><th>狀態</th><th>回報時間</th></tr></thead>
         <tbody id="table-tbody"></tbody>
       </table>
     </div>
@@ -275,6 +278,10 @@ function renderKanban(list) {
           <div class="top"><span class="badge badge-${i.severity}">${i.severity}</span><span>${fmtTime(i.reportedAt)}</span></div>
           <div class="area">${esc(areaLabel(i.areaId))}</div>
           <div class="desc">${esc(i.itemName ? i.itemName + "：" : "")}${esc(i.description)}</div>
+          <div class="kcard-people">
+            <span title="回報人">📝 ${esc(i.reportedBy || "—")}</span>
+            <span title="負責人" class="${i.assignedTo ? "" : "unassigned"}">🔧 ${esc(i.assignedTo || "尚未指派")}</span>
+          </div>
         </div>`).join("")}
     </div>`).join("")}</div>`;
 }
@@ -283,7 +290,8 @@ function renderTable(list) {
     <tr onclick="openDetail('${i.id}')">
       <td><span class="badge badge-${i.severity}">${i.severity}</span></td>
       <td>${esc(areaLabel(i.areaId))}</td>
-      <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(i.itemName?i.itemName+"：":"")}${esc(i.description)}</td>
+      <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(i.itemName?i.itemName+"：":"")}${esc(i.description)}</td>
+      <td>${esc(i.reportedBy || "—")}</td>
       <td>${esc(i.assignedTo || "—")}</td>
       <td><span class="badge-status st-${i.status}" style="padding:2px 9px;border-radius:99px;font-size:.72rem;font-weight:700">${i.status}</span></td>
       <td>${fmtTime(i.reportedAt)}</td>
@@ -296,7 +304,7 @@ window.openDetail = function(id) {
   detailId = id;
   const i = issues[id]; if (!i) return;
   document.getElementById("d-title").innerHTML = `<span class="badge badge-${i.severity}">${i.severity}</span> ${esc(areaLabel(i.areaId))}`;
-  document.getElementById("d-meta").textContent = `回報時間：${fmtTime(i.reportedAt)}　狀態：${i.status}`;
+  document.getElementById("d-meta").textContent = `回報人：${i.reportedBy || "—"}　回報時間：${fmtTime(i.reportedAt)}　狀態：${i.status}`;
   document.getElementById("d-desc").textContent = (i.itemName ? i.itemName + "：" : "") + (i.description || "");
   const photoRow = document.getElementById("d-photo-row");
   if (i.photoUrls && i.photoUrls.length) {

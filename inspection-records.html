@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>製程巡檢 — 紀錄查詢 / Tra cứu hồ sơ kiểm tra</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f5f6fa; --surface: #ffffff; --border: #e2e5ed;
+    --text: #1a1d23; --text-soft: #6b7280;
+    --accent: #2563eb; --accent-hover: #1d4ed8;
+    --danger: #dc2626; --warn: #d97706; --ok: #16a34a; --muted: #64748b;
+    --warn-bg: #fffbeb; --danger-bg: #fef2f2; --ok-bg: #f0fdf4; --muted-bg: #f1f5f9;
+    --radius: 8px; --shadow: 0 1px 4px rgba(0,0,0,.08);
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  .topbar { background: #1e293b; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,.25); gap: 12px; flex-wrap: wrap; }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .topbar-logo { height: 42px; object-fit: contain; border-radius: 8px; }
+  .topbar h1 { font-size: .95rem; font-weight: 700; color: #fff; }
+  .topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .nav-link { font-size: .78rem; color: rgba(255,255,255,.8); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,.2); text-decoration: none;
+    display: flex; flex-direction: column; align-items: center; line-height: 1.3; gap: 1px; }
+  .nav-link .vi { font-size: .82em; font-style: italic; opacity: .75; }
+  .nav-link:hover { background: rgba(255,255,255,.1); }
+  .user-badge { font-size: .78rem; color: #fff; background: rgba(255,255,255,.08); padding: 6px 12px; border-radius: 6px; }
+
+  .main { max-width: 1280px; margin: 0 auto; padding: 20px; }
+
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+  .toolbar label { font-size: .8rem; color: var(--text-soft); }
+  .toolbar input[type=date] { padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius); font-size: .85rem; }
+  .toolbar select, .toolbar input[type=search] { padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius); font-size: .82rem; background: var(--surface); }
+  .toolbar input[type=search] { min-width: 160px; }
+  .presets { display: flex; gap: 6px; }
+  .btn { padding: 8px 16px; border-radius: var(--radius); font-size: .82rem; font-weight: 600; cursor: pointer; border: none; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  .btn-outline:hover { background: #fff; }
+
+  .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px,1fr)); gap: 12px; margin-bottom: 18px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 16px; }
+  .stat-card .lbl { font-size: .7rem; color: var(--text-soft); }
+  .stat-card .val { font-size: 1.4rem; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; }
+
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: .84rem; }
+  thead th { padding: 10px 12px; text-align: left; font-weight: 600; background: #f8f9fc; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  tbody tr { border-bottom: 1px solid var(--border); cursor: pointer; }
+  tbody tr:hover { background: #f8f9fc; }
+  td { padding: 9px 12px; vertical-align: middle; }
+
+  .badge-result { display: inline-block; padding: 2px 9px; border-radius: 99px; font-size: .72rem; font-weight: 700; }
+  .badge-result.ok { background: var(--ok-bg); color: var(--ok); }
+  .badge-result.bad { background: var(--danger-bg); color: var(--danger); }
+
+  .loading, .empty-state { text-align: center; padding: 50px 20px; color: var(--text-soft); }
+
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 16px; }
+  .modal-overlay.hidden { display: none; }
+  .modal { background: var(--surface); border-radius: 12px; padding: 24px; width: 100%; max-width: 640px; max-height: 92vh; overflow-y: auto; }
+  .modal h2 { font-size: 1.05rem; margin-bottom: 4px; }
+  .modal .meta { font-size: .8rem; color: var(--text-soft); margin-bottom: 16px; line-height: 1.6; }
+  .cat-header { font-size: .74rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .04em; margin: 16px 0 8px; }
+  .cat-header:first-of-type { margin-top: 0; }
+  .item-row { padding: 8px 0; border-bottom: 1px solid var(--border); font-size: .85rem; }
+  .item-row:last-child { border-bottom: none; }
+  .item-row-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .item-row .val { font-weight: 600; white-space: nowrap; }
+  .item-row.bad .val { color: var(--danger); }
+  .item-row.ok .val { color: var(--ok); }
+  .item-desc { margin-top: 6px; padding: 8px 10px; background: var(--danger-bg); border-radius: 6px; font-size: .8rem; color: var(--text); white-space: pre-wrap; }
+  .item-desc .lbl { display: block; font-size: .66rem; font-weight: 700; color: var(--danger); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 3px; }
+  .item-photos { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+  .item-photos img { width: 56px; height: 56px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; }
+
+  .edit-field-row { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .edit-field-row .fg { flex: 1; min-width: 140px; }
+  .edit-field-row label { display: block; font-size: .74rem; color: var(--text-soft); margin-bottom: 4px; }
+  .edit-field-row input, .edit-field-row select { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius); font-size: .86rem; }
+  .item-row.editing { background: var(--bg); border-radius: 6px; padding: 10px; margin-bottom: 6px; border-bottom: none; }
+  .item-row.editing .item-row-top { margin-bottom: 8px; }
+  .item-row.editing input[type=number], .item-row.editing input[type=text] { padding: 7px 9px; border: 1px solid var(--border); border-radius: 6px; font-size: .85rem; width: 110px; }
+  .tg-row { display: flex; gap: 6px; }
+  .tg { padding: 6px 12px; border-radius: 6px; border: 2px solid var(--border); background: transparent; font-weight: 700; font-size: .78rem; cursor: pointer; }
+  .tg-ok.active { border-color: var(--ok); background: var(--ok-bg); color: var(--ok); }
+  .tg-bad.active { border-color: var(--danger); background: var(--danger-bg); color: var(--danger); }
+  .new-abn-panel { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); }
+  .sev-row { display: flex; gap: 6px; margin-bottom: 8px; }
+  .sev-btn { flex: 1; padding: 6px 4px; border-radius: 6px; border: 2px solid var(--border); background: transparent; font-size: .72rem; font-weight: 700; cursor: pointer; }
+  .sev-btn[data-sev=CR].active { border-color: #b91c1c; background: #fee2e2; color: #b91c1c; }
+  .sev-btn[data-sev=MA].active { border-color: #a16207; background: #fef9c3; color: #a16207; }
+  .sev-btn[data-sev=MI].active { border-color: var(--muted); background: var(--muted-bg); color: var(--muted); }
+  .new-abn-panel textarea { width: 100%; padding: 7px 9px; border: 1px solid var(--border); border-radius: 6px; font-size: .82rem; font-family: inherit; }
+  .existing-issue-note { margin-top: 8px; font-size: .76rem; color: var(--warn); background: var(--warn-bg); border-radius: 6px; padding: 6px 9px; }
+  .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+  .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.85); display: flex; align-items: center; justify-content: center; z-index: 2000; cursor: zoom-out; }
+  .lightbox.hidden { display: none; }
+  .lightbox img { max-width: 92vw; max-height: 88vh; border-radius: 8px; }
+
+  @media (max-width: 640px) { .main { padding: 12px; } }
+</style>
+</head>
+<body>
+<script type="module" src="auth-guard.js?v=2"></script>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <img src="Rexon%20logo.png" alt="REXON VN" class="topbar-logo">
+    <h1>巡檢紀錄查詢</h1>
+  </div>
+  <div class="topbar-right" id="nav-links"></div>
+</header>
+
+<div class="main" id="main-content" style="display:none">
+  <div class="toolbar">
+    <label>起</label><input type="date" id="f-start">
+    <label>迄</label><input type="date" id="f-end">
+    <div class="presets">
+      <button class="btn btn-outline" onclick="setRange('today')">今日</button>
+      <button class="btn btn-outline" onclick="setRange('week')">本週</button>
+      <button class="btn btn-outline" onclick="setRange('month')">本月</button>
+    </div>
+    <select id="f-building" onchange="populateStationFilter();render()">
+      <option value="">所有棟別</option><option value="A">A棟</option><option value="B">B棟</option><option value="C">C棟</option>
+    </select>
+    <select id="f-station" onchange="render()"><option value="">所有站點</option></select>
+    <select id="f-shift" onchange="render()"><option value="">所有班別</option><option value="上午">上午</option><option value="下午">下午</option></select>
+    <select id="f-result" onchange="render()"><option value="">所有結果</option><option value="正常">正常</option><option value="異常">異常</option></select>
+    <input type="search" id="f-search" placeholder="搜尋巡檢人員/機種…" oninput="render()">
+    <button class="btn btn-primary" onclick="loadData()">🔄 查詢</button>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="lbl">符合筆數</div><div class="val" id="s-count">—</div></div>
+    <div class="stat-card"><div class="lbl">正常</div><div class="val" id="s-ok" style="color:var(--ok)">—</div></div>
+    <div class="stat-card"><div class="lbl">異常</div><div class="val" id="s-bad" style="color:var(--danger)">—</div></div>
+  </div>
+
+  <div id="loading" class="loading">載入中…</div>
+  <div class="table-wrap" id="table-wrap" style="display:none">
+    <table>
+      <thead><tr><th>時間</th><th>棟別/站點</th><th>班別</th><th>巡檢人員</th><th>機種/零件</th><th>清單版本</th><th>結果</th></tr></thead>
+      <tbody id="records-tbody"></tbody>
+    </table>
+  </div>
+  <div class="empty-state" id="empty-state" style="display:none">此條件尚無巡檢紀錄</div>
+</div>
+
+<div class="empty-state" id="no-access" style="display:none">🚫 此頁面僅限品保（quality）/系統管理員使用</div>
+
+<div class="modal-overlay hidden" id="detail-modal">
+  <div class="modal">
+    <h2 id="d-title"></h2>
+    <div class="meta" id="d-meta"></div>
+    <div id="d-edit-fields" style="display:none"></div>
+    <div id="d-items"></div>
+    <div class="modal-footer" id="d-view-actions">
+      <button class="btn btn-outline" id="d-delete-btn" onclick="deleteRecord()" style="color:var(--danger);border-color:var(--danger)">🗑️ 刪除紀錄</button>
+      <button class="btn btn-outline" id="d-edit-btn" onclick="enterEditMode()">✏️ 編輯</button>
+      <button class="btn btn-outline" onclick="closeDetail()">關閉</button>
+    </div>
+    <div class="modal-footer" id="d-edit-actions" style="display:none">
+      <button class="btn btn-outline" onclick="cancelEditMode()">取消編輯</button>
+      <button class="btn btn-primary" onclick="saveEdit()">💾 儲存修改</button>
+    </div>
+  </div>
+</div>
+
+<div class="lightbox hidden" id="lightbox" onclick="this.classList.add('hidden')"><img id="lightbox-img" src="" alt=""></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore, collection, doc, getDoc, getDocs, deleteDoc, updateDoc, addDoc,
+  query, where, Timestamp, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { mivAuthReady } from "./auth-guard.js?v=2";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs", authDomain: "miv-1426c.firebaseapp.com",
+  projectId: "miv-1426c", storageBucket: "miv-1426c.firebasestorage.app",
+  messagingSenderId: "398934341623", appId: "1:398934341623:web:4af46c057d2e202855a0f2"
+};
+const db = getFirestore(initializeApp(firebaseConfig));
+const areasCol = collection(db, "pi_areas");
+const recordsCol = collection(db, "pi_inspection_records");
+const issuesCol = collection(db, "pi_issues");
+
+const piUser = await mivAuthReady;
+if (piUser.role !== "admin" && piUser.role !== "quality") {
+  document.getElementById("no-access").style.display = "";
+} else {
+  document.getElementById("main-content").style.display = "";
+}
+
+function renderNav() {
+  const links = [
+    `<a class="nav-link" href="inspection.html"><span>← 返回巡檢</span><span class="vi">Quay lại kiểm tra</span></a>`,
+    `<a class="nav-link" href="inspection-issues.html"><span>📋 異常追蹤</span><span class="vi">Theo dõi bất thường</span></a>`,
+    `<a class="nav-link" href="inspection-dashboard.html"><span>📊 統計報表</span><span class="vi">Báo cáo</span></a>`,
+  ];
+  if (piUser.role === "admin") links.push(`<a class="nav-link" href="inspection-admin.html"><span>⚙ 後台管理</span><span class="vi">Quản trị</span></a>`);
+  document.getElementById("nav-links").innerHTML = links.join("");
+}
+function esc(s){ return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function showErr(msg){ document.getElementById("loading").textContent = "⚠️ " + msg; document.getElementById("loading").style.display = ""; }
+
+function todayStr() { return new Date().toISOString().slice(0,10); }
+function startOfWeekStr() { const d = new Date(); const day = (d.getDay()+6)%7; d.setDate(d.getDate()-day); return d.toISOString().slice(0,10); }
+function startOfMonthStr() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`; }
+window.setRange = function(kind) {
+  const end = todayStr();
+  let start = end;
+  if (kind === "week") start = startOfWeekStr();
+  else if (kind === "month") start = startOfMonthStr();
+  document.getElementById("f-start").value = start;
+  document.getElementById("f-end").value = end;
+  loadData();
+};
+document.getElementById("f-start").value = todayStr();
+document.getElementById("f-end").value = todayStr();
+
+let areas = {}, allRecords = [];
+
+window.populateStationFilter = function() {
+  const b = document.getElementById("f-building").value;
+  const sel = document.getElementById("f-station");
+  const list = Object.values(areas).filter(a => !b || a.building === b)
+    .sort((x,y) => x.building.localeCompare(y.building) || (x.sortOrder||0)-(y.sortOrder||0));
+  sel.innerHTML = `<option value="">所有站點</option>` + list.map(a =>
+    `<option value="${a.id}">${esc(a.building)}棟 ${esc(a.stationName)}${a.lineNo?'第'+esc(a.lineNo)+'線':''}</option>`
+  ).join("");
+};
+
+window.loadData = async function() {
+  document.getElementById("loading").style.display = "";
+  document.getElementById("table-wrap").style.display = "none";
+  document.getElementById("empty-state").style.display = "none";
+  try {
+    if (!Object.keys(areas).length) {
+      const areaSnap = await getDocs(areasCol);
+      areaSnap.forEach(d => areas[d.id] = { id: d.id, ...d.data() });
+      populateStationFilter();
+    }
+    const startDate = new Date(document.getElementById("f-start").value + "T00:00:00");
+    const endDate = new Date(document.getElementById("f-end").value + "T23:59:59");
+    const snap = await getDocs(query(recordsCol,
+      where("inspectionTime", ">=", Timestamp.fromDate(startDate)),
+      where("inspectionTime", "<=", Timestamp.fromDate(endDate))));
+    allRecords = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a,b) => (b.inspectionTime?.toMillis?.()||0) - (a.inspectionTime?.toMillis?.()||0));
+    render();
+  } catch (err) {
+    showErr("載入失敗：" + err.message);
+    return;
+  }
+  document.getElementById("loading").style.display = "none";
+};
+
+function areaLabel(r) {
+  return `${r.building}棟 ${r.stationName}${r.lineNo ? "第"+r.lineNo+"線" : ""}`;
+}
+function fmtTime(ts) { return ts && ts.toDate ? ts.toDate().toLocaleString("zh-TW", { hour12:false }) : "同步中…"; }
+
+window.render = function() {
+  const bf = document.getElementById("f-building").value;
+  const sf = document.getElementById("f-station").value;
+  const shf = document.getElementById("f-shift").value;
+  const rf = document.getElementById("f-result").value;
+  const q = (document.getElementById("f-search").value || "").toLowerCase();
+
+  const list = allRecords.filter(r => {
+    if (bf && r.building !== bf) return false;
+    if (sf && r.areaId !== sf) return false;
+    if (shf && r.shift !== shf) return false;
+    if (rf && r.overallStatus !== rf) return false;
+    if (q && !((r.inspectorName||"") + (r.partOrModelNo||"") + (r.modelName||"")).toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  document.getElementById("s-count").textContent = list.length;
+  document.getElementById("s-ok").textContent = list.filter(r => r.overallStatus === "正常").length;
+  document.getElementById("s-bad").textContent = list.filter(r => r.overallStatus === "異常").length;
+
+  const tbody = document.getElementById("records-tbody");
+  const wrap = document.getElementById("table-wrap");
+  const empty = document.getElementById("empty-state");
+  if (!list.length) { tbody.innerHTML = ""; wrap.style.display = "none"; empty.style.display = ""; return; }
+  empty.style.display = "none"; wrap.style.display = "";
+  tbody.innerHTML = list.map(r => `
+    <tr onclick="openDetail('${r.id}')">
+      <td>${fmtTime(r.inspectionTime)}</td>
+      <td>${esc(areaLabel(r))}</td>
+      <td>${esc(r.shift||"—")}</td>
+      <td>${esc(r.inspectorName||"—")}</td>
+      <td>${esc(r.modelName || r.partOrModelNo || "—")}</td>
+      <td>v${r.templateVersion ?? "—"}</td>
+      <td><span class="badge-result ${r.overallStatus==='異常'?'bad':'ok'}">${esc(r.overallStatus||"—")}</span></td>
+    </tr>`).join("");
+};
+
+const CATS = ["製程參數", "品質抽檢", "自主檢查"];
+const SEVS = ["CR", "MA", "MI"];
+const SEV_LABEL = { CR: "嚴重缺點", MA: "主要缺點", MI: "次要缺點" };
+
+let currentRecord = null;
+let currentIssuesByItemId = {}, currentIssuesByItemName = {};
+let editMode = false, editItems = [], editExtra = {};
+
+window.openDetail = async function(id) {
+  const r = allRecords.find(x => x.id === id); if (!r) return;
+  currentRecord = r;
+  editMode = false;
+  document.getElementById("detail-modal").classList.remove("hidden");
+  document.getElementById("d-items").innerHTML = `<div style="color:var(--text-soft);font-size:.85rem;padding:12px 0">載入中…</div>`;
+
+  // 異常項目的說明/照片存在 pi_issues，依 itemId（舊資料用 itemName 比對）取得
+  currentIssuesByItemId = {}; currentIssuesByItemName = {};
+  if (r.issueIds && r.issueIds.length) {
+    const fetched = await Promise.all(r.issueIds.map(iid => getDoc(doc(db, "pi_issues", iid)).catch(() => null)));
+    fetched.forEach(snap => {
+      if (!snap || !snap.exists()) return;
+      const data = { id: snap.id, ...snap.data() };
+      if (data.itemId) currentIssuesByItemId[data.itemId] = data;
+      if (data.itemName) currentIssuesByItemName[data.itemName] = data;
+    });
+  }
+  renderViewMode();
+};
+
+function issueFor(it) {
+  return (it.itemId && currentIssuesByItemId[it.itemId]) || currentIssuesByItemName[it.itemName];
+}
+
+function renderViewMode() {
+  const r = currentRecord;
+  document.getElementById("d-title").innerHTML = `${esc(areaLabel(r))} <span class="badge-result ${r.overallStatus==='異常'?'bad':'ok'}">${esc(r.overallStatus||"—")}</span>`;
+  document.getElementById("d-meta").textContent =
+    `時間：${fmtTime(r.inspectionTime)}　班別：${r.shift||"—"}　巡檢人員：${r.inspectorName||"—"}　機種/零件：${r.modelName || r.partOrModelNo || "—"}　清單版本：v${r.templateVersion ?? "—"}`;
+  document.getElementById("d-edit-fields").style.display = "none";
+  document.getElementById("d-view-actions").style.display = "flex";
+  document.getElementById("d-edit-actions").style.display = "none";
+
+  const byCat = {};
+  (r.results || []).forEach(it => { const c = it.category || "其他"; (byCat[c] || (byCat[c] = [])).push(it); });
+  const order = [...CATS.filter(c => byCat[c]), ...Object.keys(byCat).filter(c => !CATS.includes(c))];
+  let html = "";
+  if (!order.length) html = `<div style="color:var(--text-soft);font-size:.85rem;padding:12px 0">此紀錄沒有逐項結果資料</div>`;
+  order.forEach(cat => {
+    html += `<div class="cat-header">${esc(cat)}</div>`;
+    byCat[cat].forEach(it => {
+      const abnormal = !!it.isAbnormal;
+      const valStr = typeof it.value === "boolean" ? (it.value ? "✓ 正常" : "✕ 異常") : (it.value ?? "—");
+      const issue = issueFor(it);
+      let extra = "";
+      if (abnormal && issue) {
+        extra += `<div class="item-desc"><span class="lbl">${esc(issue.severity||"")} 異常說明</span>${esc(issue.description || "（未填寫說明）")}</div>`;
+        if (issue.photoUrls && issue.photoUrls.length) {
+          extra += `<div class="item-photos">${issue.photoUrls.map(src => `<img src="${src}" onclick="event.stopPropagation();openLightbox('${src}')">`).join("")}</div>`;
+        }
+      } else if (abnormal) {
+        extra = `<div class="item-desc"><span class="lbl">異常說明</span>（查無對應追蹤單）</div>`;
+      }
+      html += `<div class="item-row ${abnormal?'bad':'ok'}"><div class="item-row-top"><span>${esc(it.itemName)}</span><span class="val">${esc(valStr)}</span></div>${extra}</div>`;
+    });
+  });
+  document.getElementById("d-items").innerHTML = html;
+}
+
+window.enterEditMode = function() {
+  editMode = true;
+  editItems = JSON.parse(JSON.stringify(currentRecord.results || []));
+  editExtra = {};
+  document.getElementById("d-view-actions").style.display = "none";
+  document.getElementById("d-edit-actions").style.display = "flex";
+
+  const efDiv = document.getElementById("d-edit-fields");
+  efDiv.style.display = "";
+  efDiv.innerHTML = `
+    <div class="edit-field-row">
+      <div class="fg"><label>班別</label>
+        <select id="ed-shift">
+          <option value="上午" ${currentRecord.shift==="上午"?"selected":""}>上午</option>
+          <option value="下午" ${currentRecord.shift==="下午"?"selected":""}>下午</option>
+        </select>
+      </div>
+      <div class="fg"><label>零件 / 機種編號</label>
+        <input type="text" id="ed-partno" value="${esc(currentRecord.partOrModelNo||"")}">
+      </div>
+    </div>`;
+
+  renderEditItems();
+};
+
+function renderEditItems() {
+  const byCat = {};
+  editItems.forEach((it, i) => { const c = it.category || "其他"; (byCat[c] || (byCat[c] = [])).push(i); });
+  const order = [...CATS.filter(c => byCat[c]), ...Object.keys(byCat).filter(c => !CATS.includes(c))];
+  let html = "";
+  order.forEach(cat => {
+    html += `<div class="cat-header">${esc(cat)}</div>`;
+    byCat[cat].forEach(i => {
+      const it = editItems[i];
+      const isBool = typeof it.value === "boolean";
+      const isNum = typeof it.value === "number";
+      let valueField = "";
+      if (isNum) valueField = `<input type="number" step="any" value="${it.value ?? ""}" oninput="setEditValue(${i}, this.value===''?null:Number(this.value))">`;
+      else if (!isBool) valueField = `<input type="text" value="${esc(it.value ?? "")}" oninput="setEditValue(${i}, this.value)">`;
+
+      const wasAbnormal = !!it.isAbnormal;
+      const extra = wasAbnormal ? renderAbnPanel(i, it) : "";
+      html += `<div class="item-row editing" id="edit-row-${i}">
+        <div class="item-row-top">
+          <span>${esc(it.itemName)}</span>
+          <div style="display:flex;gap:8px;align-items:center">
+            ${valueField}
+            <div class="tg-row">
+              <button class="tg tg-ok ${!wasAbnormal?'active':''}" onclick="toggleEditAbnormal(${i}, false)">✓ 正常</button>
+              <button class="tg tg-bad ${wasAbnormal?'active':''}" onclick="toggleEditAbnormal(${i}, true)">✕ 異常</button>
+            </div>
+          </div>
+        </div>
+        <div id="abn-extra-${i}">${extra}</div>
+      </div>`;
+    });
+  });
+  document.getElementById("d-items").innerHTML = html;
+}
+
+function renderAbnPanel(i, it) {
+  const issue = issueFor(it);
+  if (issue) {
+    // 已有對應追蹤單：提醒改到異常追蹤看板處理，這裡不重複建立
+    return `<div class="existing-issue-note">⚠️ 此項目已有異常追蹤單（${esc(issue.severity||"")}），如需修改說明/狀態請至「異常追蹤看板」處理，這裡的正常/異常標記仍會一併更新。</div>`;
+  }
+  const ex = editExtra[i] || (editExtra[i] = { severity: "MI", desc: "", photos: [] });
+  return `<div class="new-abn-panel">
+    <div class="sev-row">
+      ${SEVS.map(s => `<button class="sev-btn ${ex.severity===s?'active':''}" data-sev="${s}" onclick="setEditSeverity(${i},'${s}')">${s}</button>`).join("")}
+    </div>
+    <textarea rows="2" placeholder="請填寫異常說明（新增異常項目必填）" oninput="editExtra[${i}].desc=this.value">${esc(ex.desc)}</textarea>
+    <div class="photo-btn-row" style="display:flex;gap:8px;margin-top:8px">
+      <label class="btn btn-outline" style="cursor:pointer;flex:1;text-align:center">📷 拍照<input type="file" accept="image/*" capture="environment" style="display:none" onchange="onEditPhotoSelect(${i},this)"></label>
+      <label class="btn btn-outline" style="cursor:pointer;flex:1;text-align:center">📁 從相簿選取<input type="file" accept="image/*" style="display:none" onchange="onEditPhotoSelect(${i},this)"></label>
+    </div>
+    <div class="item-photos" id="edit-photos-${i}">${ex.photos.map((src,pi) => `<span style="position:relative;display:inline-block"><img src="${src}" onclick="openLightbox('${src}')"><button onclick="removeEditPhoto(${i},${pi})" style="position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--danger);color:#fff;border:none;font-size:.65rem;cursor:pointer">✕</button></span>`).join("")}</div>
+  </div>`;
+}
+
+window.setEditValue = function(i, v) { editItems[i].value = v; };
+window.toggleEditAbnormal = function(i, abnormal) {
+  editItems[i].isAbnormal = abnormal;
+  if (typeof editItems[i].value === "boolean") editItems[i].value = !abnormal;
+  renderEditItems();
+};
+window.setEditSeverity = function(i, sev) {
+  editExtra[i].severity = sev;
+  document.querySelectorAll(`#abn-extra-${i} .sev-btn`).forEach(b => b.classList.toggle("active", b.dataset.sev === sev));
+};
+function compressToBase64(file, maxPx, quality) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let w = img.width, h = img.height;
+      if (w > maxPx || h > maxPx) { if (w >= h) { h = Math.round(h*maxPx/w); w = maxPx; } else { w = Math.round(w*maxPx/h); h = maxPx; } }
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL("image/jpeg", quality));
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+window.onEditPhotoSelect = async function(i, input) {
+  const file = input.files[0]; input.value = "";
+  if (!file) return;
+  if (editExtra[i].photos.length >= 3) { alert("每個異常項目最多上傳 3 張照片"); return; }
+  editExtra[i].photos.push(await compressToBase64(file, 640, 0.6));
+  renderEditItems();
+};
+window.removeEditPhoto = function(i, pi) { editExtra[i].photos.splice(pi, 1); renderEditItems(); };
+
+window.cancelEditMode = function() {
+  editMode = false;
+  renderViewMode();
+};
+
+window.saveEdit = async function() {
+  // 新增為異常但尚未有追蹤單的項目，必須填寫說明
+  for (let i = 0; i < editItems.length; i++) {
+    const it = editItems[i];
+    if (it.isAbnormal && !issueFor(it)) {
+      const ex = editExtra[i];
+      if (!ex || !ex.desc.trim()) {
+        alert(`「${it.itemName}」是新標記的異常項目，請填寫異常說明才能儲存`);
+        return;
+      }
+    }
+  }
+  const shift = document.getElementById("ed-shift").value;
+  const partOrModelNo = document.getElementById("ed-partno").value.trim();
+  const overallStatus = editItems.some(it => it.isAbnormal) ? "異常" : "正常";
+  const newIssueIds = [...(currentRecord.issueIds || [])];
+
+  try {
+    for (let i = 0; i < editItems.length; i++) {
+      const it = editItems[i];
+      if (it.isAbnormal && !issueFor(it)) {
+        const ex = editExtra[i];
+        const issueRef = await addDoc(issuesCol, {
+          recordId: currentRecord.id,
+          areaId: currentRecord.areaId,
+          itemId: it.itemId || null,
+          itemName: it.itemName,
+          partOrModelNo: partOrModelNo,
+          modelName: currentRecord.modelName || null,
+          severity: ex.severity,
+          needsSupervisorNotify: ex.severity === "CR" || ex.severity === "MA",
+          description: ex.desc.trim(),
+          photoUrls: ex.photos,
+          status: "待處理",
+          assignedTo: null,
+          reportedBy: piUser.name || piUser.employeeId,
+          reportedById: piUser.employeeId,
+          reportedAt: serverTimestamp(),
+          resolvedAt: null,
+          reviewerId: null,
+          reviewSignedAt: null,
+          reviewNotes: null,
+        });
+        newIssueIds.push(issueRef.id);
+      }
+    }
+    await updateDoc(doc(db, "pi_inspection_records", currentRecord.id), {
+      results: editItems, overallStatus, shift, partOrModelNo, issueIds: newIssueIds,
+    });
+    const idx = allRecords.findIndex(x => x.id === currentRecord.id);
+    if (idx >= 0) allRecords[idx] = { ...currentRecord, results: editItems, overallStatus, shift, partOrModelNo, issueIds: newIssueIds };
+    editMode = false;
+    closeDetail();
+    render();
+  } catch (err) {
+    alert("儲存失敗：" + err.message);
+  }
+};
+
+window.deleteRecord = async function() {
+  const r = currentRecord; if (!r) return;
+  const issueCount = (r.issueIds || []).length;
+  const msg = issueCount
+    ? `確定刪除這筆巡檢紀錄？此紀錄有 ${issueCount} 筆關聯異常單，會一併刪除。此動作無法復原。`
+    : `確定刪除這筆巡檢紀錄？此動作無法復原。`;
+  if (!confirm(msg)) return;
+  try {
+    await Promise.all((r.issueIds || []).map(iid => deleteDoc(doc(db, "pi_issues", iid)).catch(() => {})));
+    await deleteDoc(doc(db, "pi_inspection_records", r.id));
+    allRecords = allRecords.filter(x => x.id !== r.id);
+    closeDetail();
+    render();
+  } catch (err) {
+    alert("刪除失敗：" + err.message);
+  }
+};
+
+window.openLightbox = src => { document.getElementById("lightbox-img").src = src; document.getElementById("lightbox").classList.remove("hidden"); };
+window.closeDetail = () => { document.getElementById("detail-modal").classList.add("hidden"); editMode = false; };
+
+renderNav();
+if (piUser.role === "admin" || piUser.role === "quality") loadData();
+</script>
+</body>
+</html>

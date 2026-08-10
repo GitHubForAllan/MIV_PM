@@ -31,8 +31,10 @@
   .topbar-title h1 { font-size: .95rem; font-weight: 700; color: #fff; line-height: 1.3; }
   .topbar-title .vi { font-size: .68rem; color: rgba(255,255,255,.5); font-weight: 400; font-style: italic; }
   .topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .nav-link { font-size: .78rem; color: rgba(255,255,255,.8); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,.2); text-decoration: none; white-space: nowrap; }
+  .nav-link { font-size: .78rem; color: rgba(255,255,255,.8); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,.2); text-decoration: none; white-space: nowrap;
+    display: flex; flex-direction: column; align-items: center; line-height: 1.3; gap: 1px; }
   .nav-link:hover { background: rgba(255,255,255,.1); }
+  .nav-link .vi { font-size: .82em; font-style: italic; opacity: .75; }
   .user-badge { font-size: .78rem; color: #fff; background: rgba(255,255,255,.08); padding: 6px 12px; border-radius: 6px; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
   .user-badge .role { color: #93c5fd; }
   .user-badge button { background: none; border: none; color: rgba(255,255,255,.55); cursor: pointer; font-size: .74rem; }
@@ -52,11 +54,12 @@
   .station-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 12px;
     text-align: center; cursor: pointer; transition: transform .1s, box-shadow .1s; }
   .station-card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
-  .station-card .icon { font-size: 1.5rem; margin-bottom: 6px; }
-  .station-card .name { font-weight: 700; font-size: .92rem; }
-  .station-card .line { font-size: .72rem; color: var(--text-soft); margin-top: 2px; }
+  .station-card .icon { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; }
+  .station-card .name-vi { font-weight: 700; font-size: .9rem; line-height: 1.25; }
+  .station-card .name-zh { font-size: .74rem; color: var(--text-soft); margin-top: 2px; }
+  .station-card .line { font-size: .72rem; color: var(--text-soft); margin-top: 4px; }
   .station-card.no-template { opacity: .55; }
-  .station-card.no-template .name::after { content: "（尚無清單）"; display: block; font-size: .66rem; font-weight: 400; color: var(--danger); }
+  .station-card.no-template .name-zh::after { content: "（尚無清單）"; display: block; font-size: .66rem; font-weight: 400; color: var(--danger); }
 
   .empty-state { text-align: center; padding: 50px 20px; color: var(--text-soft); }
   .empty-state .icon { font-size: 2.6rem; margin-bottom: 10px; }
@@ -230,6 +233,7 @@ if (piUser.role !== "quality" && piUser.role !== "admin") {
 function renderNav() {
   const links = [];
   links.push(`<a class="nav-link" href="inspection-issues.html"><span>📋 異常追蹤</span><span class="vi"> Theo dõi bất thường</span></a>`);
+  links.push(`<a class="nav-link" href="inspection-records.html"><span>📑 紀錄查詢</span><span class="vi"> Tra cứu hồ sơ</span></a>`);
   links.push(`<a class="nav-link" href="inspection-dashboard.html"><span>📊 統計報表</span><span class="vi"> Báo cáo</span></a>`);
   if (piUser.role === "admin") {
     links.push(`<a class="nav-link" href="inspection-admin.html"><span>⚙ 後台管理</span><span class="vi"> Quản trị</span></a>`);
@@ -277,8 +281,30 @@ function renderBuildingTabs() {
 }
 window.selectBuilding = function(b) { currentBuilding = b; renderBuildingTabs(); renderStationGrid(); };
 
-const STATION_ICON = { 噴漆:"🎨", 沾膠:"🧴", PU發泡:"🫧", CNC:"⚙️", 焊接:"🔥", 塑膠射出:"🧱", 彎管:"🔩",
-  雷射割管:"✂️", 雷射割板:"✂️", "3D雷射割管":"✂️", 沖床:"🛠", 有氧組裝線:"🔵", 無氧組裝線:"⚪" };
+const ASSEMBLY_SVG = `<span style="font-size:1.5rem">🏭</span>`;
+const NEUTRAL_BG = "#f1f5f9";
+function emojiIcon(e) { return `<span style="font-size:1.5rem">${e}</span>`; }
+
+const STATION_INFO = {
+  噴漆: { vi: "Phun sơn", bg: NEUTRAL_BG, icon: emojiIcon("🎨") },
+  沾膠: { vi: "Nhúng keo", bg: NEUTRAL_BG, icon: emojiIcon("🧴") },
+  PU發泡: { vi: "Xốp PU", bg: NEUTRAL_BG, icon: emojiIcon("🫧") },
+  CNC: { vi: "CNC", bg: NEUTRAL_BG, icon: emojiIcon("⚙️") },
+  焊接: { vi: "Hàn", bg: NEUTRAL_BG, icon: emojiIcon("🔥") },
+  塑膠射出: { vi: "Ép nhựa", bg: NEUTRAL_BG, icon: emojiIcon("🧱") },
+  彎管: { vi: "Uốn ống", bg: NEUTRAL_BG, icon: emojiIcon("🔩") },
+  雷射割管: { vi: "Cắt ống bằng laser", bg: NEUTRAL_BG, icon: emojiIcon("✂️") },
+  雷射割板: { vi: "Cắt tấm bằng laser", bg: NEUTRAL_BG, icon: emojiIcon("✂️") },
+  "3D雷射割管": { vi: "Cắt ống 3D bằng laser", bg: NEUTRAL_BG, icon: emojiIcon("✂️") },
+  沖床: { vi: "Máy dập", bg: NEUTRAL_BG, icon: emojiIcon("🛠") },
+  無氧組裝線: { vi: "Dây chuyền lắp ráp kỵ khí", bg: NEUTRAL_BG, icon: emojiIcon("⚪") },
+  有氧組裝線: { vi: "Dây chuyền lắp ráp hiếu khí", bg: NEUTRAL_BG, icon: emojiIcon("🔵") },
+};
+function stationInfo(name) {
+  if (STATION_INFO[name]) return STATION_INFO[name];
+  if (name && name.endsWith("組裝線")) return { vi: "Dây chuyền lắp ráp", bg: "#e6e9fc", icon: ASSEMBLY_SVG };
+  return { vi: "", bg: "#f1f5f9", icon: `<span style="font-size:1.4rem">🏭</span>` };
+}
 
 function renderStationGrid() {
   const list = Object.values(areas).filter(a => a.building === currentBuilding).sort((a,b) => (a.sortOrder||0) - (b.sortOrder||0));
@@ -288,9 +314,11 @@ function renderStationGrid() {
   empty.style.display = "none";
   grid.innerHTML = list.map(a => {
     const hasTpl = !!resolveTemplate(a);
+    const info = stationInfo(a.stationName);
     return `<div class="station-card ${hasTpl ? "" : "no-template"}" onclick="openArea('${a.id}')">
-      <div class="icon">${STATION_ICON[a.stationName] || "🏭"}</div>
-      <div class="name">${esc(a.stationName)}</div>
+      <div class="icon" style="background:${info.bg}">${info.icon}</div>
+      ${info.vi ? `<div class="name-vi">${esc(info.vi)}</div>` : ""}
+      <div class="name-zh">${esc(a.stationName)}</div>
       ${a.lineNo ? `<div class="line">第 ${esc(a.lineNo)} 線</div>` : ""}
       ${a.currentModel ? `<div class="line">機種：${esc(a.currentModel)}</div>` : ""}
     </div>`;
@@ -549,7 +577,10 @@ window.submitInspection = async function() {
       const issueRef = await addDoc(issuesCol, {
         recordId: recordRef.id,
         areaId: currentArea.id,
+        itemId: item.itemId,
         itemName: item.itemName,
+        partOrModelNo: document.getElementById("f-partno").value.trim(),
+        modelName: currentArea.currentModel || null,
         severity: st.severity,
         needsSupervisorNotify: st.severity === "CR" || st.severity === "MA",
         description: st.desc.trim(),

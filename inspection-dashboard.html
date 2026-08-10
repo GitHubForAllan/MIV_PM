@@ -25,7 +25,9 @@
   .topbar-logo { height: 42px; object-fit: contain; border-radius: 8px; }
   .topbar h1 { font-size: .95rem; font-weight: 700; color: #fff; }
   .topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .nav-link { font-size: .78rem; color: rgba(255,255,255,.8); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,.2); text-decoration: none; }
+  .nav-link { font-size: .78rem; color: rgba(255,255,255,.8); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,.2); text-decoration: none;
+    display: flex; flex-direction: column; align-items: center; line-height: 1.3; gap: 1px; }
+  .nav-link .vi { font-size: .82em; font-style: italic; opacity: .75; }
   .nav-link:hover { background: rgba(255,255,255,.1); }
   .user-badge { font-size: .78rem; color: #fff; background: rgba(255,255,255,.08); padding: 6px 12px; border-radius: 6px; }
   .user-badge button { background:none;border:none;color:rgba(255,255,255,.55);cursor:pointer;font-size:.74rem;margin-left:6px; }
@@ -145,8 +147,12 @@ if (piUser.role !== "admin" && piUser.role !== "quality") {
   document.getElementById("dash-main").style.display = "";
 }
 function renderNav() {
-  const links = [`<a class="nav-link" href="inspection.html">← 返回巡檢</a>`, `<a class="nav-link" href="inspection-issues.html">📋 異常追蹤</a>`];
-  if (piUser.role === "admin") links.push(`<a class="nav-link" href="inspection-admin.html">⚙ 後台管理</a>`);
+  const links = [
+    `<a class="nav-link" href="inspection.html"><span>← 返回巡檢</span><span class="vi">Quay lại kiểm tra</span></a>`,
+    `<a class="nav-link" href="inspection-issues.html"><span>📋 異常追蹤</span><span class="vi">Theo dõi bất thường</span></a>`,
+    `<a class="nav-link" href="inspection-records.html"><span>📑 紀錄查詢</span><span class="vi">Tra cứu hồ sơ</span></a>`,
+  ];
+  if (piUser.role === "admin") links.push(`<a class="nav-link" href="inspection-admin.html"><span>⚙ 後台管理</span><span class="vi">Quản trị</span></a>`);
   document.getElementById("nav-links").innerHTML = links.join("");
 }
 function esc(s){ return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }

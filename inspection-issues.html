@@ -27,7 +27,9 @@
   .topbar h1 { font-size: .95rem; font-weight: 700; color: #fff; }
   .topbar h1 .vi { display:block; font-size:.68rem; color:rgba(255,255,255,.5); font-weight:400; font-style:italic; }
   .topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .nav-link { font-size: .78rem; color: rgba(255,255,255,.8); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,.2); text-decoration: none; }
+  .nav-link { font-size: .78rem; color: rgba(255,255,255,.8); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,.2); text-decoration: none;
+    display: flex; flex-direction: column; align-items: center; line-height: 1.3; gap: 1px; }
+  .nav-link .vi { font-size: .82em; font-style: italic; opacity: .75; }
   .nav-link:hover { background: rgba(255,255,255,.1); }
   .user-badge { font-size: .78rem; color: #fff; background: rgba(255,255,255,.08); padding: 6px 12px; border-radius: 6px; }
   .user-badge button { background:none;border:none;color:rgba(255,255,255,.55);cursor:pointer;font-size:.74rem;margin-left:6px; }
@@ -150,7 +152,7 @@
   <div id="table-view" style="display:none">
     <div class="table-wrap">
       <table>
-        <thead><tr><th>等級</th><th>站點</th><th>描述</th><th>回報人</th><th>負責人</th><th>狀態</th><th>回報時間</th></tr></thead>
+        <thead><tr><th>等級</th><th>站點</th><th>機種/零件</th><th>描述</th><th>回報人</th><th>負責人</th><th>狀態</th><th>回報時間</th></tr></thead>
         <tbody id="table-tbody"></tbody>
       </table>
     </div>
@@ -193,7 +195,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, doc, updateDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, doc, getDoc, updateDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { mivAuthReady } from "./auth-guard.js?v=2";
 
 const firebaseConfig = {
@@ -204,22 +206,43 @@ const firebaseConfig = {
 const db = getFirestore(initializeApp(firebaseConfig));
 const issuesCol = collection(db, "pi_issues");
 const areasCol = collection(db, "pi_areas");
+const recordsCol = collection(db, "pi_inspection_records");
 
 const piUser = await mivAuthReady;
 
 function renderNav() {
-  const links = [`<a class="nav-link" href="inspection.html">← 返回巡檢</a>`];
-  links.push(`<a class="nav-link" href="inspection-dashboard.html">📊 統計報表</a>`);
-  if (piUser.role === "admin") links.push(`<a class="nav-link" href="inspection-admin.html">⚙ 後台管理</a>`);
+  const links = [`<a class="nav-link" href="inspection.html"><span>← 返回巡檢</span><span class="vi">Quay lại kiểm tra</span></a>`];
+  links.push(`<a class="nav-link" href="inspection-records.html"><span>📑 紀錄查詢</span><span class="vi">Tra cứu hồ sơ</span></a>`);
+  links.push(`<a class="nav-link" href="inspection-dashboard.html"><span>📊 統計報表</span><span class="vi">Báo cáo</span></a>`);
+  if (piUser.role === "admin") links.push(`<a class="nav-link" href="inspection-admin.html"><span>⚙ 後台管理</span><span class="vi">Quản trị</span></a>`);
   document.getElementById("nav-links").innerHTML = links.join("");
 }
 function esc(s){ return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 function canManage(){ return piUser.role === "quality" || piUser.role === "admin"; }
 
 let issues = {}, areas = {}, currentView = "kanban";
+const recordCache = {}; // recordId -> {modelName, partOrModelNo} | null
 
 onSnapshot(areasCol, snap => { areas = {}; snap.forEach(d => areas[d.id] = { id: d.id, ...d.data() }); render(); });
-onSnapshot(issuesCol, snap => { issues = {}; snap.forEach(d => issues[d.id] = { id: d.id, ...d.data() }); render(); updateStats(); });
+onSnapshot(issuesCol, snap => {
+  issues = {};
+  snap.forEach(d => issues[d.id] = { id: d.id, ...d.data() });
+  render(); updateStats();
+  backfillPartLabels();
+});
+
+// 舊資料的異常單建立時還沒有存機種/零件編號，補從對應的巡檢紀錄查回來
+async function backfillPartLabels() {
+  const needed = Object.values(issues).filter(i => !partLabel(i) && i.recordId && !(i.recordId in recordCache));
+  if (!needed.length) return;
+  await Promise.all(needed.map(async i => {
+    try {
+      const snap = await getDoc(doc(db, "pi_inspection_records", i.recordId));
+      recordCache[i.recordId] = snap.exists() ? { modelName: snap.data().modelName, partOrModelNo: snap.data().partOrModelNo } : null;
+    } catch { recordCache[i.recordId] = null; }
+  }));
+  render();
+}
 
 function areaLabel(areaId) {
   const a = areas[areaId];
@@ -276,7 +299,7 @@ function renderKanban(list) {
       ${(cols[s]||[]).map(i => `
         <div class="kcard sev-${i.severity}" onclick="openDetail('${i.id}')">
           <div class="top"><span class="badge badge-${i.severity}">${i.severity}</span><span>${fmtTime(i.reportedAt)}</span></div>
-          <div class="area">${esc(areaLabel(i.areaId))}</div>
+          <div class="area">${esc(areaLabel(i.areaId))}${partLabel(i) ? " ｜ " + esc(partLabel(i)) : ""}</div>
           <div class="desc">${esc(i.itemName ? i.itemName + "：" : "")}${esc(i.description)}</div>
           <div class="kcard-people">
             <span title="回報人">📝 ${esc(i.reportedBy || "—")}</span>
@@ -285,12 +308,19 @@ function renderKanban(list) {
         </div>`).join("")}
     </div>`).join("")}</div>`;
 }
+function partLabel(i) {
+  if (i.modelName || i.partOrModelNo) return i.modelName || i.partOrModelNo;
+  const cached = i.recordId && recordCache[i.recordId];
+  return cached ? (cached.modelName || cached.partOrModelNo || "") : "";
+}
+
 function renderTable(list) {
   document.getElementById("table-tbody").innerHTML = list.map(i => `
     <tr onclick="openDetail('${i.id}')">
       <td><span class="badge badge-${i.severity}">${i.severity}</span></td>
       <td>${esc(areaLabel(i.areaId))}</td>
-      <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(i.itemName?i.itemName+"：":"")}${esc(i.description)}</td>
+      <td>${esc(partLabel(i) || "—")}</td>
+      <td style="max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(i.itemName?i.itemName+"：":"")}${esc(i.description)}</td>
       <td>${esc(i.reportedBy || "—")}</td>
       <td>${esc(i.assignedTo || "—")}</td>
       <td><span class="badge-status st-${i.status}" style="padding:2px 9px;border-radius:99px;font-size:.72rem;font-weight:700">${i.status}</span></td>
@@ -303,7 +333,7 @@ let detailId = null;
 window.openDetail = function(id) {
   detailId = id;
   const i = issues[id]; if (!i) return;
-  document.getElementById("d-title").innerHTML = `<span class="badge badge-${i.severity}">${i.severity}</span> ${esc(areaLabel(i.areaId))}`;
+  document.getElementById("d-title").innerHTML = `<span class="badge badge-${i.severity}">${i.severity}</span> ${esc(areaLabel(i.areaId))}${partLabel(i) ? " ｜ " + esc(partLabel(i)) : ""}`;
   document.getElementById("d-meta").textContent = `回報人：${i.reportedBy || "—"}　回報時間：${fmtTime(i.reportedAt)}　狀態：${i.status}`;
   document.getElementById("d-desc").textContent = (i.itemName ? i.itemName + "：" : "") + (i.description || "");
   const photoRow = document.getElementById("d-photo-row");

@@ -29,6 +29,8 @@
     display: flex; flex-direction: column; align-items: center; line-height: 1.3; gap: 1px; }
   .nav-link .vi { font-size: .82em; font-style: italic; opacity: .75; }
   .nav-link:hover { background: rgba(255,255,255,.1); }
+  .vi-sub { display: block; font-size: .74em; font-weight: 400; font-style: italic; opacity: .7; }
+  .topbar h1 .vi-sub { color: rgba(255,255,255,.65); }
   .user-badge { font-size: .78rem; color: #fff; background: rgba(255,255,255,.08); padding: 6px 12px; border-radius: 6px; }
 
   .main { max-width: 1280px; margin: 0 auto; padding: 20px; }
@@ -113,47 +115,55 @@
 <header class="topbar">
   <div class="topbar-left">
     <img src="Rexon%20logo.png" alt="REXON VN" class="topbar-logo">
-    <h1>巡檢紀錄查詢</h1>
+    <h1>巡檢紀錄查詢<span class="vi-sub">Tra cứu hồ sơ kiểm tra</span></h1>
   </div>
   <div class="topbar-right" id="nav-links"></div>
 </header>
 
 <div class="main" id="main-content" style="display:none">
   <div class="toolbar">
-    <label>起</label><input type="date" id="f-start">
-    <label>迄</label><input type="date" id="f-end">
+    <label>起<span class="vi-sub">Từ</span></label><input type="date" id="f-start">
+    <label>迄<span class="vi-sub">Đến</span></label><input type="date" id="f-end">
     <div class="presets">
-      <button class="btn btn-outline" onclick="setRange('today')">今日</button>
-      <button class="btn btn-outline" onclick="setRange('week')">本週</button>
-      <button class="btn btn-outline" onclick="setRange('month')">本月</button>
+      <button class="btn btn-outline" onclick="setRange('today')">今日<span class="vi-sub">Hôm nay</span></button>
+      <button class="btn btn-outline" onclick="setRange('week')">本週<span class="vi-sub">Tuần này</span></button>
+      <button class="btn btn-outline" onclick="setRange('month')">本月<span class="vi-sub">Tháng này</span></button>
     </div>
     <select id="f-building" onchange="populateStationFilter();render()">
-      <option value="">所有棟別</option><option value="A">A棟</option><option value="B">B棟</option><option value="C">C棟</option>
+      <option value="">所有棟別 / Tất cả khu</option><option value="A">A棟 / Khu A</option><option value="B">B棟 / Khu B</option><option value="C">C棟 / Khu C</option>
     </select>
-    <select id="f-station" onchange="render()"><option value="">所有站點</option></select>
-    <select id="f-shift" onchange="render()"><option value="">所有班別</option><option value="上午">上午</option><option value="下午">下午</option></select>
-    <select id="f-result" onchange="render()"><option value="">所有結果</option><option value="正常">正常</option><option value="異常">異常</option></select>
-    <input type="search" id="f-search" placeholder="搜尋巡檢人員/機種…" oninput="render()">
-    <button class="btn btn-primary" onclick="loadData()">🔄 查詢</button>
+    <select id="f-station" onchange="render()"><option value="">所有站點 / Tất cả trạm</option></select>
+    <select id="f-shift" onchange="render()"><option value="">所有班別 / Tất cả ca</option><option value="上午">上午 / Ca sáng</option><option value="下午">下午 / Ca chiều</option></select>
+    <select id="f-result" onchange="render()"><option value="">所有結果 / Tất cả kết quả</option><option value="正常">正常 / Bình thường</option><option value="異常">異常 / Bất thường</option></select>
+    <input type="search" id="f-search" placeholder="搜尋巡檢人員/機種… / Tìm người kiểm tra hoặc model…" oninput="render()">
+    <button class="btn btn-primary" onclick="loadData()">🔄 查詢<span class="vi-sub">Tra cứu</span></button>
   </div>
 
   <div class="stats-row">
-    <div class="stat-card"><div class="lbl">符合筆數</div><div class="val" id="s-count">—</div></div>
-    <div class="stat-card"><div class="lbl">正常</div><div class="val" id="s-ok" style="color:var(--ok)">—</div></div>
-    <div class="stat-card"><div class="lbl">異常</div><div class="val" id="s-bad" style="color:var(--danger)">—</div></div>
+    <div class="stat-card"><div class="lbl">符合筆數<span class="vi-sub">Số bản ghi</span></div><div class="val" id="s-count">—</div></div>
+    <div class="stat-card"><div class="lbl">正常<span class="vi-sub">Bình thường</span></div><div class="val" id="s-ok" style="color:var(--ok)">—</div></div>
+    <div class="stat-card"><div class="lbl">異常<span class="vi-sub">Bất thường</span></div><div class="val" id="s-bad" style="color:var(--danger)">—</div></div>
   </div>
 
-  <div id="loading" class="loading">載入中…</div>
+  <div id="loading" class="loading">載入中… / Đang tải…</div>
   <div class="table-wrap" id="table-wrap" style="display:none">
     <table>
-      <thead><tr><th>時間</th><th>棟別/站點</th><th>班別</th><th>巡檢人員</th><th>機種/零件</th><th>清單版本</th><th>結果</th></tr></thead>
+      <thead><tr>
+        <th>時間<span class="vi-sub">Thời gian</span></th>
+        <th>棟別/站點<span class="vi-sub">Khu / Trạm</span></th>
+        <th>班別<span class="vi-sub">Ca</span></th>
+        <th>巡檢人員<span class="vi-sub">Người kiểm tra</span></th>
+        <th>機種/零件<span class="vi-sub">Model / Mã</span></th>
+        <th>清單版本<span class="vi-sub">Phiên bản</span></th>
+        <th>結果<span class="vi-sub">Kết quả</span></th>
+      </tr></thead>
       <tbody id="records-tbody"></tbody>
     </table>
   </div>
-  <div class="empty-state" id="empty-state" style="display:none">此條件尚無巡檢紀錄</div>
+  <div class="empty-state" id="empty-state" style="display:none">此條件尚無巡檢紀錄<span class="vi-sub" style="display:block">Không có hồ sơ phù hợp với điều kiện này</span></div>
 </div>
 
-<div class="empty-state" id="no-access" style="display:none">🚫 此頁面僅限品保（quality）/系統管理員使用</div>
+<div class="empty-state" id="no-access" style="display:none">🚫 此頁面僅限品保（quality）/系統管理員使用<span class="vi-sub" style="display:block">Trang này chỉ dành cho vai trò quality/admin</span></div>
 
 <div class="modal-overlay hidden" id="detail-modal">
   <div class="modal">

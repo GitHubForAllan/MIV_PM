@@ -94,6 +94,13 @@
   .detail-row .val { font-size: .9rem; white-space: pre-wrap; }
   .detail-photos { display: flex; flex-wrap: wrap; gap: 8px; }
   .detail-photos img { width: 76px; height: 76px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; }
+  .photo-btn-row { display: flex; gap: 8px; }
+  .photo-btn { flex: 1; padding: 8px 6px; border: 1.5px dashed #aac; border-radius: 6px; background: var(--bg); font-size: .78rem; color: var(--text-soft); cursor: pointer; text-align: center; }
+  .photo-btn input { display: none; }
+  .photo-preview-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .photo-thumb-wrap { position: relative; width: 64px; height: 64px; }
+  .photo-thumb-wrap img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; }
+  .photo-del { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; border-radius: 50%; background: var(--danger); color: #fff; border: none; cursor: pointer; font-size: .7rem; }
   .modal input, .modal textarea { width: 100%; padding: 9px 10px; border: 1px solid var(--border); border-radius: var(--radius); font-size: .88rem; font-family: inherit; }
   .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
   .btn { padding: 9px 16px; border-radius: var(--radius); font-size: .84rem; font-weight: 700; cursor: pointer; border: none; }
@@ -168,15 +175,22 @@
     <div class="detail-row"><label>描述</label><div class="val" id="d-desc"></div></div>
     <div class="detail-row" id="d-photo-row"><label>照片</label><div class="detail-photos" id="d-photos"></div></div>
     <div class="detail-row"><label>負責人</label>
-      <input id="d-assigned" placeholder="輸入負責改善的人員姓名">
+      <input id="d-assigned" list="assignee-datalist" placeholder="輸入或選擇負責改善的人員姓名">
+      <datalist id="assignee-datalist"></datalist>
     </div>
     <div class="detail-row" id="d-cm-row">
       <label>改善對策</label>
       <textarea id="d-countermeasure" rows="2" placeholder="說明採取了什麼改善措施…"></textarea>
+      <div class="photo-btn-row" style="margin-top:8px">
+        <label class="photo-btn">📷 拍照<input type="file" accept="image/*" capture="environment" onchange="onCmPhotoSelect(this)"></label>
+        <label class="photo-btn">📁 從相簿選取<input type="file" accept="image/*" onchange="onCmPhotoSelect(this)"></label>
+      </div>
+      <div class="photo-preview-row" id="d-cm-photos"></div>
     </div>
     <div class="detail-row" id="d-cm-info-row" style="display:none">
       <label>改善對策</label>
       <div class="val" id="d-cm-info"></div>
+      <div class="detail-photos" id="d-cm-info-photos" style="margin-top:8px"></div>
     </div>
     <div class="detail-row" id="d-review-row" style="display:none">
       <label>驗證結果</label>
@@ -229,7 +243,16 @@ onSnapshot(issuesCol, snap => {
   snap.forEach(d => issues[d.id] = { id: d.id, ...d.data() });
   render(); updateStats();
   backfillPartLabels();
+  populateAssigneeDatalist();
 });
+
+// 負責人下拉建議：統計目前異常單裡最常出現的負責人姓名
+function populateAssigneeDatalist() {
+  const counts = {};
+  Object.values(issues).forEach(i => { if (i.assignedTo) counts[i.assignedTo] = (counts[i.assignedTo]||0) + 1; });
+  const names = Object.keys(counts).sort((a,b) => counts[b]-counts[a]).slice(0, 20);
+  document.getElementById("assignee-datalist").innerHTML = names.map(n => `<option value="${esc(n)}">`).join("");
+}
 
 // 舊資料的異常單建立時還沒有存機種/零件編號，補從對應的巡檢紀錄查回來
 async function backfillPartLabels() {
@@ -330,9 +353,12 @@ function renderTable(list) {
 
 // ── 詳情 Modal ──
 let detailId = null;
+let cmPhotos = [];
+
 window.openDetail = function(id) {
   detailId = id;
   const i = issues[id]; if (!i) return;
+  cmPhotos = (i.resolutionPhotoUrls || []).slice();
   document.getElementById("d-title").innerHTML = `<span class="badge badge-${i.severity}">${i.severity}</span> ${esc(areaLabel(i.areaId))}${partLabel(i) ? " ｜ " + esc(partLabel(i)) : ""}`;
   document.getElementById("d-meta").textContent = `回報人：${i.reportedBy || "—"}　回報時間：${fmtTime(i.reportedAt)}　狀態：${i.status}`;
   document.getElementById("d-desc").textContent = (i.itemName ? i.itemName + "：" : "") + (i.description || "");
@@ -350,10 +376,13 @@ window.openDetail = function(id) {
     cmRow.style.display = "none";
     cmInfoRow.style.display = "";
     document.getElementById("d-cm-info").textContent = i.countermeasure || "（未填寫）";
+    const infoPhotos = document.getElementById("d-cm-info-photos");
+    infoPhotos.innerHTML = cmPhotos.map(src => `<img src="${src}" onclick="openLightbox('${src}')">`).join("");
   } else {
     cmRow.style.display = "";
     cmInfoRow.style.display = "none";
     document.getElementById("d-countermeasure").value = i.countermeasure || "";
+    renderCmPhotos();
   }
 
   const reviewRow = document.getElementById("d-review-row");
@@ -388,8 +417,45 @@ window.saveAssigned = async function() {
   await updateDoc(doc(db, "pi_issues", detailId), { assignedTo: document.getElementById("d-assigned").value.trim() });
   showToast("✅ 已更新負責人");
 };
+
+function compressToBase64(file, maxPx, quality) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let w = img.width, h = img.height;
+      if (w > maxPx || h > maxPx) { if (w >= h) { h = Math.round(h*maxPx/w); w = maxPx; } else { w = Math.round(w*maxPx/h); h = maxPx; } }
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL("image/jpeg", quality));
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+function renderCmPhotos() {
+  document.getElementById("d-cm-photos").innerHTML = cmPhotos.map((src, i) => `
+    <div class="photo-thumb-wrap">
+      <img src="${src}" onclick="openLightbox('${src}')">
+      <button class="photo-del" onclick="removeCmPhoto(${i})">✕</button>
+    </div>`).join("");
+}
+window.onCmPhotoSelect = async function(input) {
+  const file = input.files[0]; input.value = "";
+  if (!file) return;
+  if (cmPhotos.length >= 3) { showToast("⚠️ 改善對策最多上傳 3 張照片"); return; }
+  cmPhotos.push(await compressToBase64(file, 640, 0.6));
+  renderCmPhotos();
+};
+window.removeCmPhoto = function(i) { cmPhotos.splice(i, 1); renderCmPhotos(); };
+
 window.saveCountermeasure = async function() {
-  await updateDoc(doc(db, "pi_issues", detailId), { countermeasure: document.getElementById("d-countermeasure").value.trim() });
+  await updateDoc(doc(db, "pi_issues", detailId), {
+    countermeasure: document.getElementById("d-countermeasure").value.trim(),
+    resolutionPhotoUrls: cmPhotos,
+  });
   showToast("✅ 已儲存改善對策");
 };
 window.advanceStatus = async function(status) {
@@ -400,7 +466,7 @@ window.advanceStatus = async function(status) {
 window.markForReview = async function() {
   const cm = document.getElementById("d-countermeasure").value.trim();
   if (!cm) { showToast("⚠️ 請先填寫改善對策才能標記待複檢"); return; }
-  await updateDoc(doc(db, "pi_issues", detailId), { status: "待複檢（待主管簽核）", countermeasure: cm });
+  await updateDoc(doc(db, "pi_issues", detailId), { status: "待複檢（待主管簽核）", countermeasure: cm, resolutionPhotoUrls: cmPhotos });
   showToast("✅ 已標記待複檢");
   closeDetail();
 };

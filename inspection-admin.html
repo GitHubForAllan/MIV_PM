@@ -123,7 +123,7 @@
       <button class="tab-btn" data-tab="templates" onclick="setTab('templates')">📋 巡檢清單管理</button>
     </div>
     <button class="btn btn-outline" onclick="importSeed()">📥 匯入初始站點與清單</button>
-    <button class="btn btn-outline" onclick="importModelSeed()">📥 匯入機種清單範本（BU25VS/BR25VS）</button>
+    <button class="btn btn-outline" onclick="importModelSeed()">📥 匯入機種清單範本（BU25VS/BR25VS/TM25VS）</button>
   </div>
 
   <!-- 站點管理 -->
@@ -379,10 +379,12 @@ function renderTplPanel() {
 function renderItemRows() {
   const wrap = document.getElementById("item-rows");
   if (!editingItems.length) { wrap.innerHTML = `<div style="text-align:center;color:var(--text-soft);padding:20px;font-size:.85rem">尚無項目，點擊右上「＋ 新增項目」開始建立</div>`; return; }
-  wrap.innerHTML = editingItems.map((it, i) => `
+  wrap.innerHTML = editingItems.map((it, i) => {
+    const catOptions = CATS.includes(it.category) ? CATS : [...CATS, it.category];
+    return `
     <div class="item-edit-row">
       <input value="${esc(it.itemName)}" placeholder="項目名稱" oninput="setItemField(${i},'itemName',this.value)">
-      <select onchange="setItemField(${i},'category',this.value)">${CATS.map(c=>`<option value="${c}" ${it.category===c?'selected':''}>${c}</option>`).join('')}</select>
+      <select onchange="setItemField(${i},'category',this.value)">${catOptions.map(c=>`<option value="${esc(c)}" ${it.category===c?'selected':''}>${esc(c)}</option>`).join('')}</select>
       <select onchange="setItemField(${i},'inputType',this.value,true)">${ITYPES.map(([v,l])=>`<option value="${v}" ${it.inputType===v?'selected':''}>${l}</option>`).join('')}</select>
       <select title="標記異常時預設帶入的等級，巡檢人員仍可改選" onchange="setItemField(${i},'defaultSeverity',this.value||null)">${SEVS.map(([v,l])=>`<option value="${v}" ${(it.defaultSeverity||'')===v?'selected':''}>${l}</option>`).join('')}</select>
       <input value="${esc(it.unit||'')}" placeholder="單位" oninput="setItemField(${i},'unit',this.value||null)">
@@ -394,7 +396,8 @@ function renderItemRows() {
         <button onclick="moveItemRow(${i},1)" title="下移" ${i===editingItems.length-1?'disabled':''}>↓</button>
       </div>
       <button class="rm" onclick="removeItemRow(${i})" title="移除">🗑️</button>
-    </div>`).join("");
+    </div>`;
+  }).join("");
 }
 window.setItemField = function(i, field, value, rerender) {
   if (!editingItems[i]) return;
@@ -458,7 +461,7 @@ window.importSeed = async function() {
 
 // ══════════════ 匯入機種清單範本 ══════════════
 window.importModelSeed = async function() {
-  if (!confirm("將從 inspection_model_seed.json 匯入 BU25VS / BR25VS 機種清單範本（依你提供的巡檢表整理），已存在同機種名稱的清單將跳過。是否繼續？")) return;
+  if (!confirm("將從 inspection_model_seed.json 匯入 BU25VS / BR25VS / TM25VS 機種清單範本（依你提供的巡檢表整理），已存在同機種名稱的清單將跳過。是否繼續？")) return;
   try {
     const seed = await (await fetch("inspection_model_seed.json")).json();
     let created = 0, skipped = 0;

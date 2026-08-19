@@ -377,12 +377,13 @@ function renderItems() {
   (currentTemplate.items || []).forEach(item => {
     itemStates[item.itemId] = { value: null, isAbnormal: null, desc: "", severity: item.defaultSeverity || "MI", photos: [] };
   });
-  const cats = ["製程參數", "品質抽檢", "自主檢查"];
-  const byCat = {}; cats.forEach(c => byCat[c] = []);
-  (currentTemplate.items || []).forEach(it => (byCat[it.category] || (byCat[it.category] = [])).push(it));
+  const knownCats = ["製程參數", "品質抽檢", "自主檢查"];
+  const byCat = {};
+  (currentTemplate.items || []).forEach(it => { const c = it.category || "其他"; (byCat[c] || (byCat[c] = [])).push(it); });
+  const order = [...knownCats.filter(c => byCat[c]), ...Object.keys(byCat).filter(c => !knownCats.includes(c))];
 
   let html = "";
-  cats.filter(c => byCat[c] && byCat[c].length).forEach(cat => {
+  order.forEach(cat => {
     html += `<div class="cat-header">${esc(cat)}</div>`;
     byCat[cat].forEach(item => { html += renderItemRow(item); });
   });

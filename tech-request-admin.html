@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="zh-Hant" data-page-key="tech-request-admin">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>技術課委託系統 — 後台管理</title>
+<link rel="stylesheet" href="styles.css?v=21">
+<style>
+  :root { color-scheme: light; }
+  body { padding: 24px; }
+  .wrap { width: min(1000px, 100%); margin: 0 auto; }
+  .page-title { font-size: 1.5rem; font-weight: 800; margin: 0 0 4px; }
+  .page-title .vi { display:block; font-size: .6em; font-weight: 500; color: var(--muted); font-style: italic; }
+  .page-sub { color: var(--muted); font-size: .88rem; margin: 0 0 24px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+    padding: 20px 22px; margin-bottom: 24px; box-shadow: var(--shadow);
+  }
+  .card h2 { font-size: 1.05rem; margin: 0 0 4px; }
+  .card h2 .vi { font-size: .65em; font-weight: 500; color: var(--muted); font-style: italic; margin-left: 8px; }
+  .card .card-sub { color: var(--muted); font-size: .8rem; margin: 0 0 14px; }
+  .add-grid { display: grid; grid-template-columns: repeat(3, 1fr) auto; gap: 10px; align-items: end; }
+  .add-grid.cols4 { grid-template-columns: repeat(4, 1fr) auto; }
+  .field label { display: block; font-size: .78rem; color: var(--muted); margin-bottom: 5px; }
+  .field input, .field select {
+    width: 100%; padding: 9px 10px; border: 1px solid var(--line-strong); border-radius: 7px;
+    font-size: .88rem; background: #fff; color: var(--text);
+  }
+  .btn { padding: 9px 18px; border: 0; border-radius: 7px; font-size: .88rem; font-weight: 700; cursor: pointer; }
+  .btn-primary { background: var(--blue); color: #fff; }
+  .btn-primary:hover { background: var(--blue-dark); }
+  .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-ghost { background: #edf3f7; color: var(--text); }
+  .btn-danger { background: #fee9e9; color: #ad2727; }
+  table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+  th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; }
+  th { color: var(--muted); font-weight: 700; font-size: .78rem; text-transform: uppercase; }
+  .row-msg { font-size: .78rem; margin-top: 2px; min-height: 1em; }
+  .empty-state { text-align: center; color: var(--muted); padding: 30px 0; }
+  #denied, #loading { text-align: center; padding: 80px 20px; color: var(--muted); }
+  .hidden { display: none !important; }
+  .rate-row { display: flex; gap: 10px; align-items: end; }
+  .rate-row .field { max-width: 220px; }
+  .staff-tag { display: inline-flex; align-items: center; gap: 6px; background: #edf3f7; border-radius: 999px; padding: 5px 6px 5px 12px; font-size: .82rem; margin: 3px 6px 3px 0; }
+  .staff-tag button { border: none; background: #dbe4ea; color: #465262; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; font-size: .72rem; }
+</style>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
+</head>
+<body>
+
+<div id="loading">載入中…</div>
+
+<div id="denied" class="hidden">
+  <p style="font-size:1.1rem;font-weight:700;color:var(--text)">權限不足</p>
+  <p>此頁僅限管理員（admin）使用，請聯絡系統管理員指派權限。</p>
+  <p><a href="index.html">← 返回首頁</a></p>
+</div>
+
+<div class="wrap hidden" id="app">
+  <p class="page-title">技術課委託系統 — 後台管理<span class="vi">Hệ thống Ủy thác Phòng Kỹ thuật — Quản trị</span></p>
+  <p class="page-sub"><a href="tech-request.html">← 返回委託單列表</a></p>
+
+  <div class="card">
+    <h2>工時單價設定<span class="vi">Đơn giá giờ công</span></h2>
+    <p class="card-sub">用於自動計算每筆委託單的「工時成本」（工作總工時 × 工時單價）。修改後僅影響之後新完成的委託單，已完成單不受影響。</p>
+    <div class="rate-row">
+      <div class="field">
+        <label>工時單價（每小時）</label>
+        <input type="number" min="0" id="rate-input">
+      </div>
+      <button class="btn btn-primary" id="btn-save-rate">儲存</button>
+      <p class="row-msg" id="rate-msg"></p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>技術課受理人員<span class="vi">Nhân viên Phòng Kỹ thuật</span></h2>
+    <p class="card-sub">只有列在此清單中的使用者（或 admin）能夠在系統中「受理」與「標記完成」委託單。</p>
+    <div class="add-grid">
+      <div class="field">
+        <label>選擇使用者</label>
+        <select id="staff-select"><option value="">請選擇…</option></select>
+      </div>
+      <div style="grid-column: span 2"></div>
+      <button class="btn btn-primary" id="btn-add-staff">新增</button>
+    </div>
+    <p class="row-msg" id="staff-msg"></p>
+    <div id="staff-list" style="margin-top:14px"></div>
+  </div>
+
+  <div class="card">
+    <h2>委託類別<span class="vi">Loại ủy thác</span></h2>
+    <p class="card-sub">委託人填寫委託單時可選擇的類別選項。「排序」數字越小越前面。刪除類別不會影響已經送出的委託單，那些單仍會顯示當初填寫的類別。</p>
+    <div class="add-grid cols4">
+      <div class="field"><label>類別名稱（中文）</label><input id="add-cat-name" placeholder="例：加工"></div>
+      <div class="field"><label>類別名稱（越文，選填）</label><input id="add-cat-nameVi" placeholder="例：Gia công"></div>
+      <div class="field"><label>排序</label><input type="number" id="add-cat-order" placeholder="例：1"></div>
+      <div></div>
+      <button class="btn btn-primary" id="btn-add-cat">新增</button>
+    </div>
+    <p class="row-msg" id="cat-msg"></p>
+    <table style="margin-top:14px">
+      <thead><tr><th>類別名稱</th><th>越文名稱</th><th style="width:90px">排序</th><th style="width:100px">操作</th></tr></thead>
+      <tbody id="cat-rows"></tbody>
+    </table>
+    <div class="empty-state hidden" id="cat-empty">
+      尚未設定任何委託類別，委託人將無法送出委託單。
+      <div style="margin-top:12px"><button class="btn btn-ghost" id="btn-seed-cat">建立預設類別（加工／製造／創新／新產品／其它）</button></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>委託單位與簽核主管對照表<span class="vi">Đơn vị ủy thác &amp; Quản lý ký duyệt</span></h2>
+    <p class="card-sub">委託人送出委託單時可選擇的「委託單位」清單；每個單位需指定一位簽核主管，委託單送出後會通知該主管簽核。</p>
+    <div class="add-grid cols4">
+      <div class="field"><label>單位名稱（中文）</label><input id="add-dept-name" placeholder="例：生產一課"></div>
+      <div class="field"><label>單位名稱（越文，選填）</label><input id="add-dept-nameVi" placeholder="例：Sản xuất 1"></div>
+      <div class="field">
+        <label>簽核主管</label>
+        <select id="add-dept-supervisor"><option value="">請選擇…</option></select>
+      </div>
+      <div></div>
+      <button class="btn btn-primary" id="btn-add-dept">新增</button>
+    </div>
+    <p class="row-msg" id="dept-msg"></p>
+    <table style="margin-top:14px">
+      <thead><tr><th>單位名稱</th><th>越文名稱</th><th>簽核主管</th><th style="width:100px">操作</th></tr></thead>
+      <tbody id="dept-rows"></tbody>
+    </table>
+    <div class="empty-state hidden" id="dept-empty">尚未設定任何委託單位。</div>
+  </div>
+</div>
+
+<script type="module">
+import { mivAuthReady } from "./auth-guard.js?v=2";
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs",
+  authDomain: "miv-1426c.firebaseapp.com",
+  projectId: "miv-1426c",
+  storageBucket: "miv-1426c.firebasestorage.app",
+  messagingSenderId: "398934341623",
+  appId: "1:398934341623:web:4af46c057d2e202855a0f2"
+};
+const fbApp = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+const db = getFirestore(fbApp);
+const usersCol = collection(db, "users");
+const deptCol = collection(db, "treq_departments");
+const catCol = collection(db, "treq_categories");
+const configRef = doc(db, "treq_meta", "config");
+
+function esc(s) {
+  return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+// 登入驗證若遲遲沒回應（例如直接以檔案方式開啟頁面、模組載入失敗），
+// 頁面會永遠停在「載入中…」，因此逾時後主動顯示原因。
+const authTimer = setTimeout(() => {
+  const el = document.getElementById("loading");
+  el.style.color = "#ad2727";
+  el.innerHTML = "⚠️ 無法完成登入驗證，頁面無法載入。<br>請確認是透過系統網址開啟此頁（不能直接開啟本機 HTML 檔案），並確認已登入。<br>" +
+    "<span style='font-size:.85em;font-style:italic'>Không thể xác thực đăng nhập. Vui lòng mở trang qua địa chỉ hệ thống và đăng nhập.</span>";
+}, 8000);
+
+mivAuthReady.then(user => {
+  clearTimeout(authTimer);
+  document.getElementById("loading").classList.add("hidden");
+  if (user.role !== "admin") {
+    document.getElementById("denied").classList.remove("hidden");
+    return;
+  }
+  document.getElementById("app").classList.remove("hidden");
+  initPage();
+});
+
+function initPage() {
+  let users = {};
+  let config = { hourlyRate: 0, techStaff: [] };
+  let departments = {};
+  let categories = {};
+
+  function userOptionsHtml() {
+    const list = Object.values(users).sort((a,b) => (a.employeeId||"").localeCompare(b.employeeId||""));
+    return `<option value="">請選擇…</option>` + list.map(u =>
+      `<option value="${esc(u.uid)}">${esc(u.employeeId||u.uid)}${u.name ? " － " + esc(u.name) : ""}</option>`).join("");
+  }
+
+  const onDbError = target => err => {
+    const el = document.getElementById(target);
+    el.style.color = "#ad2727";
+    el.textContent = "讀取資料失敗：" + err.message;
+  };
+
+  onSnapshot(usersCol, snap => {
+    users = {};
+    snap.forEach(d => users[d.id] = { uid: d.id, ...d.data() });
+    document.getElementById("staff-select").innerHTML = userOptionsHtml();
+    const deptSupEl = document.getElementById("add-dept-supervisor");
+    const keep = deptSupEl.value;
+    deptSupEl.innerHTML = userOptionsHtml();
+    deptSupEl.value = keep;
+    renderDeptRows();
+  }, onDbError("staff-msg"));
+
+  onSnapshot(configRef, snap => {
+    config = snap.exists() ? snap.data() : { hourlyRate: 0, techStaff: [] };
+    document.getElementById("rate-input").value = config.hourlyRate ?? "";
+    renderStaffList();
+  }, onDbError("rate-msg"));
+
+  onSnapshot(deptCol, snap => {
+    departments = {};
+    snap.forEach(d => departments[d.id] = { id: d.id, ...d.data() });
+    renderDeptRows();
+  }, onDbError("dept-msg"));
+
+  onSnapshot(catCol, snap => {
+    categories = {};
+    snap.forEach(d => categories[d.id] = { id: d.id, ...d.data() });
+    renderCatRows();
+  }, onDbError("cat-msg"));
+
+  document.getElementById("btn-save-rate").addEventListener("click", async () => {
+    const val = Number(document.getElementById("rate-input").value);
+    const msgEl = document.getElementById("rate-msg");
+    if (!(val >= 0)) { msgEl.style.color = "#ad2727"; msgEl.textContent = "請輸入有效金額"; return; }
+    try {
+      await setDoc(configRef, { hourlyRate: val }, { merge: true });
+      msgEl.style.color = "#20a66a"; msgEl.textContent = "✓ 已儲存";
+      setTimeout(() => msgEl.textContent = "", 2500);
+    } catch (e) {
+      msgEl.style.color = "#ad2727"; msgEl.textContent = "儲存失敗：" + e.message;
+    }
+  });
+
+  function renderStaffList() {
+    const staff = config.techStaff || [];
+    const listEl = document.getElementById("staff-list");
+    if (!staff.length) { listEl.innerHTML = `<p class="empty-state">尚未指定技術課受理人員。</p>`; return; }
+    listEl.innerHTML = staff.map((s, i) =>
+      `<span class="staff-tag">${esc(s.employeeId||"")}${s.name ? " － " + esc(s.name) : ""}<button data-i="${i}">✕</button></span>`).join("");
+    listEl.querySelectorAll("button[data-i]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const i = Number(btn.dataset.i);
+        const next = staff.slice(); next.splice(i, 1);
+        await setDoc(configRef, { techStaff: next }, { merge: true });
+      });
+    });
+  }
+
+  document.getElementById("btn-add-staff").addEventListener("click", async () => {
+    const uid = document.getElementById("staff-select").value;
+    const msgEl = document.getElementById("staff-msg");
+    if (!uid) { msgEl.style.color = "#ad2727"; msgEl.textContent = "請選擇使用者"; return; }
+    const u = users[uid];
+    const staff = config.techStaff || [];
+    if (staff.some(s => s.uid === uid)) { msgEl.style.color = "#ad2727"; msgEl.textContent = "此使用者已在清單中"; return; }
+    try {
+      await setDoc(configRef, { techStaff: [...staff, { uid, employeeId: u?.employeeId || "", name: u?.name || "" }] }, { merge: true });
+      msgEl.style.color = "#20a66a"; msgEl.textContent = "✓ 已新增";
+      document.getElementById("staff-select").value = "";
+      setTimeout(() => msgEl.textContent = "", 2500);
+    } catch (e) {
+      msgEl.style.color = "#ad2727"; msgEl.textContent = "新增失敗：" + e.message;
+    }
+  });
+
+  // ── 委託類別 ──
+  function sortedCats() {
+    return Object.values(categories).sort((a, b) =>
+      (a.order ?? 999) - (b.order ?? 999) || (a.name || "").localeCompare(b.name || ""));
+  }
+
+  function renderCatRows() {
+    const list = sortedCats();
+    const rowsEl = document.getElementById("cat-rows");
+    document.getElementById("cat-empty").classList.toggle("hidden", list.length > 0);
+    rowsEl.innerHTML = list.map(c => `
+      <tr data-id="${esc(c.id)}">
+        <td><input class="f-name" value="${esc(c.name||"")}" style="width:130px;padding:5px 7px;border:1px solid var(--line-strong);border-radius:5px"></td>
+        <td><input class="f-nameVi" value="${esc(c.nameVi||"")}" style="width:150px;padding:5px 7px;border:1px solid var(--line-strong);border-radius:5px"></td>
+        <td><input class="f-order" type="number" value="${c.order ?? ""}" style="width:70px;padding:5px 7px;border:1px solid var(--line-strong);border-radius:5px"></td>
+        <td style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-save" style="padding:6px 12px;font-size:.78rem">儲存</button>
+          <button class="btn btn-danger btn-del" style="padding:6px 12px;font-size:.78rem">刪除</button>
+        </td>
+      </tr>
+      <tr><td colspan="4" style="border:none;padding:0 8px"><p class="row-msg"></p></td></tr>
+    `).join("");
+
+    rowsEl.querySelectorAll("tr[data-id]").forEach(tr => {
+      const id = tr.dataset.id;
+      const msgEl = tr.nextElementSibling.querySelector(".row-msg");
+      tr.querySelector(".btn-save").addEventListener("click", async () => {
+        const name = tr.querySelector(".f-name").value.trim();
+        const nameVi = tr.querySelector(".f-nameVi").value.trim();
+        const orderRaw = tr.querySelector(".f-order").value;
+        if (!name) { msgEl.style.color = "#ad2727"; msgEl.textContent = "類別名稱不可為空"; return; }
+        try {
+          await setDoc(doc(db, "treq_categories", id),
+            { name, nameVi, order: orderRaw === "" ? null : Number(orderRaw) }, { merge: true });
+          msgEl.style.color = "#20a66a"; msgEl.textContent = "✓ 已儲存";
+          setTimeout(() => msgEl.textContent = "", 2500);
+        } catch (e) {
+          msgEl.style.color = "#ad2727"; msgEl.textContent = "儲存失敗：" + e.message;
+        }
+      });
+      tr.querySelector(".btn-del").addEventListener("click", async () => {
+        if (!confirm(`確定要刪除類別「${categories[id]?.name || id}」嗎？\n已送出的委託單不受影響，仍會顯示原本填寫的類別。`)) return;
+        try { await deleteDoc(doc(db, "treq_categories", id)); }
+        catch (e) { msgEl.style.color = "#ad2727"; msgEl.textContent = "刪除失敗：" + e.message; }
+      });
+    });
+  }
+
+  document.getElementById("btn-add-cat").addEventListener("click", async () => {
+    const name = document.getElementById("add-cat-name").value.trim();
+    const nameVi = document.getElementById("add-cat-nameVi").value.trim();
+    const orderRaw = document.getElementById("add-cat-order").value;
+    const msgEl = document.getElementById("cat-msg");
+    if (!name) { msgEl.style.color = "#ad2727"; msgEl.textContent = "請輸入類別名稱"; return; }
+    if (Object.values(categories).some(c => c.name === name)) {
+      msgEl.style.color = "#ad2727"; msgEl.textContent = "已有同名的類別"; return;
+    }
+    const btn = document.getElementById("btn-add-cat");
+    btn.disabled = true;
+    try {
+      await setDoc(doc(catCol), {
+        name, nameVi,
+        order: orderRaw === "" ? Object.keys(categories).length + 1 : Number(orderRaw),
+      });
+      msgEl.style.color = "#20a66a"; msgEl.textContent = "✓ 已新增";
+      document.getElementById("add-cat-name").value = "";
+      document.getElementById("add-cat-nameVi").value = "";
+      document.getElementById("add-cat-order").value = "";
+      setTimeout(() => msgEl.textContent = "", 2500);
+    } catch (e) {
+      msgEl.style.color = "#ad2727"; msgEl.textContent = "新增失敗：" + e.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById("btn-seed-cat").addEventListener("click", async () => {
+    const msgEl = document.getElementById("cat-msg");
+    const defaults = [
+      { name: "加工", nameVi: "Gia công", order: 1 },
+      { name: "製造", nameVi: "Chế tạo", order: 2 },
+      { name: "創新", nameVi: "Sáng tạo", order: 3 },
+      { name: "新產品", nameVi: "Sản phẩm mới", order: 4 },
+      { name: "其它", nameVi: "Khác", order: 5 },
+    ];
+    const btn = document.getElementById("btn-seed-cat");
+    btn.disabled = true;
+    try {
+      for (const c of defaults) await setDoc(doc(catCol), c);
+      msgEl.style.color = "#20a66a"; msgEl.textContent = "✓ 已建立預設類別";
+      setTimeout(() => msgEl.textContent = "", 2500);
+    } catch (e) {
+      msgEl.style.color = "#ad2727"; msgEl.textContent = "建立失敗：" + e.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  function renderDeptRows() {
+    const list = Object.values(departments).sort((a,b) => (a.name||"").localeCompare(b.name||""));
+    const rowsEl = document.getElementById("dept-rows");
+    document.getElementById("dept-empty").classList.toggle("hidden", list.length > 0);
+    rowsEl.innerHTML = list.map(d => `
+      <tr data-id="${esc(d.id)}">
+        <td><input class="f-name" value="${esc(d.name||"")}" style="width:130px;padding:5px 7px;border:1px solid var(--line-strong);border-radius:5px"></td>
+        <td><input class="f-nameVi" value="${esc(d.nameVi||"")}" style="width:150px;padding:5px 7px;border:1px solid var(--line-strong);border-radius:5px"></td>
+        <td><select class="f-sup" style="padding:5px 7px;border:1px solid var(--line-strong);border-radius:5px">${userOptionsHtml()}</select></td>
+        <td style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-save" style="padding:6px 12px;font-size:.78rem">儲存</button>
+          <button class="btn btn-danger btn-del" style="padding:6px 12px;font-size:.78rem">刪除</button>
+        </td>
+      </tr>
+      <tr><td colspan="4" style="border:none;padding:0 8px"><p class="row-msg"></p></td></tr>
+    `).join("");
+    rowsEl.querySelectorAll("tr[data-id]").forEach(tr => {
+      const id = tr.dataset.id;
+      tr.querySelector(".f-sup").value = departments[id].supervisorUid || "";
+      const msgEl = tr.nextElementSibling.querySelector(".row-msg");
+      tr.querySelector(".btn-save").addEventListener("click", async () => {
+        const name = tr.querySelector(".f-name").value.trim();
+        const nameVi = tr.querySelector(".f-nameVi").value.trim();
+        const supervisorUid = tr.querySelector(".f-sup").value;
+        if (!name) { msgEl.style.color = "#ad2727"; msgEl.textContent = "單位名稱不可為空"; return; }
+        if (!supervisorUid) { msgEl.style.color = "#ad2727"; msgEl.textContent = "請指定簽核主管"; return; }
+        const su = users[supervisorUid];
+        try {
+          await setDoc(doc(db, "treq_departments", id), {
+            name, nameVi, supervisorUid, supervisorName: su ? (su.name || su.employeeId) : ""
+          }, { merge: true });
+          msgEl.style.color = "#20a66a"; msgEl.textContent = "✓ 已儲存";
+          setTimeout(() => msgEl.textContent = "", 2500);
+        } catch (e) {
+          msgEl.style.color = "#ad2727"; msgEl.textContent = "儲存失敗：" + e.message;
+        }
+      });
+      tr.querySelector(".btn-del").addEventListener("click", async () => {
+        if (!confirm(`確定要刪除「${departments[id]?.name || id}」嗎？`)) return;
+        try { await deleteDoc(doc(db, "treq_departments", id)); }
+        catch (e) { msgEl.style.color = "#ad2727"; msgEl.textContent = "刪除失敗：" + e.message; }
+      });
+    });
+  }
+
+  document.getElementById("btn-add-dept").addEventListener("click", async () => {
+    const name = document.getElementById("add-dept-name").value.trim();
+    const nameVi = document.getElementById("add-dept-nameVi").value.trim();
+    const supervisorUid = document.getElementById("add-dept-supervisor").value;
+    const msgEl = document.getElementById("dept-msg");
+    if (!name) { msgEl.style.color = "#ad2727"; msgEl.textContent = "請輸入單位名稱"; return; }
+    if (!supervisorUid) { msgEl.style.color = "#ad2727"; msgEl.textContent = "請指定簽核主管"; return; }
+    const su = users[supervisorUid];
+    const btn = document.getElementById("btn-add-dept");
+    btn.disabled = true;
+    try {
+      const newDoc = doc(deptCol);
+      await setDoc(newDoc, { name, nameVi, supervisorUid, supervisorName: su ? (su.name || su.employeeId) : "" });
+      msgEl.style.color = "#20a66a"; msgEl.textContent = "✓ 已新增";
+      document.getElementById("add-dept-name").value = "";
+      document.getElementById("add-dept-nameVi").value = "";
+      document.getElementById("add-dept-supervisor").value = "";
+      setTimeout(() => msgEl.textContent = "", 2500);
+    } catch (e) {
+      msgEl.style.color = "#ad2727"; msgEl.textContent = "新增失敗：" + e.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+}
+</script>
+</body>
+</html>

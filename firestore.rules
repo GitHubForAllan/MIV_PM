@@ -1,0 +1,130 @@
+rules_version = '2';
+
+// 越南力山工業 廠務系統 — Firestore 安全規則
+//
+// 原則：預設全部拒絕，逐一開放實際用到的集合。
+// 例外（維持免登入，配合現場使用方式）：
+//   - andon/config      安燈看板（andon.html）在產線電視牆上唯讀顯示
+//   - issues            問題反映（issue-report.html）現場直接回報
+// 其餘所有集合一律需要登入；管理者專屬的設定資料僅限 admin 寫入。
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── 共用判斷式 ──────────────────────────────────────────────
+    function signedIn() {
+      return request.auth != null;
+    }
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ── 使用者角色表 ────────────────────────────────────────────
+    // 登入者可讀（各系統需依角色決定可用功能），但只有管理員能改角色，
+    // 避免任何人把自己升級成 admin。
+    match /users/{uid} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    // ── 安燈系統 ────────────────────────────────────────────────
+    // andon/config 需給電視牆看板（andon.html，無登入）唯讀；
+    // 寫入與其他文件一律需登入。
+    match /andon/{docId} {
+      allow read: if signedIn() || docId == 'config';
+      allow write: if signedIn();
+    }
+    match /andon-logs/{logId} {
+      allow read, write: if signedIn();
+    }
+
+    // ── 問題反映系統 ────────────────────────────────────────────
+    // issue-report.html 目前為免登入現場回報，維持原行為。
+    match /issues/{issueId} {
+      allow read, write: if true;
+    }
+
+    // ── 工具室系統 ──────────────────────────────────────────────
+    match /toolroom_items/{itemId} {
+      allow read, write: if signedIn();
+    }
+    match /toolroom_requisitions/{reqId} {
+      allow read, write: if signedIn();
+    }
+
+    // ── 校驗管理 ────────────────────────────────────────────────
+    match /calibration_assets/{assetId} {
+      allow read, write: if signedIn();
+    }
+
+    // ── 製程巡檢系統 ────────────────────────────────────────────
+    match /pi_areas/{areaId} {
+      allow read, write: if signedIn();
+    }
+    match /pi_checklist_templates/{templateId} {
+      allow read, write: if signedIn();
+    }
+    match /pi_inspection_records/{recordId} {
+      allow read, write: if signedIn();
+    }
+    match /pi_issues/{issueId} {
+      allow read, write: if signedIn();
+    }
+
+    // ── 裝櫃計算工具 ────────────────────────────────────────────
+    match /containerModels/{modelId} {
+      allow read, write: if signedIn();
+    }
+
+    // ── 技術課委託管理系統 ──────────────────────────────────────
+    // 委託單位與簽核主管對照表：登入者可讀（送單要選單位），僅管理員可維護
+    match /treq_departments/{deptId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    // 委託類別：登入者可讀（填單要選類別），僅管理員可維護
+    match /treq_categories/{catId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    // 工時單價與技術課受理人員：登入者可讀（前台要用單價算成本），僅管理員可改
+    match /treq_meta/config {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    // 單號流水號：每位委託人送單時都要遞增，因此開放登入者寫入，
+    // 但限制只能有 seq 一個欄位，避免被塞入其他資料。
+    match /treq_meta/counter {
+      allow read: if signedIn();
+      allow write: if signedIn()
+        && request.resource.data.keys().hasOnly(['seq'])
+        && request.resource.data.seq is number;
+    }
+
+    // 委託單
+    match /treq_requests/{reqId} {
+      allow read: if signedIn();
+
+      // 只能以自己的名義建單，且必須從「待主管簽核」開始
+      allow create: if signedIn()
+        && request.resource.data.requesterUid == request.auth.uid
+        && request.resource.data.status == 'pending_approval';
+
+      // 單號與委託人不可被竄改
+      allow update: if signedIn()
+        && request.resource.data.no == resource.data.no
+        && request.resource.data.requesterUid == resource.data.requesterUid;
+
+      // 撤回：限本人且尚未簽核／已被退回；管理員可刪
+      allow delete: if isAdmin()
+        || (signedIn()
+            && resource.data.requesterUid == request.auth.uid
+            && resource.data.status in ['pending_approval', 'rejected']);
+    }
+  }
+}

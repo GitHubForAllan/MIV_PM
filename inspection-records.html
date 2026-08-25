@@ -207,6 +207,8 @@ const piUser = await mivAuthReady;
 // 紀錄查詢：viewer／production／quality／admin 可看，工具室不可
 const CAN_VIEW_ROLES = ["viewer", "production", "quality", "admin"];
 const canView = CAN_VIEW_ROLES.includes(piUser.role);
+// 可執行巡檢作業者才顯示「返回巡檢」與「統計報表」
+const canInspect = piUser.role === "quality" || piUser.role === "admin";
 if (!canView) {
   document.getElementById("no-access").style.display = "";
 } else {
@@ -214,11 +216,20 @@ if (!canView) {
 }
 
 function renderNav() {
+  // 無檢視權限者只給返回首頁，其餘連結對他們同樣是死路
+  if (!canView) {
+    document.getElementById("nav-links").innerHTML =
+      `<a class="nav-link" href="index.html"><span>← 返回首頁</span><span class="vi">Trang chủ</span></a>`;
+    return;
+  }
   const links = [
-    `<a class="nav-link" href="inspection.html"><span>← 返回巡檢</span><span class="vi">Quay lại kiểm tra</span></a>`,
+    canInspect
+      ? `<a class="nav-link" href="inspection.html"><span>← 返回巡檢</span><span class="vi">Quay lại kiểm tra</span></a>`
+      : `<a class="nav-link" href="index.html"><span>← 返回首頁</span><span class="vi">Trang chủ</span></a>`,
     `<a class="nav-link" href="inspection-issues.html"><span>📋 異常追蹤</span><span class="vi">Theo dõi bất thường</span></a>`,
-    `<a class="nav-link" href="inspection-dashboard.html"><span>📊 統計報表</span><span class="vi">Báo cáo</span></a>`,
   ];
+  // 統計報表僅品保／管理員可用，其他角色不顯示連結避免點進去被擋
+  if (canInspect) links.push(`<a class="nav-link" href="inspection-dashboard.html"><span>📊 統計報表</span><span class="vi">Báo cáo</span></a>`);
   if (piUser.role === "admin") links.push(`<a class="nav-link" href="inspection-admin.html"><span>⚙ 後台管理</span><span class="vi">Quản trị</span></a>`);
   document.getElementById("nav-links").innerHTML = links.join("");
 }

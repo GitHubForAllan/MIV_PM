@@ -147,6 +147,12 @@ if (piUser.role !== "admin" && piUser.role !== "quality") {
   document.getElementById("dash-main").style.display = "";
 }
 function renderNav() {
+  // 統計報表僅品保／管理員可用，無權者只給返回首頁
+  if (piUser.role !== "admin" && piUser.role !== "quality") {
+    document.getElementById("nav-links").innerHTML =
+      `<a class="nav-link" href="index.html"><span>← 返回首頁</span><span class="vi">Trang chủ</span></a>`;
+    return;
+  }
   const links = [
     `<a class="nav-link" href="inspection.html"><span>← 返回巡檢</span><span class="vi">Quay lại kiểm tra</span></a>`,
     `<a class="nav-link" href="inspection-issues.html"><span>📋 異常追蹤</span><span class="vi">Theo dõi bất thường</span></a>`,

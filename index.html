@@ -46,7 +46,7 @@
           <span class="hub-tile-sub">Issue Report</span>
           <span class="hub-tile-desc">建築物問題回報<br><span class="vi">Báo cáo sự cố tòa nhà</span></span>
         </a>
-        <a href="calibration.html" class="hub-tile hub-tile--blue">
+        <a href="calibration.html" class="hub-tile hub-tile--blue" data-roles="viewer production quality admin">
           <span class="hub-tile-icon">
             <svg width="34" height="34" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect x="8" y="10" width="26" height="24" rx="3" fill="#ffffff" stroke="#1479b8" stroke-width="2.2"/>
@@ -71,7 +71,7 @@
           <span class="hub-tile-sub">Calibration</span>
           <span class="hub-tile-desc">儀器校驗排程與紀錄<br><span class="vi">Lịch hiệu chuẩn và hồ sơ thiết bị</span></span>
         </a>
-        <a href="inspection.html" class="hub-tile hub-tile--indigo">
+        <a href="inspection.html" class="hub-tile hub-tile--indigo" data-roles="viewer production quality admin">
           <span class="hub-tile-icon">🔍</span>
           <span class="hub-tile-name">製程巡檢系統</span>
           <span class="hub-tile-sub">Process Inspection</span>
@@ -117,5 +117,24 @@
         -->
       </section>
     </main>
+
+    <script type="module">
+      // 依角色隱藏無任何權限的系統入口，避免點進去才發現被擋。
+      // 有 data-roles 的磁磚只給列出的角色看；沒有的則所有角色皆可使用。
+      import { mivAuthReady } from "./auth-guard.js?v=2";
+      mivAuthReady.then(user => {
+        const role = user.role || "";
+        document.querySelectorAll(".hub-tile[data-roles]").forEach(tile => {
+          if (!tile.dataset.roles.split(" ").includes(role)) tile.style.display = "none";
+        });
+        if (!role) {
+          const warn = document.createElement("p");
+          warn.style.cssText = "max-width:820px;margin:0 auto 24px;padding:14px 18px;border-radius:12px;background:#fef3c7;color:#92400e;font-size:14px;text-align:center";
+          warn.innerHTML = "⚠️ 您的帳號尚未指派角色，多數系統將無法使用，請聯絡系統管理員。" +
+            "<br><span style='font-style:italic;font-size:.9em'>Tài khoản của bạn chưa được phân quyền, vui lòng liên hệ quản trị viên.</span>";
+          document.querySelector(".hub-grid").before(warn);
+        }
+      });
+    </script>
   </body>
 </html>

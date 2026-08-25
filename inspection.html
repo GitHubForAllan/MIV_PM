@@ -220,6 +220,13 @@ const issuesCol = collection(db, "pi_issues");
 // ── 登入檢查（共用工號登入，角色來自 users 集合）──
 const piUser = await mivAuthReady;
 if (piUser.role !== "quality" && piUser.role !== "admin") {
+  // 巡檢作業限品保／管理員。但 viewer 與 production 有紀錄查詢與異常追蹤的權限，
+  // 而首頁的巡檢入口指向本頁，直接擋掉會讓他們沒有任何路徑進入巡檢系統，
+  // 因此改為導向他們有權限的頁面。
+  if (piUser.role === "viewer" || piUser.role === "production") {
+    location.replace("inspection-records.html");
+    throw new Error("redirecting to inspection-records.html");
+  }
   document.body.innerHTML = `
     <div style="display:flex;align-items:center;justify-content:center;min-height:80vh;flex-direction:column;gap:10px;color:#374151;text-align:center;padding:24px">
       <p style="font-size:1.2rem;font-weight:700">權限不足</p>

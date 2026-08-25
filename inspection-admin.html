@@ -196,7 +196,8 @@ const areasCol = collection(db, "pi_areas");
 const templatesCol = collection(db, "pi_checklist_templates");
 
 const piUser = await mivAuthReady;
-if (piUser.role !== "admin" && piUser.role !== "quality") {
+// 巡檢後台管理：僅管理員（站點與表單範本的維護權限）
+if (piUser.role !== "admin") {
   document.getElementById("no-access").style.display = "";
 } else {
   document.getElementById("admin-main").style.display = "";

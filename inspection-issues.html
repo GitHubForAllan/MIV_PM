@@ -224,6 +224,19 @@ const recordsCol = collection(db, "pi_inspection_records");
 
 const piUser = await mivAuthReady;
 
+// 異常追蹤：viewer／production／quality／admin 可看，工具室不可
+if (!["viewer", "production", "quality", "admin"].includes(piUser.role)) {
+  document.body.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:center;min-height:80vh;flex-direction:column;gap:10px;color:#374151;text-align:center;padding:24px">
+      <p style="font-size:1.2rem;font-weight:700">權限不足</p>
+      <p style="color:#64748b">您的角色無權檢視巡檢異常追蹤，請聯絡系統管理員指派權限。<br>
+        <span style="font-style:italic;font-size:.9em">Vai trò của bạn không có quyền xem theo dõi bất thường, vui lòng liên hệ quản trị viên.</span></p>
+      <a href="index.html" style="color:#2563eb">← 返回首頁 / Trang chủ</a>
+      <button onclick="window.mivLogout()" style="margin-top:6px;padding:6px 16px;border:1px solid #cbd5e1;background:transparent;border-radius:8px;color:#64748b;cursor:pointer">登出 / Đăng xuất</button>
+    </div>`;
+  throw new Error("insufficient permission for inspection-issues.html");
+}
+
 function renderNav() {
   const links = [`<a class="nav-link" href="inspection.html"><span>← 返回巡檢</span><span class="vi">Quay lại kiểm tra</span></a>`];
   links.push(`<a class="nav-link" href="inspection-records.html"><span>📑 紀錄查詢</span><span class="vi">Tra cứu hồ sơ</span></a>`);

@@ -2,127 +2,183 @@ rules_version = '2';
 
 // 越南力山工業 廠務系統 — Firestore 安全規則
 //
-// 原則：預設全部拒絕，逐一開放實際用到的集合。
-// 例外（維持免登入，配合現場使用方式）：
-//   - andon/config      安燈看板（andon.html）在產線電視牆上唯讀顯示
-//   - issues            問題反映（issue-report.html）現場直接回報
-// 其餘所有集合一律需要登入；管理者專屬的設定資料僅限 admin 寫入。
+// 原則：預設全部拒絕，依「角色」逐一開放。
+// 角色來自 users/{uid}.role：viewer / production / toolroom / quality / admin
+// ※ 沒有 users 文件或沒有角色的帳號 = 沒有任何權限（安燈看板與問題反映除外）。
+//
+// 免登入例外（配合現場使用方式）：
+//   - andon/config  安燈看板（andon.html）在產線電視牆上唯讀顯示
+//   - issues        問題反映（issue-report.html）現場直接回報
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ── 共用判斷式 ──────────────────────────────────────────────
+    // ── 角色判斷 ────────────────────────────────────────────────
     function signedIn() {
       return request.auth != null;
     }
-    function isAdmin() {
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    function hasRole(roles) {
       return signedIn()
         && exists(/databases/$(database)/documents/users/$(request.auth.uid))
-        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+        && userDoc().role in roles;
     }
+    function isAdmin()    { return hasRole(['admin']); }
+    // 任何已指派角色的員工
+    function anyStaff()   { return hasRole(['viewer', 'production', 'toolroom', 'quality', 'admin']); }
+    // 排除工具室：校驗與巡檢相關資料
+    function nonToolroom(){ return hasRole(['viewer', 'production', 'quality', 'admin']); }
+    function isQuality()  { return hasRole(['quality', 'admin']); }
+    function isToolroom() { return hasRole(['toolroom', 'admin']); }
 
     // ── 使用者角色表 ────────────────────────────────────────────
-    // 登入者可讀（各系統需依角色決定可用功能），但只有管理員能改角色，
-    // 避免任何人把自己升級成 admin。
+    // 每個人都要能讀自己的角色（auth-guard 判斷可用功能）；
+    // 列出全部使用者僅限管理員；異動角色僅限管理員。
     match /users/{uid} {
-      allow read: if signedIn();
+      allow get:   if isAdmin() || (signedIn() && request.auth.uid == uid);
+      allow list:  if isAdmin();
       allow write: if isAdmin();
     }
 
     // ── 安燈系統 ────────────────────────────────────────────────
-    // andon/config 需給電視牆看板（andon.html，無登入）唯讀；
-    // 寫入與其他文件一律需登入。
-    match /andon/{docId} {
-      allow read: if signedIn() || docId == 'config';
-      allow write: if signedIn();
+    // andon/config：電視牆看板需免登入唯讀。
+    // 產線操作（觸發／解除異常）會改 lines.{id}.alert，開放所有角色；
+    // 但新增或刪除產線僅限管理員，因此非管理員寫入時產線清單必須維持不變。
+    match /andon/config {
+      allow read: if true;
+      allow write: if isAdmin()
+        || (anyStaff()
+            && resource.data.lines is map
+            && request.resource.data.lines is map
+            && request.resource.data.lines.keys().hasOnly(resource.data.lines.keys())
+            && resource.data.lines.keys().hasOnly(request.resource.data.lines.keys()));
     }
+    // PIN 碼（andon/auth）與棟別設定（andon/buildings）：僅管理員可讀寫
+    match /andon/{docId} {
+      allow read:  if isAdmin();
+      allow write: if isAdmin();
+    }
+    // 安燈異常紀錄：產線操作時建立與更新，所有角色皆可
     match /andon-logs/{logId} {
-      allow read, write: if signedIn();
+      allow read:   if anyStaff();
+      allow create: if anyStaff();
+      allow update: if anyStaff();
+      allow delete: if isAdmin();
     }
 
     // ── 問題反映系統 ────────────────────────────────────────────
-    // issue-report.html 目前為免登入現場回報，維持原行為。
+    // issue-report.html 為免登入現場回報，維持原行為。
     match /issues/{issueId} {
       allow read, write: if true;
     }
 
     // ── 工具室系統 ──────────────────────────────────────────────
+    // 庫存品項：所有人可檢視；新增／編輯／刪除／入出庫僅工具室與管理員
     match /toolroom_items/{itemId} {
-      allow read, write: if signedIn();
+      allow read:  if anyStaff();
+      allow write: if isToolroom();
     }
+    // 領用申請：所有人可檢視並提出申請；審核、修改、刪除僅工具室與管理員
     match /toolroom_requisitions/{reqId} {
-      allow read, write: if signedIn();
+      allow read:   if anyStaff();
+      allow create: if anyStaff();
+      allow update: if isToolroom();
+      allow delete: if isToolroom();
     }
 
     // ── 校驗管理 ────────────────────────────────────────────────
+    // 檢視不含工具室；新增／編輯／刪除／匯入僅品保與管理員
     match /calibration_assets/{assetId} {
-      allow read, write: if signedIn();
+      allow read:  if nonToolroom();
+      allow write: if isQuality();
     }
 
     // ── 製程巡檢系統 ────────────────────────────────────────────
+    // 站點：紀錄查詢與異常追蹤都需要讀；維護僅管理員（巡檢後台管理）
     match /pi_areas/{areaId} {
-      allow read, write: if signedIn();
+      allow read:  if nonToolroom();
+      allow write: if isAdmin();
     }
+    // 巡檢表單範本：僅巡檢作業會用到；維護僅管理員
     match /pi_checklist_templates/{templateId} {
-      allow read, write: if signedIn();
+      allow read:  if isQuality();
+      allow write: if isAdmin();
     }
+    // 巡檢紀錄：紀錄查詢可讀（不含工具室）；建立與修改僅品保與管理員
+    //
+    // ※ 「統計報表」與「紀錄查詢」讀的是同一批資料，規則無法分辨是哪一頁
+    //    發出的請求，因此資料庫層放行兩者的聯集，報表頁的限制維持在畫面層。
     match /pi_inspection_records/{recordId} {
-      allow read, write: if signedIn();
+      allow read:  if nonToolroom();
+      allow write: if isQuality();
     }
+    // 巡檢異常單
     match /pi_issues/{issueId} {
-      allow read, write: if signedIn();
+      allow read:   if nonToolroom();
+      // 異常單由巡檢作業產生
+      allow create: if isQuality();
+      allow delete: if isAdmin();
+      // 品保與管理員可完整更新（含簽核結案／退回）；
+      // 其他角色只能填負責人與改善對策，且不得將狀態改為已結案。
+      allow update: if isQuality()
+        || (nonToolroom()
+            && request.resource.data.diff(resource.data).affectedKeys()
+                 .hasOnly(['assignedTo', 'countermeasure', 'resolutionPhotoUrls', 'status'])
+            && request.resource.data.status in ['待處理', '改善中', '待複檢（待主管簽核）']);
     }
 
     // ── 裝櫃計算工具 ────────────────────────────────────────────
     match /containerModels/{modelId} {
-      allow read, write: if signedIn();
+      allow read, write: if anyStaff();
     }
 
     // ── 技術課委託管理系統 ──────────────────────────────────────
-    // 委託單位與簽核主管對照表：登入者可讀（送單要選單位），僅管理員可維護
+    // 委託單位與簽核主管對照表：所有人可讀（送單要選單位），僅管理員可維護
     match /treq_departments/{deptId} {
-      allow read: if signedIn();
+      allow read:  if anyStaff();
       allow write: if isAdmin();
     }
 
-    // 委託類別：登入者可讀（填單要選類別），僅管理員可維護
+    // 委託類別：所有人可讀（填單要選類別），僅管理員可維護
     match /treq_categories/{catId} {
-      allow read: if signedIn();
+      allow read:  if anyStaff();
       allow write: if isAdmin();
     }
 
-    // 工時單價與技術課受理人員：登入者可讀（前台要用單價算成本），僅管理員可改
+    // 工時單價與技術課受理人員：所有人可讀（前台要用單價算成本），僅管理員可改
     match /treq_meta/config {
-      allow read: if signedIn();
+      allow read:  if anyStaff();
       allow write: if isAdmin();
     }
 
-    // 單號流水號：每位委託人送單時都要遞增，因此開放登入者寫入，
+    // 單號流水號：每位委託人送單時都要遞增，因此所有角色皆可寫，
     // 但限制只能有 seq 一個欄位，避免被塞入其他資料。
     match /treq_meta/counter {
-      allow read: if signedIn();
-      allow write: if signedIn()
+      allow read: if anyStaff();
+      allow write: if anyStaff()
         && request.resource.data.keys().hasOnly(['seq'])
         && request.resource.data.seq is number;
     }
 
-    // 委託單
+    // 委託單：所有角色皆可檢視與送出；後續流程依身分（主管／技術課／本人）而非角色
     match /treq_requests/{reqId} {
-      allow read: if signedIn();
+      allow read: if anyStaff();
 
       // 只能以自己的名義建單，且必須從「待主管簽核」開始
-      allow create: if signedIn()
+      allow create: if anyStaff()
         && request.resource.data.requesterUid == request.auth.uid
         && request.resource.data.status == 'pending_approval';
 
       // 單號與委託人不可被竄改
-      allow update: if signedIn()
+      allow update: if anyStaff()
         && request.resource.data.no == resource.data.no
         && request.resource.data.requesterUid == resource.data.requesterUid;
 
       // 撤回：限本人且尚未簽核／已被退回；管理員可刪
       allow delete: if isAdmin()
-        || (signedIn()
+        || (anyStaff()
             && resource.data.requesterUid == request.auth.uid
             && resource.data.status in ['pending_approval', 'rejected']);
     }

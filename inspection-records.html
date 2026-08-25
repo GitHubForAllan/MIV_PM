@@ -163,7 +163,7 @@
   <div class="empty-state" id="empty-state" style="display:none">此條件尚無巡檢紀錄<span class="vi-sub" style="display:block">Không có hồ sơ phù hợp với điều kiện này</span></div>
 </div>
 
-<div class="empty-state" id="no-access" style="display:none">🚫 此頁面僅限品保（quality）/系統管理員使用<span class="vi-sub" style="display:block">Trang này chỉ dành cho vai trò quality/admin</span></div>
+<div class="empty-state" id="no-access" style="display:none">🚫 您的角色無權檢視巡檢紀錄，請聯絡系統管理員<span class="vi-sub" style="display:block">Vai trò của bạn không có quyền xem hồ sơ kiểm tra, vui lòng liên hệ quản trị viên</span></div>
 
 <div class="modal-overlay hidden" id="detail-modal">
   <div class="modal">
@@ -204,7 +204,10 @@ const recordsCol = collection(db, "pi_inspection_records");
 const issuesCol = collection(db, "pi_issues");
 
 const piUser = await mivAuthReady;
-if (piUser.role !== "admin" && piUser.role !== "quality") {
+// 紀錄查詢：viewer／production／quality／admin 可看，工具室不可
+const CAN_VIEW_ROLES = ["viewer", "production", "quality", "admin"];
+const canView = CAN_VIEW_ROLES.includes(piUser.role);
+if (!canView) {
   document.getElementById("no-access").style.display = "";
 } else {
   document.getElementById("main-content").style.display = "";
@@ -586,7 +589,7 @@ window.openLightbox = src => { document.getElementById("lightbox-img").src = src
 window.closeDetail = () => { document.getElementById("detail-modal").classList.add("hidden"); editMode = false; };
 
 renderNav();
-if (piUser.role === "admin" || piUser.role === "quality") loadData();
+if (canView) loadData();
 </script>
 </body>
 </html>

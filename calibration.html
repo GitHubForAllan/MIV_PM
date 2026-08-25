@@ -1,0 +1,1300 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>儀器校驗管理 / Quản Lý Hiệu Chuẩn Thiết Bị</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f5f6fa;
+      --surface: #ffffff;
+      --border: #e2e5ed;
+      --text: #1a1d23;
+      --text-soft: #6b7280;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --danger: #dc2626;
+      --warn: #d97706;
+      --ok: #16a34a;
+      --muted: #64748b;
+      --warn-bg: #fffbeb;
+      --danger-bg: #fef2f2;
+      --ok-bg: #f0fdf4;
+      --muted-bg: #f1f5f9;
+      --radius: 8px;
+      --shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+           background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    .bi { display: flex; flex-direction: column; gap: 1px; }
+    .bi .zh { font-size: inherit; line-height: 1.3; }
+    .bi .vi { font-size: .72em; color: var(--text-soft); line-height: 1.2; font-style: italic; }
+
+    /* ── 頂欄 ── */
+    .topbar {
+      background: #1e293b;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      padding: 0 24px; height: 72px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,.25);
+      gap: 16px; flex-wrap: wrap;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 16px; }
+    .topbar-logo { height: 48px; object-fit: contain; border-radius: 10px; flex-shrink: 0; }
+    .topbar-divider { width: 1px; height: 36px; background: rgba(255,255,255,.15); }
+    .topbar-title h1 { font-size: 1rem; font-weight: 700; line-height: 1.3; color: #fff; }
+    .topbar-title h1 .vi { font-size: .72rem; color: rgba(255,255,255,.5); font-weight: 400; font-style: italic; }
+    .topbar-title .eyebrow { font-size: .66rem; color: rgba(255,255,255,.4); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 2px; }
+    .topbar-actions { display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
+    .topbar-actions .btn-outline { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.25); color: rgba(255,255,255,.9); }
+    .topbar-actions .btn-outline:hover { background: rgba(255,255,255,.16); border-color: rgba(255,255,255,.4); }
+
+    /* ── 主體 ── */
+    .main { max-width: 1520px; margin: 0 auto; padding: 24px; }
+
+    /* ── 統計卡 ── */
+    .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; }
+    .stat-card .stat-label { font-size: .7rem; color: var(--text-soft); margin-bottom: 2px; line-height: 1.5; }
+    .stat-card .stat-label .vi { font-size: .88em; font-style: italic; }
+    .stat-card .stat-value { font-size: 1.6rem; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
+    .stat-card.warn   { border-left: 4px solid var(--warn);   background: var(--warn-bg); }
+    .stat-card.danger { border-left: 4px solid var(--danger); background: var(--danger-bg); }
+    .stat-card.ok     { border-left: 4px solid var(--ok);     background: var(--ok-bg); }
+    .stat-card.muted  { border-left: 4px solid var(--muted);  background: var(--muted-bg); }
+    .stat-card.clickable { cursor: pointer; transition: transform .1s; }
+    .stat-card.clickable:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+
+    /* ── 工具列 ── */
+    .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
+    .search-box { flex: 1; min-width: 200px; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius); font-size: .9rem; outline: none; }
+    .search-box:focus { border-color: var(--accent); }
+    .filter-select { padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius); font-size: .82rem; background: var(--surface); cursor: pointer; }
+
+    /* ── 按鈕 ── */
+    .btn { padding: 8px 16px; border-radius: var(--radius); font-size: .82rem; font-weight: 600; cursor: pointer; border: none; transition: background .15s;
+      display: flex; flex-direction: column; align-items: center; gap: 1px; line-height: 1.3; }
+    .btn .vi { font-size: .68em; font-weight: 400; font-style: italic; opacity: .85; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-outline:hover { background: var(--bg); }
+    .btn-sm { padding: 5px 12px; font-size: .78rem; }
+    .btn-icon { padding: 4px 8px; font-size: .9rem; background: transparent; border: none; cursor: pointer; color: var(--text-soft); }
+    .btn-icon:hover { color: var(--accent); }
+
+    /* ── 表格 ── */
+    .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: .83rem; }
+    thead th { padding: 10px 12px; text-align: left; font-weight: 600; background: #f8f9fc; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    thead th .zh { font-size: .78rem; color: var(--text-soft); text-transform: uppercase; }
+    thead th .vi { font-size: .66rem; color: #9ca3af; font-style: italic; }
+    tbody tr { border-bottom: 1px solid var(--border); }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f8f9fc; }
+    td { padding: 9px 12px; vertical-align: middle; }
+    .code-cell { font-family: monospace; font-size: .8rem; font-weight: 600; color: var(--accent); }
+
+    /* ── 徽章 ── */
+    .badge { display: inline-flex; flex-direction: column; align-items: center; padding: 2px 8px; border-radius: 99px; font-size: .68rem; font-weight: 600; white-space: nowrap; line-height: 1.4; }
+    .badge .vi { font-size: .88em; font-weight: 400; font-style: italic; opacity: .85; }
+    .badge-ok     { background: #dcfce7; color: #15803d; }
+    .badge-warn   { background: #fef9c3; color: #a16207; }
+    .badge-danger { background: #fee2e2; color: #b91c1c; }
+    .badge-muted  { background: #f1f5f9; color: #64748b; }
+    .badge-new    { background: #fbf1de; color: #7a5115; border: 1px solid #d9a441; font-size: .64rem; padding: 1px 6px; border-radius: 4px; font-weight: 700; }
+    .badge-inactive { background: #e0e7ff; color: #4338ca; }
+    .badge-scrapped { background: #374151; color: #f3f4f6; }
+
+    /* ── Modal ── */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 16px; }
+    .modal-overlay.hidden { display: none; }
+    .modal { background: var(--surface); border-radius: 12px; padding: 28px; width: 100%; max-width: 620px; max-height: 92vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.2); }
+    .modal.wide { max-width: 820px; }
+    .modal h2 { font-size: 1rem; font-weight: 700; margin-bottom: 20px; line-height: 1.5; }
+    .modal h2 .vi { display: block; font-size: .78rem; font-weight: 400; color: var(--text-soft); font-style: italic; }
+    .modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+    .modal-header h2 { margin-bottom: 0; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-grid .full { grid-column: 1 / -1; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-group label { font-size: .76rem; font-weight: 600; color: var(--text-soft); line-height: 1.5; }
+    .form-group label .vi { display: block; font-size: .9em; font-weight: 400; font-style: italic; color: #9ca3af; }
+    .form-group input, .form-group select, .form-group textarea { padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius); font-size: .88rem; font-family: inherit; outline: none; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+
+    /* ── 校驗結果切換 ── */
+    .result-row { display: flex; gap: 8px; margin-bottom: 4px; }
+    .result-btn { flex: 1; padding: 10px; border-radius: var(--radius); border: 2px solid var(--border); font-weight: 700; cursor: pointer; background: transparent; font-size: .85rem;
+      display: flex; flex-direction: column; align-items: center; gap: 2px; line-height: 1.3; }
+    .result-btn .vi { font-size: .72em; font-weight: 400; font-style: italic; opacity: .8; }
+    .result-btn.active-pass { border-color: var(--ok); background: var(--ok-bg); color: var(--ok); }
+    .result-btn.active-fail { border-color: var(--danger); background: var(--danger-bg); color: var(--danger); }
+    .result-btn.active-pending { border-color: var(--warn); background: var(--warn-bg); color: var(--warn); }
+
+    /* ── 履歷列表 ── */
+    .hist-list { list-style: none; max-height: 420px; overflow-y: auto; }
+    .hist-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .hist-item:last-child { border-bottom: none; }
+    .hist-thumb { width: 48px; height: 48px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); flex-shrink: 0; cursor: pointer; }
+    .hist-body { flex: 1; min-width: 0; }
+    .hist-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 3px; }
+    .hist-date { font-weight: 700; font-size: .86rem; }
+    .hist-meta { font-size: .78rem; color: var(--text-soft); line-height: 1.5; }
+
+    /* ── 圖片上傳 ── */
+    .img-upload-area { border: 2px dashed var(--border); border-radius: var(--radius); padding: 14px; text-align: center; cursor: pointer;
+      transition: border-color .15s, background .15s; position: relative; min-height: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
+    .img-upload-area:hover, .img-upload-area.drag-over { border-color: var(--accent); background: #eff6ff; }
+    .img-upload-area input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .img-upload-area .upload-icon { font-size: 1.5rem; }
+    .img-upload-area .upload-hint { font-size: .74rem; color: var(--text-soft); }
+    .img-preview-wrap { position: relative; display: inline-block; }
+    .img-preview { max-width: 100%; max-height: 140px; object-fit: contain; border-radius: 6px; display: block; }
+    .img-remove-btn { position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 50%; background: var(--danger); color: #fff; border: none; cursor: pointer;
+      font-size: .8rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+    .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.75); display: flex; align-items: center; justify-content: center; z-index: 2000; cursor: zoom-out; }
+    .lightbox.hidden { display: none; }
+    .lightbox img { max-width: 90vw; max-height: 85vh; border-radius: 10px; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+    .tbl-thumb { width: 36px; height: 36px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border); cursor: pointer; display: block; }
+    .tbl-thumb:hover { opacity: .85; }
+    .tbl-thumb-empty { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: #d1d5db; }
+
+    /* ── 匯入 ── */
+    .import-summary { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; font-size: .85rem; line-height: 1.8; margin-bottom: 16px; }
+    .import-summary b { font-variant-numeric: tabular-nums; }
+    .progress-bar { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; margin-top: 10px; }
+    .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width .2s; }
+
+    .hidden { display: none !important; }
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--text-soft); }
+    .empty-state .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+    .empty-state .vi { font-style: italic; font-size: .9em; }
+    .loading { text-align: center; padding: 40px; color: var(--text-soft); font-size: .9rem; }
+
+    @media (max-width: 640px) {
+      .topbar { padding: 10px; height: auto; }
+      .topbar-logo { height: 30px; }
+      .topbar-divider { display: none; }
+      .topbar-title h1 { font-size: .88rem; }
+      .topbar-title .eyebrow { display: none; }
+      .topbar-actions .btn { padding: 5px 8px; font-size: .74rem; }
+      .topbar-actions .btn .vi { display: none; }
+      .main { padding: 12px; }
+      .stats-row { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+      .stat-card { padding: 12px 14px; }
+      .stat-card .stat-value { font-size: 1.3rem; }
+      .toolbar { flex-direction: column; align-items: stretch; gap: 8px; }
+      .search-box, .filter-select { width: 100%; }
+      table { font-size: .76rem; }
+      thead th, td { padding: 7px 8px; }
+      .modal-overlay { padding: 0; align-items: flex-end; }
+      .modal { border-radius: 16px 16px 0 0; max-width: 100%; max-height: 95vh; padding: 18px 16px; }
+      .modal.wide { max-width: 100%; }
+      .form-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
+</head>
+<body>
+<script type="module" src="auth-guard.js?v=2"></script>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <img src="Rexon%20logo.png" alt="REXON" class="topbar-logo">
+    <div class="topbar-divider"></div>
+    <div class="topbar-title">
+      <p class="eyebrow">力山工業 / Rexon Industrial</p>
+      <h1>儀器校驗管理<br><span class="vi">Quản Lý Hiệu Chuẩn Thiết Bị</span></h1>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn btn-outline" onclick="exportCsv()">
+      <span>匯出 CSV</span><span class="vi">Xuất CSV</span>
+    </button>
+    <button class="btn btn-outline hidden" id="btn-import" onclick="openImportModal()">
+      <span>📥 匯入採購清單</span><span class="vi">Nhập từ danh sách</span>
+    </button>
+    <button class="btn btn-primary hidden" id="btn-add-asset" onclick="openAssetModal(null)">
+      <span>＋ 新增設備</span><span class="vi">Thêm thiết bị</span>
+    </button>
+  </div>
+</header>
+
+<div class="main">
+  <!-- 統計卡 -->
+  <div class="stats-row">
+    <div class="stat-card clickable" onclick="setStatusFilter('')">
+      <div class="stat-label">設備總數<br><span class="vi">Tổng số thiết bị</span></div>
+      <div class="stat-value" id="stat-total">—</div>
+    </div>
+    <div class="stat-card danger clickable" onclick="setStatusFilter('overdue')">
+      <div class="stat-label">已逾期<br><span class="vi">Đã quá hạn</span></div>
+      <div class="stat-value" id="stat-overdue">—</div>
+    </div>
+    <div class="stat-card warn clickable" onclick="setStatusFilter('dueSoon')">
+      <div class="stat-label">30天內到期<br><span class="vi">Sắp đến hạn (30 ngày)</span></div>
+      <div class="stat-value" id="stat-duesoon">—</div>
+    </div>
+    <div class="stat-card ok clickable" onclick="setStatusFilter('ok')">
+      <div class="stat-label">校驗正常<br><span class="vi">Đang trong hạn</span></div>
+      <div class="stat-value" id="stat-ok">—</div>
+    </div>
+    <div class="stat-card muted clickable" onclick="setStatusFilter('noSchedule')">
+      <div class="stat-label">尚未排定校驗日<br><span class="vi">Chưa có lịch hiệu chuẩn</span></div>
+      <div class="stat-value" id="stat-nosched">—</div>
+    </div>
+  </div>
+
+  <!-- 工具列 -->
+  <div class="toolbar">
+    <input class="search-box" type="search" placeholder="搜尋編號 / 名稱 / 位置 / 保管人… | Tìm mã / tên / vị trí…" id="search-input" oninput="renderTable()">
+    <select class="filter-select" id="filter-status" onchange="renderTable()">
+      <option value="">所有狀態 / Tất cả trạng thái</option>
+      <option value="overdue">已逾期 / Quá hạn</option>
+      <option value="dueSoon">30天內到期 / Sắp đến hạn</option>
+      <option value="ok">正常 / Bình thường</option>
+      <option value="noSchedule">尚未排定 / Chưa có lịch</option>
+    </select>
+    <select class="filter-select" id="filter-category" onchange="renderTable()">
+      <option value="">所有類別 / Tất cả danh mục</option>
+    </select>
+    <select class="filter-select" id="filter-usage" onchange="renderTable()">
+      <option value="">所有使用狀態 / Tất cả tình trạng</option>
+      <option value="active">使用中 / Đang sử dụng</option>
+      <option value="inactive">停用中 / Tạm ngừng</option>
+      <option value="scrapped">報廢 / Đã thanh lý</option>
+    </select>
+  </div>
+
+  <!-- 表格 -->
+  <div class="table-wrap">
+    <div id="table-loading" class="loading">載入中… / Đang tải…</div>
+    <table id="asset-table" style="display:none">
+      <thead>
+        <tr>
+          <th></th>
+          <th><div class="bi"><span class="zh">編號</span><span class="vi">Mã số</span></div></th>
+          <th><div class="bi"><span class="zh">設備名稱</span><span class="vi">Tên thiết bị</span></div></th>
+          <th><div class="bi"><span class="zh">型號/規格</span><span class="vi">Quy cách</span></div></th>
+          <th><div class="bi"><span class="zh">位置 / 保管人</span><span class="vi">Vị trí / Người giữ</span></div></th>
+          <th><div class="bi"><span class="zh">週期</span><span class="vi">Chu kỳ</span></div></th>
+          <th><div class="bi"><span class="zh">上次校驗</span><span class="vi">Lần trước</span></div></th>
+          <th><div class="bi"><span class="zh">下次校驗</span><span class="vi">Lần tới</span></div></th>
+          <th><div class="bi"><span class="zh">使用狀態</span><span class="vi">Tình trạng SD</span></div></th>
+          <th><div class="bi"><span class="zh">狀態</span><span class="vi">Trạng thái</span></div></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="asset-tbody"></tbody>
+    </table>
+    <div id="asset-empty" class="empty-state" style="display:none">
+      <div class="empty-icon">🗓️</div>
+      <p>尚無設備資料，點擊右上角「新增設備」或「匯入採購清單」開始建立。</p>
+      <p class="vi">Chưa có thiết bị. Nhấn "Thêm thiết bị" hoặc "Nhập từ danh sách" để bắt đầu.</p>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;font-size:.72rem;color:#9ca3af;padding:12px 0 20px">v1.1 ・ 最後更新：2026-07-17</div>
+
+<!-- ══════════════════════════════════════
+     新增 / 編輯設備 Modal
+════════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="asset-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="asset-modal-title">新增設備<span class="vi">Thêm thiết bị mới</span></h2>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label style="display:flex;align-items:center;justify-content:space-between">
+          <span>設備編號 *<span class="vi">Mã số thiết bị *</span></span>
+          <button type="button" onclick="openCodeHelper()" style="font-size:.72rem;padding:2px 8px;border:1px solid var(--accent);border-radius:4px;background:#eff6ff;color:var(--accent);cursor:pointer;font-weight:600">🔧 編號小幫手</button>
+        </label>
+        <input id="f-code" placeholder="例：42M026001">
+        <span id="f-code-hint" style="font-size:.72rem;min-height:1em;color:var(--danger)"></span>
+      </div>
+      <div class="form-group">
+        <label>類別碼<span class="vi">Mã danh mục</span></label>
+        <input id="f-catcode" placeholder="例：42M0">
+      </div>
+      <div class="form-group">
+        <label>使用狀態<span class="vi">Tình trạng sử dụng</span></label>
+        <select id="f-usagestatus">
+          <option value="active">使用中 / Đang sử dụng</option>
+          <option value="inactive">停用中 / Tạm ngừng</option>
+          <option value="scrapped">報廢 / Đã thanh lý</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>設備名稱(中) *<span class="vi">Tên thiết bị (中) *</span></label>
+        <input id="f-namezh" placeholder="例：推拉力計">
+      </div>
+      <div class="form-group">
+        <label>Tên thiết bị (VN)</label>
+        <input id="f-namevi" placeholder="Máy đo lực kéo-đẩy">
+      </div>
+      <div class="form-group full">
+        <label>型號/規格<span class="vi">Quy cách / Thông số</span></label>
+        <input id="f-spec" placeholder="例：20KG/電子式 DST-200N">
+      </div>
+      <div class="form-group">
+        <label>存放位置<span class="vi">Vị trí lưu trữ</span></label>
+        <input id="f-location" placeholder="例：檢驗課-量具櫃A">
+      </div>
+      <div class="form-group">
+        <label>保管人<span class="vi">Người bảo quản</span></label>
+        <input id="f-keeper" placeholder="例：王小明">
+      </div>
+      <div class="form-group">
+        <label>供應商<span class="vi">Nhà cung cấp</span></label>
+        <input id="f-supplier" placeholder="選填">
+      </div>
+      <div class="form-group">
+        <label>取得日期<span class="vi">Ngày mua</span></label>
+        <input id="f-acquire" type="date">
+      </div>
+      <div class="form-group">
+        <label>採購單價<span class="vi">Đơn giá mua</span></label>
+        <input id="f-price" type="number" min="0" step="any" placeholder="選填">
+      </div>
+      <div class="form-group">
+        <label>幣別<span class="vi">Đơn vị tiền tệ</span></label>
+        <select id="f-currency">
+          <option value="">—</option>
+          <option value="VND">VND</option>
+          <option value="USD">USD</option>
+          <option value="TWD">TWD</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>校驗週期（月）*<span class="vi">Chu kỳ hiệu chuẩn (tháng) *</span></label>
+        <input id="f-cycle" type="number" min="1" placeholder="12">
+        <div style="display:flex;gap:5px;margin-top:2px;flex-wrap:wrap" id="f-cycle-presets">
+          <button type="button" class="btn-icon" style="border:1px solid var(--border);border-radius:5px;font-size:.72rem;padding:3px 8px;line-height:1.25;display:flex;flex-direction:column;align-items:center" onclick="document.getElementById('f-cycle').value=3;document.getElementById('f-cycle').dispatchEvent(new Event('change'))"><span>3個月</span><span style="font-size:.85em;color:var(--text-soft);font-style:italic">3 tháng</span></button>
+          <button type="button" class="btn-icon" style="border:1px solid var(--border);border-radius:5px;font-size:.72rem;padding:3px 8px;line-height:1.25;display:flex;flex-direction:column;align-items:center" onclick="document.getElementById('f-cycle').value=6;document.getElementById('f-cycle').dispatchEvent(new Event('change'))"><span>6個月</span><span style="font-size:.85em;color:var(--text-soft);font-style:italic">6 tháng</span></button>
+          <button type="button" class="btn-icon" style="border:1px solid var(--border);border-radius:5px;font-size:.72rem;padding:3px 8px;line-height:1.25;display:flex;flex-direction:column;align-items:center" onclick="document.getElementById('f-cycle').value=12;document.getElementById('f-cycle').dispatchEvent(new Event('change'))"><span>12個月</span><span style="font-size:.85em;color:var(--text-soft);font-style:italic">12 tháng</span></button>
+          <button type="button" class="btn-icon" style="border:1px solid var(--border);border-radius:5px;font-size:.72rem;padding:3px 8px;line-height:1.25;display:flex;flex-direction:column;align-items:center" onclick="document.getElementById('f-cycle').value=24;document.getElementById('f-cycle').dispatchEvent(new Event('change'))"><span>24個月</span><span style="font-size:.85em;color:var(--text-soft);font-style:italic">24 tháng</span></button>
+          <button type="button" class="btn-icon" style="border:1px solid var(--border);border-radius:5px;font-size:.72rem;padding:3px 8px;line-height:1.25;display:flex;flex-direction:column;align-items:center" onclick="document.getElementById('f-cycle').value=36;document.getElementById('f-cycle').dispatchEvent(new Event('change'))"><span>36個月</span><span style="font-size:.85em;color:var(--text-soft);font-style:italic">36 tháng</span></button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>下次校驗日期<span class="vi">Ngày hiệu chuẩn kế tiếp</span></label>
+        <input id="f-nextdue" type="date">
+      </div>
+      <div class="form-group full">
+        <label>備註<span class="vi">Ghi chú</span></label>
+        <input id="f-note" placeholder="選填 / Tuỳ chọn">
+      </div>
+      <div class="form-group full">
+        <label>設備照片（選填）<span class="vi">Hình ảnh thiết bị (tuỳ chọn)</span></label>
+        <input type="file" id="f-img" accept="image/*" style="display:none" onchange="handleAssetImgSelect(event)">
+        <input type="file" id="f-img-camera" accept="image/*" capture="environment" style="display:none" onchange="handleAssetImgSelect(event)">
+        <div class="img-upload-area" id="f-img-upload-area"
+             ondragover="event.preventDefault();this.classList.add('drag-over')"
+             ondragleave="this.classList.remove('drag-over')"
+             ondrop="handleAssetImgDrop(event)"
+             onclick="event.stopPropagation()">
+          <div id="f-img-placeholder">
+            <div class="upload-icon">🖼️</div>
+            <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:8px">
+              <button type="button" onclick="document.getElementById('f-img-camera').click()"
+                style="padding:7px 16px;border-radius:6px;border:1px solid #d1d5db;background:#fff;cursor:pointer;font-size:.82rem;font-weight:600">📷 拍照</button>
+              <button type="button" onclick="document.getElementById('f-img').click()"
+                style="padding:7px 16px;border-radius:6px;border:1px solid #d1d5db;background:#fff;cursor:pointer;font-size:.82rem;font-weight:600">🖼️ 從相簿選取</button>
+            </div>
+            <div class="upload-hint" style="margin-top:6px">點擊或拖曳圖片至此區域（&lt;5MB）<br><span class="vi">Nhấn hoặc kéo thả ảnh vào đây</span></div>
+          </div>
+          <div id="f-img-preview-wrap" style="display:none;width:100%">
+            <div class="img-preview-wrap">
+              <img id="f-img-preview" class="img-preview" src="" alt="preview">
+              <button class="img-remove-btn" onclick="removeAssetImg(event)" title="移除圖片">✕</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="justify-content:space-between">
+      <button class="btn btn-outline" id="btn-print-label" onclick="printLabel()" style="display:none">
+        <span>🏷️ 列印標籤</span><span class="vi">In nhãn</span>
+      </button>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline" onclick="closeAssetModal()"><span>取消</span><span class="vi">Hủy</span></button>
+        <button class="btn btn-primary" onclick="saveAsset()"><span>儲存</span><span class="vi">Lưu</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     編號小幫手 Modal
+════════════════════════════════════════ -->
+<div id="code-helper-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1100;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:12px;width:100%;max-width:640px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="padding:16px 20px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;gap:8px">
+      <div>
+        <div style="font-size:1rem;font-weight:700;color:#1e293b">🔧 編號小幫手 <span style="font-size:.82rem;font-weight:400;color:#64748b">/ Trình tạo mã số</span></div>
+        <div style="font-size:.72rem;color:#64748b;margin-top:2px">依《儀器設備編號原則目錄》逐步選擇，自動組合編號</div>
+      </div>
+      <button onclick="closeCodeHelper()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:#9ca3af;padding:2px 6px">✕</button>
+    </div>
+    <div style="overflow-y:auto;padding:18px 20px;flex:1">
+      <div style="margin-bottom:14px">
+        <div style="font-size:.78rem;font-weight:700;color:#475569;margin-bottom:8px">① 大分類 / Danh mục chính</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:7px" id="ch-cat-btns"></div>
+      </div>
+      <div id="ch-sub-area" style="display:none;margin-bottom:14px">
+        <div style="font-size:.78rem;font-weight:700;color:#475569;margin-bottom:8px">② 品項 / Loại thiết bị</div>
+        <input id="ch-sub-search" placeholder="搜尋品項… / Tìm loại…" style="width:100%;border:1px solid #e2e5ed;border-radius:6px;padding:7px 9px;font-size:.82rem;outline:none;box-sizing:border-box;margin-bottom:8px">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:7px;max-height:220px;overflow-y:auto" id="ch-sub-btns"></div>
+      </div>
+      <div id="ch-serial-area" style="display:none;margin-bottom:14px">
+        <div style="font-size:.78rem;font-weight:700;color:#475569;margin-bottom:6px">③ 取得年份 + 流水序號<span style="font-weight:400;color:#94a3b8"> / Năm + số thứ tự</span></div>
+        <div style="display:grid;grid-template-columns:100px 1fr;gap:8px">
+          <input id="ch-year" type="text" maxlength="2" placeholder="26" style="border:1px solid #e2e5ed;border-radius:6px;padding:8px 10px;font-size:.88rem;outline:none;box-sizing:border-box;text-align:center">
+          <input id="ch-serial" type="text" placeholder="001" style="border:1px solid #e2e5ed;border-radius:6px;padding:8px 10px;font-size:.88rem;outline:none;box-sizing:border-box">
+        </div>
+        <div style="font-size:.7rem;color:#94a3b8;margin-top:4px">流水序號已自動抓同編號同年份中最大值 +1，可自行修改<br>Số thứ tự được đề xuất tự động (+1 so với số lớn nhất hiện có), có thể sửa</div>
+      </div>
+      <div id="ch-preview-area" style="display:none;background:#f8fafc;border:1px solid #e2e5ed;border-radius:8px;padding:14px 16px">
+        <div style="font-size:.72rem;color:#64748b;margin-bottom:6px">編號預覽 / Xem trước mã số</div>
+        <div id="ch-preview" style="font-size:1.4rem;font-weight:700;color:#1e293b;font-family:monospace;letter-spacing:.05em"></div>
+        <div id="ch-dup-hint" style="font-size:.72rem;color:var(--danger);margin-top:6px"></div>
+      </div>
+    </div>
+    <div style="padding:12px 20px;border-top:1px solid #f1f5f9;display:flex;gap:8px;justify-content:flex-end">
+      <button onclick="closeCodeHelper()" style="padding:7px 16px;border-radius:6px;border:1px solid #e2e5ed;background:#f3f4f6;color:#374151;font-size:.85rem;font-weight:600;cursor:pointer">取消</button>
+      <button id="ch-apply-btn" onclick="applyCode()" disabled style="padding:7px 16px;border-radius:6px;border:none;background:#2563eb;color:#fff;font-size:.85rem;font-weight:600;cursor:pointer;opacity:.5">套用此編號</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     新增校驗紀錄 Modal
+════════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="record-modal">
+  <div class="modal">
+    <h2 id="record-modal-title">新增校驗紀錄<span class="vi">Thêm bản ghi hiệu chuẩn</span></h2>
+
+    <div class="result-row">
+      <button class="result-btn" id="result-pass-btn" onclick="setResult('pass')"><span>✓ 合格</span><span class="vi">Đạt</span></button>
+      <button class="result-btn" id="result-fail-btn" onclick="setResult('fail')"><span>✕ 不合格</span><span class="vi">Không đạt</span></button>
+      <button class="result-btn" id="result-pending-btn" onclick="setResult('pending')"><span>… 待確認</span><span class="vi">Chờ xử lý</span></button>
+    </div>
+
+    <div class="form-grid" style="margin-top:14px">
+      <div class="form-group">
+        <label>校驗日期 *<span class="vi">Ngày hiệu chuẩn *</span></label>
+        <input id="r-date" type="date">
+      </div>
+      <div class="form-group">
+        <label>下次校驗日期 *<span class="vi">Ngày hiệu chuẩn kế tiếp *</span></label>
+        <input id="r-nextdue" type="date">
+      </div>
+      <div class="form-group">
+        <label>校驗單位/廠商<span class="vi">Đơn vị hiệu chuẩn</span></label>
+        <input id="r-vendor" placeholder="例：內部自校 / SGS">
+      </div>
+      <div class="form-group">
+        <label>報告編號<span class="vi">Số báo cáo</span></label>
+        <input id="r-report" placeholder="選填">
+      </div>
+      <div class="form-group full">
+        <label>備註<span class="vi">Ghi chú</span></label>
+        <input id="r-note" placeholder="選填 / Tuỳ chọn">
+      </div>
+      <div class="form-group full">
+        <label>校驗報告/證書照片（選填）<span class="vi">Ảnh báo cáo / chứng chỉ (tuỳ chọn)</span></label>
+        <input type="file" id="r-img" accept="image/*" style="display:none" onchange="handleRecordImgSelect(event)">
+        <div class="img-upload-area" id="r-img-area" onclick="event.stopPropagation()"
+             ondragover="event.preventDefault();this.classList.add('drag-over')"
+             ondragleave="this.classList.remove('drag-over')"
+             ondrop="handleRecordImgDrop(event)">
+          <input type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer" onchange="handleRecordImgSelect(event)">
+          <div id="r-img-placeholder">
+            <div class="upload-icon">📎</div>
+            <div class="upload-hint">點擊或拖曳上傳圖片（&lt;5MB）<br><span class="vi">Nhấn hoặc kéo thả ảnh vào đây</span></div>
+          </div>
+          <div id="r-img-preview-wrap" style="display:none">
+            <div class="img-preview-wrap">
+              <img id="r-img-preview" class="img-preview" src="" alt="preview">
+              <button class="img-remove-btn" onclick="removeRecordImg(event)">✕</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeRecordModal()"><span>取消</span><span class="vi">Hủy</span></button>
+      <button class="btn btn-primary" id="record-save-btn" onclick="saveRecord()"><span>儲存紀錄</span><span class="vi">Lưu bản ghi</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     校驗履歷 Modal
+════════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="hist-modal">
+  <div class="modal wide">
+    <h2 id="hist-modal-title">校驗履歷<span class="vi">Lịch sử hiệu chuẩn</span></h2>
+    <ul class="hist-list" id="hist-list"></ul>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeHistModal()"><span>關閉</span><span class="vi">Đóng</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     匯入採購清單 Modal
+════════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="import-modal">
+  <div class="modal">
+    <h2>匯入採購清單<span class="vi">Nhập từ danh sách mua sắm</span></h2>
+    <div class="import-summary" id="import-summary">
+      內建 132 筆已依《儀器設備編號原則目錄》編號之採購清單資料。<br>
+      <span class="vi">132 thiết bị đã được đánh mã sẵn theo nguyên tắc đánh số.</span><br><br>
+      已存在相同編號的設備將會<b>跳過</b>，不會覆蓋既有資料。
+    </div>
+    <div class="progress-bar" id="import-progress-bar" style="display:none"><div class="progress-fill" id="import-progress-fill"></div></div>
+    <div id="import-status" style="font-size:.82rem;color:var(--text-soft);margin-top:8px"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeImportModal()"><span>取消</span><span class="vi">Hủy</span></button>
+      <button class="btn btn-outline" id="import-test-btn" onclick="runImport(10)"><span>測試匯入 10 筆</span><span class="vi">Nhập thử 10 mục</span></button>
+      <button class="btn btn-primary" id="import-run-btn" onclick="runImport()"><span>全部匯入</span><span class="vi">Nhập tất cả</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="lightbox hidden" id="lightbox" onclick="this.classList.add('hidden')"><img id="lightbox-img" src="" alt=""></div>
+
+<script type="module">
+import { mivAuthReady } from "./auth-guard.js?v=2";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore, collection, doc,
+  onSnapshot, setDoc, updateDoc, deleteDoc, getDoc, getDocs,
+  addDoc, query, orderBy, deleteField,
+  serverTimestamp, writeBatch
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs",
+  authDomain: "miv-1426c.firebaseapp.com",
+  projectId: "miv-1426c",
+  storageBucket: "miv-1426c.firebasestorage.app",
+  messagingSenderId: "398934341623",
+  appId: "1:398934341623:web:4af46c057d2e202855a0f2"
+};
+const fbApp = initializeApp(firebaseConfig);
+const db = getFirestore(fbApp);
+const assetsCol = collection(db, "calibration_assets");
+
+// 類別大碼(前2碼) → 預設校驗週期（月）
+const CYCLE_BY_PREFIX = { '40':12,'41':12,'42':12,'43':24,'44':24,'45':12,'46':12,'47':12,'48':12 };
+
+let assets = {};
+let statusFilterOverride = null;
+
+// 資產管理權限（新增/編輯/刪除設備、批次匯入）：僅 admin 與 quality（品保）
+// 一般日常操作（查詢、匯出、新增校驗紀錄）不受此限制
+let canManage = false;
+mivAuthReady.then(user => {
+  // 檢視權限：viewer／production／quality／admin，工具室不可
+  if (!["viewer", "production", "quality", "admin"].includes(user.role)) {
+    document.body.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:center;min-height:80vh;flex-direction:column;gap:10px;color:#374151;text-align:center;padding:24px">
+        <p style="font-size:1.2rem;font-weight:700">權限不足</p>
+        <p style="color:#64748b">您的角色無權檢視校驗管理，請聯絡系統管理員指派權限。<br>
+          <span style="font-style:italic;font-size:.9em">Vai trò của bạn không có quyền xem quản lý hiệu chuẩn, vui lòng liên hệ quản trị viên.</span></p>
+        <a href="index.html" style="color:#2563eb">← 返回首頁 / Trang chủ</a>
+        <button onclick="window.mivLogout()" style="margin-top:6px;padding:6px 16px;border:1px solid #cbd5e1;background:transparent;border-radius:8px;color:#64748b;cursor:pointer">登出 / Đăng xuất</button>
+      </div>`;
+    return;
+  }
+  canManage = user.role === "admin" || user.role === "quality";
+  document.getElementById("btn-import").classList.toggle("hidden", !canManage);
+  document.getElementById("btn-add-asset").classList.toggle("hidden", !canManage);
+  renderTable();
+});
+
+onSnapshot(assetsCol, snap => {
+  snap.docChanges().forEach(c => {
+    if (c.type === "removed") delete assets[c.doc.id];
+    else assets[c.doc.id] = { id: c.doc.id, ...c.doc.data() };
+  });
+  renderTable();
+  updateStats();
+  populateCategoryFilter();
+  document.getElementById("table-loading").style.display = "none";
+  document.getElementById("asset-table").style.display = "";
+});
+
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+// 越文搜尋正規化：處理輸入法造成的 Unicode 組合字差異，並允許不打聲調也能搜到
+// （例如輸入 "may do rung" 也能找到「Máy đo rung động」）
+function foldVi(s) {
+  const combRangeSrc = "[" + String.fromCharCode(0x0300) + "-" + String.fromCharCode(0x036f) + "]";
+  const COMBINING_MARKS = new RegExp(combRangeSrc, "g");
+  const D_STROKE = new RegExp(String.fromCharCode(0x0111), "g");
+  return String(s ?? '')
+    .normalize('NFC')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(COMBINING_MARKS, '')
+    .replace(D_STROKE, 'd')
+    .normalize('NFC');
+}
+function todayStr() {
+  return new Date().toISOString().slice(0,10);
+}
+function addMonths(dateStr, months) {
+  if (!dateStr) return '';
+  const [y, m, day] = dateStr.split('-').map(Number);
+  const d = new Date(Date.UTC(y, m - 1, day));
+  d.setUTCMonth(d.getUTCMonth() + Number(months || 12));
+  return d.toISOString().slice(0,10);
+}
+function fmtDate(s) { return s || '—'; }
+
+// ── 狀態計算 ────────────────────────────────
+function getStatus(a) {
+  if (!a.nextDueDate) return "noSchedule";
+  const today = todayStr();
+  const diffDays = Math.round((new Date(a.nextDueDate) - new Date(today)) / 86400000);
+  if (diffDays < 0) return "overdue";
+  if (diffDays <= 30) return "dueSoon";
+  return "ok";
+}
+function statusBadge(s) {
+  const m = {
+    overdue:    ['badge-danger', '已逾期', 'Quá hạn'],
+    dueSoon:    ['badge-warn',   '即將到期', 'Sắp đến hạn'],
+    ok:         ['badge-ok',     '正常', 'Bình thường'],
+    noSchedule: ['badge-muted',  '尚未排定', 'Chưa có lịch'],
+  };
+  const [cls, zh, vi] = m[s] || m.noSchedule;
+  return `<span class="badge ${cls}"><span>${zh}</span><span class="vi">${vi}</span></span>`;
+}
+function getUsageStatus(a) { return a.usageStatus || 'active'; }
+function usageBadge(s) {
+  const m = {
+    active:   ['badge-ok',       '使用中', 'Đang sử dụng'],
+    inactive: ['badge-inactive', '停用中', 'Tạm ngừng'],
+    scrapped: ['badge-scrapped', '報廢',   'Đã thanh lý'],
+  };
+  const [cls, zh, vi] = m[s] || m.active;
+  return `<span class="badge ${cls}"><span>${zh}</span><span class="vi">${vi}</span></span>`;
+}
+
+// ── 統計卡 ────────────────────────────────
+function updateStats() {
+  const list = Object.values(assets).filter(a => getUsageStatus(a) !== 'scrapped');
+  const counts = { overdue:0, dueSoon:0, ok:0, noSchedule:0 };
+  list.forEach(a => counts[getStatus(a)]++);
+  document.getElementById("stat-total").textContent = list.length;
+  document.getElementById("stat-overdue").textContent = counts.overdue;
+  document.getElementById("stat-duesoon").textContent = counts.dueSoon;
+  document.getElementById("stat-ok").textContent = counts.ok;
+  document.getElementById("stat-nosched").textContent = counts.noSchedule;
+}
+
+window.setStatusFilter = function(s) {
+  document.getElementById("filter-status").value = s;
+  renderTable();
+};
+
+function populateCategoryFilter() {
+  const sel = document.getElementById("filter-category");
+  const cur = sel.value;
+  const cats = {};
+  Object.values(assets).forEach(a => { if (a.categoryCode) cats[a.categoryCode] = a.nameZh || a.categoryCode; });
+  const sorted = Object.keys(cats).sort();
+  sel.innerHTML = '<option value="">所有類別 / Tất cả danh mục</option>' +
+    sorted.map(c => `<option value="${esc(c)}">${esc(c)} ${esc(cats[c])}</option>`).join('');
+  sel.value = cur;
+}
+
+// ── 渲染表格 ────────────────────────────────
+window.renderTable = function() {
+  const q = foldVi(document.getElementById("search-input").value);
+  const sf = document.getElementById("filter-status").value;
+  const cf = document.getElementById("filter-category").value;
+  const uf = document.getElementById("filter-usage").value;
+  let rows = Object.values(assets).filter(a =>
+    (!q || [a.code,a.nameZh,a.nameVi,a.itemZh,a.itemVi,a.spec,a.location,a.keeper,a.supplier].some(v => foldVi(v).includes(q))) &&
+    (!sf || getStatus(a) === sf) &&
+    (!cf || a.categoryCode === cf) &&
+    (!uf || getUsageStatus(a) === uf)
+  );
+  rows.sort((a,b) => {
+    if (!a.nextDueDate && !b.nextDueDate) return (a.code||'').localeCompare(b.code||'');
+    if (!a.nextDueDate) return 1;
+    if (!b.nextDueDate) return -1;
+    return a.nextDueDate.localeCompare(b.nextDueDate);
+  });
+
+  const tbody = document.getElementById("asset-tbody");
+  const empty = document.getElementById("asset-empty");
+  if (!rows.length) { tbody.innerHTML = ""; empty.style.display = ""; return; }
+  empty.style.display = "none";
+  tbody.innerHTML = rows.map(a => `<tr>
+    <td style="width:44px;text-align:center;padding:6px 8px">
+      ${a.imageUrl
+        ? `<img class="tbl-thumb" src="${esc(a.imageUrl)}" alt="" onclick="openLightbox('${esc(a.imageUrl)}')">`
+        : `<span class="tbl-thumb-empty">📷</span>`}
+    </td>
+    <td class="code-cell">${esc(a.code)}${a.isNewCategory ? ' <span class="badge-new">新類別</span>' : ''}</td>
+    <td>
+      <div style="font-weight:600">${esc(a.itemZh || a.nameZh)}</div>
+      ${a.itemVi || a.nameVi ? `<div style="font-size:.76rem;color:var(--text-soft);font-style:italic">${esc(a.itemVi || a.nameVi)}</div>` : ''}
+    </td>
+    <td style="font-size:.78rem;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(a.spec)}">${esc(a.spec || '—')}</td>
+    <td style="font-size:.78rem">${esc(a.location || '—')}${a.keeper ? `<br><span style="color:var(--text-soft)">${esc(a.keeper)}</span>` : ''}</td>
+    <td style="font-size:.8rem;text-align:center">${a.cycleMonths || 12} 個月<br><span style="color:var(--text-soft);font-size:.72rem;font-style:italic">${a.cycleMonths || 12} tháng</span></td>
+    <td style="font-size:.8rem">${fmtDate(a.lastCalibDate)}</td>
+    <td style="font-size:.8rem;font-weight:600">${fmtDate(a.nextDueDate)}</td>
+    <td>${usageBadge(getUsageStatus(a))}</td>
+    <td>${statusBadge(getStatus(a))}</td>
+    <td style="white-space:nowrap">
+      <button class="btn-icon" title="新增校驗紀錄" onclick="openRecordModal('${a.id}')">🗓️</button>
+      <button class="btn-icon" title="校驗履歷" onclick="openHistModal('${a.id}')">📋</button>
+      ${canManage ? `<button class="btn-icon" title="編輯" onclick="openAssetModal('${a.id}')">✏️</button>
+      <button class="btn-icon" title="刪除" onclick="deleteAsset('${a.id}')">🗑️</button>` : ''}
+    </td>
+  </tr>`).join('');
+};
+
+// ── 新增/編輯設備 ────────────────────────────────
+let editingAssetId = null;
+window.openAssetModal = function(id) {
+  if (!canManage) { alert("權限不足，僅品保／管理員可新增或編輯設備 / Không đủ quyền hạn"); return; }
+  editingAssetId = id;
+  const a = id ? assets[id] : null;
+  document.getElementById("asset-modal-title").innerHTML = id
+    ? `編輯設備 ${esc(a.code)}<span class="vi">Sửa thiết bị</span>`
+    : `新增設備<span class="vi">Thêm thiết bị mới</span>`;
+  document.getElementById("f-code").value = a?.code || '';
+  document.getElementById("f-code").disabled = !!id;
+  document.getElementById("f-code-hint").textContent = '';
+  document.getElementById("f-catcode").value = a?.categoryCode || '';
+  document.getElementById("f-usagestatus").value = a?.usageStatus || 'active';
+  document.getElementById("f-namezh").value = a?.itemZh || a?.nameZh || '';
+  document.getElementById("f-namevi").value = a?.itemVi || a?.nameVi || '';
+  document.getElementById("f-spec").value = a?.spec || '';
+  document.getElementById("f-location").value = a?.location || '';
+  document.getElementById("f-keeper").value = a?.keeper || '';
+  document.getElementById("f-supplier").value = a?.supplier || '';
+  document.getElementById("f-price").value = a?.unitPrice ?? '';
+  document.getElementById("f-currency").value = a?.currency || '';
+  document.getElementById("f-acquire").value = a?.acquireDate || '';
+  document.getElementById("f-cycle").value = a?.cycleMonths || '';
+  document.getElementById("f-nextdue").value = a?.nextDueDate || '';
+  document.getElementById("f-note").value = a?.note || '';
+  assetImgData = a?.imageUrl || '';
+  if (assetImgData) {
+    document.getElementById("f-img-placeholder").style.display = "none";
+    document.getElementById("f-img-preview-wrap").style.display = "";
+    document.getElementById("f-img-preview").src = assetImgData;
+  } else {
+    document.getElementById("f-img-placeholder").style.display = "";
+    document.getElementById("f-img-preview-wrap").style.display = "none";
+  }
+  document.getElementById("f-img").value = "";
+  document.getElementById("f-img-camera").value = "";
+  document.getElementById("btn-print-label").style.display = id ? "" : "none";
+  document.getElementById("asset-modal").classList.remove("hidden");
+};
+window.closeAssetModal = () => document.getElementById("asset-modal").classList.add("hidden");
+
+// ── 列印標籤（下載資料檔給 BarTender 監控資料夾自動列印）──
+window.printLabel = function() {
+  const code = document.getElementById("f-code").value.trim();
+  const nextDue = document.getElementById("f-nextdue").value;
+  if (!code) { alert("設備編號不可為空 / Mã thiết bị không được để trống"); return; }
+  if (!nextDue) {
+    if (!confirm("尚未設定下次校驗日期，仍要列印標籤嗎？\nChưa có ngày hiệu chuẩn tiếp theo, vẫn muốn in nhãn?")) return;
+  }
+  const row = {
+    Code: code,
+    NameZh: document.getElementById("f-namezh").value.trim(),
+    Spec: document.getElementById("f-spec").value.trim(),
+    AcquireDate: toSlashDate(document.getElementById("f-acquire").value),
+    NextDueDate: toSlashDate(nextDue),
+  };
+  const header = Object.keys(row).join(",");
+  const line = Object.values(row).map(csvEscape).join(",");
+  const csv = "﻿" + header + "\r\n" + line + "\r\n";
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const stamp = new Date().toISOString().replace(/[-:T]/g,'').slice(0,14);
+  a.href = url;
+  a.download = `label_${code}_${stamp}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+function toSlashDate(iso) { return iso ? iso.replaceAll('-', '/') : ''; }
+function csvEscape(v) { return `"${String(v ?? '').replace(/"/g, '""')}"`; }
+
+// ── 設備照片 ────────────────────────────────
+let assetImgData = '';
+async function handleAssetFile(file) {
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { alert("圖片不可超過 5MB / Ảnh không quá 5MB"); return; }
+  assetImgData = await compressToBase64(file, 700, 0.78);
+  document.getElementById("f-img-placeholder").style.display = "none";
+  document.getElementById("f-img-preview-wrap").style.display = "";
+  document.getElementById("f-img-preview").src = assetImgData;
+}
+window.handleAssetImgSelect = e => handleAssetFile(e.target.files[0]);
+window.handleAssetImgDrop = e => {
+  e.preventDefault();
+  document.getElementById("f-img-upload-area").classList.remove("drag-over");
+  handleAssetFile(e.dataTransfer.files[0]);
+};
+window.removeAssetImg = function(e) {
+  if (e) e.stopPropagation();
+  assetImgData = '';
+  document.getElementById("f-img-placeholder").style.display = "";
+  document.getElementById("f-img-preview-wrap").style.display = "none";
+  document.getElementById("f-img").value = "";
+  document.getElementById("f-img-camera").value = "";
+};
+
+document.getElementById("f-catcode").addEventListener("input", () => {
+  if (editingAssetId) return;
+  const prefix = document.getElementById("f-catcode").value.slice(0,2);
+  if (CYCLE_BY_PREFIX[prefix] && !document.getElementById("f-cycle").value) {
+    document.getElementById("f-cycle").value = CYCLE_BY_PREFIX[prefix];
+  }
+});
+
+// 首次校驗日期一律從取得（交貨）日期起算：新增設備時，取得日期或週期變動會自動推算下次校驗日期
+// （編輯已有校驗紀錄的設備時不自動覆蓋，避免蓋掉依實際校驗結果算出的到期日）
+function syncNextDueFromAcquire() {
+  if (editingAssetId) return;
+  const acquire = document.getElementById("f-acquire").value;
+  const cycle = document.getElementById("f-cycle").value;
+  if (!acquire || !cycle) return;
+  document.getElementById("f-nextdue").value = addMonths(acquire, cycle);
+}
+document.getElementById("f-acquire").addEventListener("change", syncNextDueFromAcquire);
+document.getElementById("f-cycle").addEventListener("change", syncNextDueFromAcquire);
+
+window.saveAsset = async function() {
+  if (!canManage) { alert("權限不足，僅品保／管理員可新增或編輯設備 / Không đủ quyền hạn"); return; }
+  const code = document.getElementById("f-code").value.trim();
+  const nameZh = document.getElementById("f-namezh").value.trim();
+  if (!code || !nameZh) {
+    document.getElementById("f-code-hint").textContent = "請填寫設備編號與名稱 / Vui lòng nhập mã và tên";
+    return;
+  }
+  const id = editingAssetId || code;
+  if (!editingAssetId) {
+    const existing = await getDoc(doc(db, "calibration_assets", id));
+    if (existing.exists()) {
+      document.getElementById("f-code-hint").textContent = "此編號已存在 / Mã số đã tồn tại";
+      return;
+    }
+  }
+  const data = {
+    code,
+    categoryCode: document.getElementById("f-catcode").value.trim(),
+    usageStatus: document.getElementById("f-usagestatus").value,
+    itemZh: nameZh,
+    nameZh: nameZh,
+    itemVi: document.getElementById("f-namevi").value.trim(),
+    nameVi: document.getElementById("f-namevi").value.trim(),
+    spec: document.getElementById("f-spec").value.trim(),
+    location: document.getElementById("f-location").value.trim(),
+    keeper: document.getElementById("f-keeper").value.trim(),
+    supplier: document.getElementById("f-supplier").value.trim(),
+    unitPrice: document.getElementById("f-price").value === '' ? null : Number(document.getElementById("f-price").value),
+    currency: document.getElementById("f-currency").value,
+    acquireDate: document.getElementById("f-acquire").value,
+    cycleMonths: Number(document.getElementById("f-cycle").value) || 12,
+    nextDueDate: document.getElementById("f-nextdue").value,
+    note: document.getElementById("f-note").value.trim(),
+    imageUrl: assetImgData || '',
+    updatedAt: serverTimestamp(),
+  };
+  if (editingAssetId) {
+    await updateDoc(doc(db, "calibration_assets", editingAssetId), data);
+  } else {
+    data.lastCalibDate = '';
+    data.createdAt = serverTimestamp();
+    await setDoc(doc(db, "calibration_assets", id), data);
+  }
+  closeAssetModal();
+};
+
+window.deleteAsset = async function(id) {
+  if (!canManage) { alert("權限不足，僅品保／管理員可刪除設備 / Không đủ quyền hạn"); return; }
+  const a = assets[id]; if (!a) return;
+  if (!confirm(`確定刪除設備「${a.code} ${a.itemZh || a.nameZh}」？此動作無法復原。\nXác nhận xóa thiết bị này? Không thể hoàn tác.`)) return;
+  await deleteDoc(doc(db, "calibration_assets", id));
+};
+
+// ── 編號小幫手 ────────────────────────────────
+let CATS = [];
+fetch('category_codes.json').then(r => r.json()).then(d => CATS = d).catch(() => { CATS = []; });
+
+let _chCatIdx = null, _chItem = null;
+
+window.openCodeHelper = function() {
+  _chCatIdx = null; _chItem = null;
+  document.getElementById('ch-sub-area').style.display = 'none';
+  document.getElementById('ch-serial-area').style.display = 'none';
+  document.getElementById('ch-preview-area').style.display = 'none';
+  document.getElementById('ch-sub-search').value = '';
+  document.getElementById('ch-apply-btn').disabled = true;
+  document.getElementById('ch-apply-btn').style.opacity = '.5';
+  document.getElementById('ch-cat-btns').innerHTML = CATS.map((g, i) => `
+    <button onclick="chSelectCat(${i})" data-idx="${i}"
+      style="padding:8px 10px;border-radius:8px;border:1px solid #e2e5ed;background:#fff;cursor:pointer;font-size:.8rem;font-weight:600;text-align:left;line-height:1.35">
+      <div>${esc(g.label)}</div>
+      <div style="font-size:.72rem;font-weight:400;color:#64748b">${esc(g.labelVi||'')}</div>
+    </button>`).join('') || '<div style="font-size:.8rem;color:#94a3b8">類別資料載入中…</div>';
+  document.getElementById('code-helper-overlay').style.display = 'flex';
+};
+window.closeCodeHelper = () => document.getElementById('code-helper-overlay').style.display = 'none';
+
+window.chSelectCat = function(idx) {
+  _chCatIdx = idx; _chItem = null;
+  document.querySelectorAll('#ch-cat-btns button').forEach(b => {
+    const a = Number(b.dataset.idx) === idx;
+    b.style.background = a ? '#1e293b' : '#fff';
+    b.style.color = a ? '#fff' : '';
+    b.style.borderColor = a ? '#1e293b' : '#e2e5ed';
+    b.querySelector('div:last-child').style.color = a ? '#cbd5e1' : '#64748b';
+  });
+  chRenderSubBtns('');
+  document.getElementById('ch-sub-area').style.display = '';
+  document.getElementById('ch-serial-area').style.display = 'none';
+  document.getElementById('ch-preview-area').style.display = 'none';
+  document.getElementById('ch-apply-btn').disabled = true;
+  document.getElementById('ch-apply-btn').style.opacity = '.5';
+};
+
+function chRenderSubBtns(filter) {
+  const g = CATS[_chCatIdx]; if (!g) return;
+  const f = (filter||'').toLowerCase();
+  const items = g.items.filter(it => !f || it.code.toLowerCase().includes(f) || (it.zh||'').toLowerCase().includes(f) || (it.vi||'').toLowerCase().includes(f));
+  document.getElementById('ch-sub-btns').innerHTML = items.map(it => `
+    <button onclick="chSelectItem('${it.code.replace(/'/g,"\\'")}')" data-code="${esc(it.code)}"
+      style="padding:8px 10px;border-radius:8px;border:1px solid #e2e5ed;background:#fff;cursor:pointer;font-size:.8rem;text-align:left;line-height:1.35">
+      <div><span style="font-family:monospace;font-weight:700;color:#2563eb">${esc(it.code)}</span> ${esc(it.zh)}${it.isNew ? ' <span class="badge-new">新</span>' : ''}</div>
+      <div style="font-size:.7rem;color:#64748b">${esc(it.vi||'')}</div>
+    </button>`).join('') || '<div style="font-size:.8rem;color:#94a3b8;grid-column:1/-1">找不到符合的品項</div>';
+}
+document.getElementById('ch-sub-search').addEventListener('input', e => chRenderSubBtns(e.target.value));
+
+window.chSelectItem = function(code) {
+  _chItem = CATS[_chCatIdx].items.find(it => it.code === code);
+  if (!_chItem) return;
+  document.querySelectorAll('#ch-sub-btns button').forEach(b => {
+    const a = b.dataset.code === code;
+    b.style.background = a ? '#2563eb' : '#fff';
+    b.style.color = a ? '#fff' : '';
+    b.style.borderColor = a ? '#2563eb' : '#e2e5ed';
+    b.querySelector('div:last-child').style.color = a ? '#bfdbfe' : '#64748b';
+  });
+  document.getElementById('ch-year').value = todayStr().slice(2,4);
+  document.getElementById('ch-serial').value = chSuggestSerial(code, document.getElementById('ch-year').value);
+  document.getElementById('ch-serial-area').style.display = '';
+  chUpdatePreview();
+};
+
+function chSuggestSerial(typeCode, year) {
+  const prefix = typeCode + year;
+  let max = 0;
+  Object.values(assets).forEach(a => {
+    if (a.code && a.code.startsWith(prefix) && a.code.length === prefix.length + 3) {
+      const n = parseInt(a.code.slice(prefix.length), 10);
+      if (!isNaN(n) && n > max) max = n;
+    }
+  });
+  return String(max + 1).padStart(3, '0');
+}
+
+function chUpdatePreview() {
+  if (!_chItem) return;
+  const year = document.getElementById('ch-year').value.trim() || todayStr().slice(2,4);
+  const serial = document.getElementById('ch-serial').value.trim() || '001';
+  const code = _chItem.code + year + serial;
+  document.getElementById('ch-preview').textContent = code;
+  const dup = !!assets[code];
+  document.getElementById('ch-dup-hint').textContent = dup ? '⚠ 此編號已存在，套用後將視為修改既有設備 / Mã đã tồn tại' : '';
+  document.getElementById('ch-preview-area').style.display = '';
+  document.getElementById('ch-apply-btn').disabled = false;
+  document.getElementById('ch-apply-btn').style.opacity = '1';
+}
+document.getElementById('ch-year').addEventListener('input', () => { if (_chItem) { document.getElementById('ch-serial').value = chSuggestSerial(_chItem.code, document.getElementById('ch-year').value.trim() || todayStr().slice(2,4)); chUpdatePreview(); } });
+document.getElementById('ch-serial').addEventListener('input', chUpdatePreview);
+
+window.applyCode = function() {
+  if (!_chItem) return;
+  const code = document.getElementById('ch-preview').textContent;
+  document.getElementById('f-code').value = code;
+  document.getElementById('f-catcode').value = _chItem.code;
+  if (!document.getElementById('f-namezh').value.trim()) document.getElementById('f-namezh').value = _chItem.zh;
+  if (!document.getElementById('f-namevi').value.trim()) document.getElementById('f-namevi').value = _chItem.vi || '';
+  document.getElementById('f-catcode').dispatchEvent(new Event('input', { bubbles: true }));
+  document.getElementById('f-code-hint').textContent = '';
+  closeCodeHelper();
+};
+
+// ── 新增校驗紀錄 ────────────────────────────────
+let recordAssetId = null;
+let recordResult = 'pass';
+let recordImgData = '';
+
+window.openRecordModal = function(id) {
+  recordAssetId = id;
+  const a = assets[id]; if (!a) return;
+  document.getElementById("record-modal-title").innerHTML =
+    `新增校驗紀錄 — ${esc(a.code)} ${esc(a.itemZh || a.nameZh)}<span class="vi">Thêm bản ghi hiệu chuẩn</span>`;
+  document.getElementById("r-date").value = todayStr();
+  document.getElementById("r-nextdue").value = addMonths(todayStr(), a.cycleMonths || 12);
+  document.getElementById("r-vendor").value = '';
+  document.getElementById("r-report").value = '';
+  document.getElementById("r-note").value = '';
+  removeRecordImg();
+  setResult('pass');
+  document.getElementById("record-modal").classList.remove("hidden");
+};
+window.closeRecordModal = () => document.getElementById("record-modal").classList.add("hidden");
+
+window.setResult = function(r) {
+  recordResult = r;
+  ['pass','fail','pending'].forEach(k => {
+    document.getElementById(`result-${k}-btn`).classList.toggle(`active-${k}`, k === r);
+  });
+};
+
+document.getElementById("r-date").addEventListener("change", () => {
+  const a = assets[recordAssetId]; if (!a) return;
+  document.getElementById("r-nextdue").value = addMonths(document.getElementById("r-date").value, a.cycleMonths || 12);
+});
+
+window.saveRecord = async function() {
+  const date = document.getElementById("r-date").value;
+  const nextDue = document.getElementById("r-nextdue").value;
+  if (!date || !nextDue) { alert("請填寫校驗日期與下次校驗日期 / Vui lòng nhập đầy đủ ngày"); return; }
+  const btn = document.getElementById("record-save-btn");
+  btn.disabled = true;
+  const entry = {
+    date, nextDue, result: recordResult,
+    vendor: document.getElementById("r-vendor").value.trim(),
+    reportNo: document.getElementById("r-report").value.trim(),
+    note: document.getElementById("r-note").value.trim(),
+    fileData: recordImgData || '',
+    recordedAt: new Date().toISOString(),
+  };
+  try {
+    // 校驗紀錄存成子集合（每筆一份文件），避免多筆帶照片的紀錄疊加在同一份文件裡超過
+    // Firestore 單一文件 1MiB 上限，導致儲存失敗
+    await addDoc(collection(db, "calibration_assets", recordAssetId, "records"), entry);
+    await updateDoc(doc(db, "calibration_assets", recordAssetId), {
+      lastCalibDate: date,
+      nextDueDate: nextDue,
+      updatedAt: serverTimestamp(),
+    });
+    closeRecordModal();
+  } catch (err) {
+    alert("儲存失敗，請稍後再試 / Lưu thất bại：" + err.message);
+  } finally {
+    btn.disabled = false;
+  }
+};
+
+function compressToBase64(file, maxPx, quality) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let w = img.width, h = img.height;
+      if (w > maxPx || h > maxPx) {
+        if (w >= h) { h = Math.round(h * maxPx / w); w = maxPx; }
+        else { w = Math.round(w * maxPx / h); h = maxPx; }
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL("image/jpeg", quality));
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+async function handleRecordFile(file) {
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { alert("圖片不可超過 5MB / Ảnh không quá 5MB"); return; }
+  recordImgData = await compressToBase64(file, 900, 0.8);
+  document.getElementById("r-img-placeholder").style.display = "none";
+  document.getElementById("r-img-preview-wrap").style.display = "";
+  document.getElementById("r-img-preview").src = recordImgData;
+}
+window.handleRecordImgSelect = e => handleRecordFile(e.target.files[0]);
+window.handleRecordImgDrop = e => {
+  e.preventDefault();
+  document.getElementById("r-img-area").classList.remove("drag-over");
+  handleRecordFile(e.dataTransfer.files[0]);
+};
+window.removeRecordImg = function(e) {
+  if (e) e.stopPropagation();
+  recordImgData = '';
+  document.getElementById("r-img-placeholder").style.display = "";
+  document.getElementById("r-img-preview-wrap").style.display = "none";
+  document.getElementById("r-img").value = "";
+};
+
+// ── 校驗履歷 ────────────────────────────────
+window.openHistModal = async function(id) {
+  const a = assets[id]; if (!a) return;
+  document.getElementById("hist-modal-title").innerHTML =
+    `${esc(a.code)} ${esc(a.itemZh || a.nameZh)} — 校驗履歷<span class="vi">Lịch sử hiệu chuẩn</span>`;
+  const list = document.getElementById("hist-list");
+  list.innerHTML = `<li style="text-align:center;padding:30px;color:var(--text-soft)">載入中… / Đang tải…</li>`;
+  document.getElementById("hist-modal").classList.remove("hidden");
+
+  const snap = await getDocs(query(collection(db, "calibration_assets", id, "records"), orderBy("date", "desc")));
+  const log = snap.docs.map(d => d.data());
+  if (!log.length) {
+    list.innerHTML = `<li style="text-align:center;padding:30px;color:var(--text-soft)">尚無校驗紀錄<br><span style="font-style:italic">Chưa có bản ghi hiệu chuẩn</span></li>`;
+  } else {
+    const resultMap = {
+      pass:    ['✓ 合格','Đạt','var(--ok)'],
+      fail:    ['✕ 不合格','Không đạt','var(--danger)'],
+      pending: ['… 待確認','Chờ xử lý','var(--warn)'],
+    };
+    list.innerHTML = log.map(r => {
+      const [rzh, rvi, color] = resultMap[r.result] || resultMap.pass;
+      return `<li class="hist-item">
+        ${r.fileData ? `<img class="hist-thumb" src="${r.fileData}" onclick="openLightbox('${r.fileData}')">` : `<div class="hist-thumb" style="display:flex;align-items:center;justify-content:center;color:#d1d5db">—</div>`}
+        <div class="hist-body">
+          <div class="hist-top">
+            <span class="hist-date">${esc(r.date)}</span>
+            <span style="color:${color};font-weight:700;font-size:.8rem">${rzh}</span>
+            <span style="color:var(--text-soft);font-size:.74rem;font-style:italic">${rvi}</span>
+          </div>
+          <div class="hist-meta">
+            下次到期：${esc(r.nextDue || '—')}
+            ${r.vendor ? ` ・ 校驗單位：${esc(r.vendor)}` : ''}
+            ${r.reportNo ? ` ・ 報告號：${esc(r.reportNo)}` : ''}
+            ${r.note ? `<br>${esc(r.note)}` : ''}
+          </div>
+        </div>
+      </li>`;
+    }).join('');
+  }
+};
+window.closeHistModal = () => document.getElementById("hist-modal").classList.add("hidden");
+window.openLightbox = src => {
+  document.getElementById("lightbox-img").src = src;
+  document.getElementById("lightbox").classList.remove("hidden");
+};
+
+// ── 匯入採購清單 ────────────────────────────────
+let SEED = [];
+fetch('calibration_seed.json').then(r => r.json()).then(d => SEED = d).catch(() => { SEED = []; });
+
+window.openImportModal = function() {
+  if (!canManage) { alert("權限不足，僅品保／管理員可匯入設備 / Không đủ quyền hạn"); return; }
+  document.getElementById("import-status").textContent = '';
+  document.getElementById("import-progress-bar").style.display = "none";
+  document.getElementById("import-progress-fill").style.width = "0%";
+  document.getElementById("import-run-btn").disabled = false;
+  document.getElementById("import-test-btn").disabled = false;
+  document.getElementById("import-modal").classList.remove("hidden");
+};
+window.closeImportModal = () => document.getElementById("import-modal").classList.add("hidden");
+
+window.runImport = async function(limit) {
+  if (!canManage) { alert("權限不足，僅品保／管理員可匯入設備 / Không đủ quyền hạn"); return; }
+  if (!SEED.length) { document.getElementById("import-status").textContent = "找不到匯入資料 calibration_seed.json"; return; }
+  const source = limit ? SEED.slice(0, limit) : SEED;
+  const btn = document.getElementById("import-run-btn");
+  const testBtn = document.getElementById("import-test-btn");
+  btn.disabled = true; testBtn.disabled = true;
+  const bar = document.getElementById("import-progress-bar");
+  const fill = document.getElementById("import-progress-fill");
+  const status = document.getElementById("import-status");
+  bar.style.display = "";
+
+  let added = 0, skipped = 0;
+  const CHUNK = 400;
+  for (let i = 0; i < source.length; i += CHUNK) {
+    const chunk = source.slice(i, i + CHUNK);
+    const batch = writeBatch(db);
+    for (const item of chunk) {
+      if (assets[item.code]) { skipped++; continue; }
+      const nextDue = item.acquireDate ? addMonths(item.acquireDate, item.cycleMonths) : '';
+      batch.set(doc(db, "calibration_assets", item.code), {
+        code: item.code,
+        categoryCode: item.categoryCode,
+        nameZh: item.nameZh, nameVi: item.nameVi,
+        itemZh: item.itemZh, itemVi: item.itemVi,
+        spec: item.spec, supplier: item.supplier,
+        unitPrice: item.unitPrice ?? null, currency: item.currency || '',
+        location: '', keeper: '',
+        acquireDate: item.acquireDate,
+        cycleMonths: item.cycleMonths,
+        lastCalibDate: '',
+        nextDueDate: nextDue,
+        isNewCategory: !!item.isNewCategory,
+        note: item.note || '',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      added++;
+    }
+    await batch.commit();
+    fill.style.width = Math.round(Math.min(i + CHUNK, source.length) / source.length * 100) + '%';
+  }
+  status.innerHTML = `匯入完成：新增 <b>${added}</b> 筆，略過已存在 <b>${skipped}</b> 筆${limit ? '（測試批次 ' + source.length + ' 筆）' : ''}。<br><span style="font-style:italic">Hoàn tất: thêm ${added}, bỏ qua ${skipped} (đã tồn tại).</span>`;
+  btn.disabled = false; testBtn.disabled = false;
+};
+
+// ── 匯出 CSV ────────────────────────────────
+window.exportCsv = function() {
+  const rows = Object.values(assets).sort((a,b) => (a.code||'').localeCompare(b.code||''));
+  const header = ['編號','類別碼','使用狀態','設備名稱(中)','Tên(VN)','型號規格','位置','保管人','供應商','採購單價','幣別','取得日期','校驗週期(月)','上次校驗','下次校驗','狀態','備註'];
+  const statusLabel = { overdue:'已逾期', dueSoon:'即將到期', ok:'正常', noSchedule:'尚未排定' };
+  const usageLabel = { active:'使用中', inactive:'停用中', scrapped:'報廢' };
+  const lines = [header.join(',')];
+  rows.forEach(a => {
+    const cells = [a.code,a.categoryCode,usageLabel[getUsageStatus(a)],a.itemZh||a.nameZh,a.itemVi||a.nameVi,a.spec,a.location,a.keeper,a.supplier,a.unitPrice,a.currency,a.acquireDate,a.cycleMonths,a.lastCalibDate,a.nextDueDate,statusLabel[getStatus(a)],a.note]
+      .map(v => `"${String(v??'').replace(/"/g,'""')}"`);
+    lines.push(cells.join(','));
+  });
+  const blob = new Blob(["﻿" + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url; link.download = `校驗清單_${todayStr()}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+};
+
+// ── Modal 點擊背景關閉 ────────────────────────────────
+["asset-modal","record-modal","hist-modal","import-modal"].forEach(id => {
+  document.getElementById(id).addEventListener("click", e => {
+    if (e.target === e.currentTarget) e.currentTarget.classList.add("hidden");
+  });
+});
+</script>
+</body>
+</html>

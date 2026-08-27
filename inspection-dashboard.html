@@ -114,7 +114,7 @@
     <h2 class="sec-title">依站點統計</h2>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>棟別</th><th>站點</th><th class="num">應巡次數</th><th class="num">實巡次數</th><th style="min-width:140px">達成率</th><th class="num">異常次數</th><th class="num">異常率</th></tr></thead>
+        <thead><tr><th>棟別</th><th>站點</th><th class="num">應巡次數</th><th class="num">實巡次數</th><th style="min-width:140px">達成率</th><th class="num">異常次數</th><th class="num">異常率</th><th style="min-width:140px">結案率</th></tr></thead>
         <tbody id="area-tbody"></tbody>
       </table>
     </div>
@@ -232,8 +232,9 @@ function renderStats(days) {
   document.getElementById("s-open").textContent = lastIssues.filter(i => i.status !== "已結案").length;
 
   const byArea = {};
-  activeAreas.forEach(a => byArea[a.id] = { area: a, actual: 0, abnormal: 0 });
+  activeAreas.forEach(a => byArea[a.id] = { area: a, actual: 0, abnormal: 0, issueTotal: 0, issueClosed: 0 });
   lastRecords.forEach(r => { if (byArea[r.areaId]) { byArea[r.areaId].actual++; if (r.overallStatus === "異常") byArea[r.areaId].abnormal++; } });
+  lastIssues.forEach(i => { if (byArea[i.areaId]) { byArea[i.areaId].issueTotal++; if (i.status === "已結案") byArea[i.areaId].issueClosed++; } });
 
   lastAreaStats = Object.values(byArea).sort((a,b) => a.area.building.localeCompare(b.area.building) || (a.area.sortOrder||0)-(b.area.sortOrder||0));
   const tbody = document.getElementById("area-tbody");
@@ -242,6 +243,7 @@ function renderStats(days) {
     const expected = 2 * days;
     const pct = expected ? Math.round(s.actual/expected*100) : 0;
     const abPct = s.actual ? Math.round(s.abnormal/s.actual*100) : 0;
+    const closePct = s.issueTotal ? Math.round(s.issueClosed/s.issueTotal*100) : null;
     return `<tr>
       <td>${esc(s.area.building)}棟</td>
       <td>${esc(s.area.stationName)}${s.area.lineNo?'第'+esc(s.area.lineNo)+'線':''}</td>
@@ -250,6 +252,7 @@ function renderStats(days) {
       <td><div class="rate-bar-wrap"><div class="rate-bar"><div class="rate-bar-fill ${rateClass(pct)}" style="width:${Math.min(pct,100)}%"></div></div><span>${pct}%</span></div></td>
       <td class="num">${s.abnormal}</td>
       <td class="num">${abPct}%</td>
+      <td>${closePct === null ? '<span style="color:var(--text-soft)">—</span>' : `<div class="rate-bar-wrap"><div class="rate-bar"><div class="rate-bar-fill ${rateClass(closePct)}" style="width:${Math.min(closePct,100)}%"></div></div><span>${closePct}% (${s.issueClosed}/${s.issueTotal})</span></div>`}</td>
     </tr>`;
   }).join("");
 }
@@ -266,13 +269,15 @@ window.exportExcel = async function() {
       { header: "棟別", key: "b", width: 8 }, { header: "站點", key: "s", width: 16 },
       { header: "應巡次數", key: "e", width: 10 }, { header: "實巡次數", key: "a", width: 10 },
       { header: "達成率", key: "r", width: 10 }, { header: "異常次數", key: "ab", width: 10 }, { header: "異常率", key: "ar", width: 10 },
+      { header: "結案率", key: "cr", width: 14 },
     ];
     const days = Math.max(1, Math.round((new Date(document.getElementById("f-end").value) - new Date(document.getElementById("f-start").value)) / 86400000) + 1);
     lastAreaStats.forEach(s => {
       const expected = 2*days;
       s1.addRow({ b: s.area.building+"棟", s: s.area.stationName+(s.area.lineNo?('第'+s.area.lineNo+'線'):''),
         e: expected, a: s.actual, r: expected?Math.round(s.actual/expected*100)+"%":"—",
-        ab: s.abnormal, ar: s.actual?Math.round(s.abnormal/s.actual*100)+"%":"—" });
+        ab: s.abnormal, ar: s.actual?Math.round(s.abnormal/s.actual*100)+"%":"—",
+        cr: s.issueTotal ? Math.round(s.issueClosed/s.issueTotal*100)+"% ("+s.issueClosed+"/"+s.issueTotal+")" : "—" });
     });
     styleHeader(s1);
 

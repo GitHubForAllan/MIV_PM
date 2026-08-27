@@ -72,6 +72,16 @@
   tbody tr:hover { background: #f8f9fc; }
   td { padding: 9px 12px; vertical-align: middle; }
 
+  /* station closure rate */
+  .rate-bar-wrap { display: flex; align-items: center; gap: 8px; min-width: 160px; }
+  .rate-bar-track { flex: 1; height: 8px; border-radius: 99px; background: var(--muted-bg); overflow: hidden; }
+  .rate-bar-fill { height: 100%; border-radius: 99px; }
+  .rate-bar-fill.rate-low { background: var(--danger); }
+  .rate-bar-fill.rate-mid { background: var(--warn); }
+  .rate-bar-fill.rate-high { background: var(--ok); }
+  .rate-pct { font-size: .8rem; font-weight: 700; min-width: 42px; text-align: right; }
+  .rate-pct.rate-low { color: var(--danger); } .rate-pct.rate-mid { color: var(--warn); } .rate-pct.rate-high { color: var(--ok); }
+
   .badge { display: inline-block; padding: 2px 9px; border-radius: 99px; font-size: .7rem; font-weight: 700; white-space: nowrap; }
   .badge-CR { background: #fee2e2; color: #b91c1c; } .badge-MA { background: #fef9c3; color: #a16207; } .badge-MI { background: #f1f5f9; color: #64748b; }
   .badge-status { background: var(--muted-bg); color: var(--muted); }
@@ -152,6 +162,7 @@
     <div class="view-toggle">
       <button id="view-kanban-btn" class="active" onclick="setView('kanban')">看板</button>
       <button id="view-table-btn" onclick="setView('table')">清單</button>
+      <button id="view-stations-btn" onclick="setView('stations')">站點結案率</button>
     </div>
   </div>
 
@@ -161,6 +172,14 @@
       <table>
         <thead><tr><th>等級</th><th>站點</th><th>機種/零件</th><th>描述</th><th>回報人</th><th>負責人</th><th>狀態</th><th>回報時間</th></tr></thead>
         <tbody id="table-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div id="stations-view" style="display:none">
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>站點</th><th>全部異常單</th><th>已結案</th><th>結案率</th></tr></thead>
+        <tbody id="stations-tbody"></tbody>
       </table>
     </div>
   </div>
@@ -305,9 +324,15 @@ window.setView = function(v) {
   currentView = v;
   document.getElementById("view-kanban-btn").classList.toggle("active", v === "kanban");
   document.getElementById("view-table-btn").classList.toggle("active", v === "table");
+  document.getElementById("view-stations-btn").classList.toggle("active", v === "stations");
   document.getElementById("kanban-view").style.display = v === "kanban" ? "" : "none";
   document.getElementById("table-view").style.display = v === "table" ? "" : "none";
+  document.getElementById("stations-view").style.display = v === "stations" ? "" : "none";
   render();
+};
+window.filterByStation = function(areaId) {
+  document.getElementById("filter-station").value = areaId;
+  setView("table");
 };
 window.setStatusFilter = function(s) { document.getElementById("filter-status").value = s; render(); };
 
@@ -335,10 +360,45 @@ function filteredList() {
 }
 
 window.render = function() {
+  if (currentView === "stations") {
+    document.getElementById("empty-state").style.display = "none";
+    renderStationRates();
+    return;
+  }
   const list = filteredList();
   document.getElementById("empty-state").style.display = list.length ? "none" : "";
   if (currentView === "kanban") renderKanban(list); else renderTable(list);
 };
+
+function rateClass(pct) { return pct >= 80 ? "rate-high" : pct >= 50 ? "rate-mid" : "rate-low"; }
+
+function renderStationRates() {
+  const byArea = {};
+  Object.values(issues).forEach(i => {
+    const a = byArea[i.areaId] || (byArea[i.areaId] = { total: 0, closed: 0 });
+    a.total++;
+    if (i.status === "已結案") a.closed++;
+  });
+  const rows = Object.keys(byArea)
+    .map(areaId => ({ areaId, area: areas[areaId], ...byArea[areaId] }))
+    .sort((a, b) => {
+      const ba = a.area?.building || "", bb = b.area?.building || "";
+      return ba.localeCompare(bb) || (a.area?.sortOrder||0) - (b.area?.sortOrder||0);
+    });
+  document.getElementById("stations-tbody").innerHTML = rows.map(r => {
+    const pct = r.total ? Math.round((r.closed / r.total) * 100) : 0;
+    const cls = rateClass(pct);
+    return `<tr onclick="filterByStation('${r.areaId}')">
+      <td>${esc(r.area ? areaLabel(r.areaId) : "（未知站點）")}</td>
+      <td>${r.total}</td>
+      <td>${r.closed}</td>
+      <td><div class="rate-bar-wrap">
+        <div class="rate-bar-track"><div class="rate-bar-fill ${cls}" style="width:${pct}%"></div></div>
+        <span class="rate-pct ${cls}">${pct}%</span>
+      </div></td>
+    </tr>`;
+  }).join("") || `<tr><td colspan="4" style="text-align:center;color:var(--text-soft)">尚無異常紀錄</td></tr>`;
+}
 
 const STATUSES = ["待處理", "改善中", "待複檢（待主管簽核）", "已結案"];
 function renderKanban(list) {

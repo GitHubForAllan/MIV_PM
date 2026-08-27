@@ -159,7 +159,7 @@
   </div>
 
   <div class="toolbar">
-    <input class="search-box" id="search-input" placeholder="搜尋內容 / 委託單位 / 單號… Tìm kiếm…" oninput="render()">
+    <input class="search-box" id="search-input" placeholder="搜尋單號 / 機種 / 圖號 / 內容 / 人員… Tìm kiếm…" oninput="render()">
     <select class="filter-select" id="filter-dept" onchange="render()"><option value="">所有委託單位 / Tất cả đơn vị</option></select>
     <select class="filter-select" id="filter-category" onchange="render()"><option value="">所有類別 / Tất cả loại</option></select>
     <select class="filter-select" id="filter-status" onchange="render()">
@@ -179,7 +179,7 @@
     <div class="table-wrap">
       <table>
         <thead><tr>
-          <th>單號</th><th>類別</th><th>委託單位</th><th>內容摘要</th><th>委託人</th><th>希望完成</th><th>狀態</th><th>總成本</th>
+          <th>單號</th><th>類別</th><th>機種</th><th>圖號</th><th>委託單位</th><th>內容摘要</th><th>委託人</th><th>擔當者</th><th>希望完成</th><th>狀態</th><th>總成本</th>
         </tr></thead>
         <tbody id="table-tbody"></tbody>
       </table>
@@ -209,6 +209,20 @@
         <div class="detail-row">
           <label>受託單位 <span class="vi">Đơn vị tiếp nhận</span></label>
           <input value="技術課 Phòng Kỹ thuật" disabled>
+        </div>
+      </div>
+      <div class="grid3">
+        <div class="detail-row">
+          <label>機種 <span class="vi">Model máy</span></label>
+          <input id="f-model" placeholder="例：TM25VS">
+        </div>
+        <div class="detail-row">
+          <label>圖號 <span class="vi">Số bản vẽ</span></label>
+          <input id="f-drawingNo" placeholder="例：A-1234-05">
+        </div>
+        <div class="detail-row">
+          <label>委託人 <span class="vi">Người ủy thác</span></label>
+          <input id="f-requesterName" placeholder="預設為登入者">
         </div>
       </div>
       <div class="grid2">
@@ -257,9 +271,15 @@
     <div class="sec" id="sec-accept" style="display:none">
       <div class="sec-title"><span>技術課受理</span><span class="vi">Phòng Kỹ thuật tiếp nhận</span></div>
       <div class="detail-row"><div class="val" id="d-accept-info"></div></div>
-      <div class="detail-row" id="d-accept-form-row" style="display:none">
-        <label>預定完成時間 <span class="vi">Thời gian dự kiến hoàn thành</span></label>
-        <input type="datetime-local" id="f-scheduledCompleteAt">
+      <div class="grid2" id="d-accept-form-row" style="display:none">
+        <div class="detail-row">
+          <label>預定完成時間 <span class="vi">Thời gian dự kiến hoàn thành</span></label>
+          <input type="datetime-local" id="f-scheduledCompleteAt">
+        </div>
+        <div class="detail-row">
+          <label>擔當者 <span class="vi">Người phụ trách</span></label>
+          <input id="f-assignee" placeholder="負責處理本委託的人員">
+        </div>
       </div>
     </div>
 
@@ -270,21 +290,28 @@
       <p class="hint" id="d-complete-empty" style="display:none">技術課處理中，尚未填寫完成資訊 / Phòng Kỹ thuật đang xử lý, chưa nhập thông tin hoàn thành</p>
       <div id="d-complete-form" style="display:none">
         <div class="grid3">
+          <div class="detail-row"><label>擔當者 <span class="vi">Người phụ trách</span></label><input id="f-assignee2"></div>
           <div class="detail-row"><label>工作人數 <span class="vi">Số người</span></label><input type="number" min="0" id="f-workerCount"></div>
+          <div class="detail-row"><label>維修次數 <span class="vi">Số lần sửa chữa</span></label><input type="number" min="0" id="f-repairCount"></div>
+        </div>
+        <div class="grid3">
           <div class="detail-row"><label>工作總工時－時 <span class="vi">Giờ</span></label><input type="number" min="0" id="f-hoursH" oninput="recalcCost()"></div>
           <div class="detail-row"><label>工作總工時－分 <span class="vi">Phút</span></label><input type="number" min="0" max="59" id="f-hoursM" oninput="recalcCost()"></div>
-        </div>
-        <div class="grid2">
           <div class="detail-row"><label>材料成本 <span class="vi">Chi phí vật liệu</span></label><input type="number" min="0" id="f-materialCost" oninput="recalcCost()"></div>
+        </div>
+        <div class="grid3">
+          <div class="detail-row"><label>委外廠商 <span class="vi">Nhà thầu bên ngoài</span></label><input id="f-vendor" placeholder="若有委外加工，填寫廠商名稱"></div>
+          <div class="detail-row"><label>委外費用 <span class="vi">Chi phí thuê ngoài</span></label><input type="number" min="0" id="f-outsourceCost" oninput="recalcCost()"></div>
           <div class="detail-row"><label>備註 <span class="vi">Ghi chú</span></label><input id="f-remarks"></div>
         </div>
         <div class="cost-box">
           <span>工時單價 <span class="vi">Đơn giá</span>：<b id="d-hourlyRate">—</b>　工時成本 <span class="vi">Chi phí giờ công</span>：<b id="d-laborCost">0</b></span>
           <span>委託總成本 <span class="vi">Tổng chi phí</span>：<strong id="d-totalCost">0</strong></span>
         </div>
+        <p class="hint">委託總成本 ＝ 工時成本 ＋ 材料成本 ＋ 委外費用</p>
       </div>
       <div class="cost-box" id="d-cost-summary" style="display:none">
-        <span>工時單價：<b id="d-hourlyRate2">—</b>　工時成本：<b id="d-laborCost2">—</b>　材料成本：<b id="d-materialCost2">—</b></span>
+        <span>工時單價：<b id="d-hourlyRate2">—</b>　工時成本：<b id="d-laborCost2">—</b>　材料成本：<b id="d-materialCost2">—</b>　委外費用：<b id="d-outsourceCost2">—</b></span>
         <span>委託總成本：<strong id="d-totalCost2">—</strong></span>
       </div>
     </div>
@@ -458,7 +485,8 @@ function filteredList() {
     if (df && r.deptId !== df) return false;
     if (cf && r.category !== cf) return false;
     if (stf && r.status !== stf) return false;
-    if (q && !((r.detail||"") + (r.no||"") + deptLabel(r.deptId)).toLowerCase().includes(q)) return false;
+    if (q && !([r.detail, r.no, r.model, r.drawingNo, r.requesterName, r.assignee, r.vendor, deptLabel(r.deptId)]
+                .filter(Boolean).join(" ").toLowerCase().includes(q))) return false;
     return true;
   }).sort((a,b) => (b.createdAt?.toMillis?.()||0) - (a.createdAt?.toMillis?.()||0));
 }
@@ -478,6 +506,7 @@ function renderKanban(list) {
         <div class="kcard" style="border-left-color:${categoryColor(r.category)}" onclick="openDetail('${r.id}')">
           <div class="top"><span>${esc(r.no||"")}</span><span>${fmtTime(r.createdAt)}</span></div>
           <div class="dept">${esc(deptLabel(r.deptId))}</div>
+          ${(r.model || r.drawingNo) ? `<div class="desc" style="margin-top:2px">${esc([r.model, r.drawingNo].filter(Boolean).join(" ／ "))}</div>` : ""}
           <div class="desc">${esc(r.detail||"")}</div>
           <div class="kcard-people">
             <span title="委託人">👤 ${esc(r.requesterName || "—")}</span>
@@ -492,9 +521,12 @@ function renderTable(list) {
     <tr onclick="openDetail('${r.id}')">
       <td>${esc(r.no||"")}</td>
       <td>${esc(r.category||"—")}</td>
+      <td>${esc(r.model || "—")}</td>
+      <td>${esc(r.drawingNo || "—")}</td>
       <td>${esc(deptLabel(r.deptId))}</td>
-      <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.detail||"")}</td>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.detail||"")}</td>
       <td>${esc(r.requesterName || "—")}</td>
+      <td>${esc(r.assignee || "—")}</td>
       <td>${r.desiredDate ? fmtDT(r.desiredDate) : "—"}</td>
       <td><span class="badge badge-status st-${r.status}">${STATUS_LABEL[r.status]||r.status}</span></td>
       <td>${r.status === "completed" ? (r.totalCost ?? 0) : "—"}</td>
@@ -534,6 +566,16 @@ window.onPhotoSelect = async function(input) {
 window.removeEditPhoto = function(i) { editPhotos.splice(i, 1); renderEditPhotos(); };
 window.openLightbox = src => { document.getElementById("lightbox-img").src = src; document.getElementById("lightbox").classList.remove("hidden"); };
 
+window.copyNo = async function(no) {
+  try {
+    await navigator.clipboard.writeText(no);
+    showToast("✅ 已複製單號 " + no);
+  } catch {
+    // 部分瀏覽器或非安全連線下無法使用剪貼簿 API，退回手動選取
+    prompt("請手動複製單號 / Sao chép thủ công:", no);
+  }
+};
+
 // ── 新增／編輯／檢視 Modal ──
 let detailId = null; // null = 建立新單
 let editingBaseFields = false;
@@ -547,6 +589,9 @@ window.openCreate = function() {
   populateCategoryInputs();
   document.querySelectorAll('#f-category input').forEach(r => r.checked = false);
   document.getElementById("f-dept").value = "";
+  document.getElementById("f-model").value = "";
+  document.getElementById("f-drawingNo").value = "";
+  document.getElementById("f-requesterName").value = trUser.name || trUser.employeeId;
   document.getElementById("f-originalDept").value = "";
   document.getElementById("f-voucherNo").value = "";
   document.getElementById("f-desiredDate").value = "";
@@ -564,7 +609,8 @@ window.openCreate = function() {
 
 function setFieldsDisabled(disabled) {
   document.querySelectorAll('#f-category input').forEach(r => r.disabled = disabled);
-  ["f-dept","f-originalDept","f-voucherNo","f-desiredDate","f-detail"].forEach(id => document.getElementById(id).disabled = disabled);
+  ["f-dept","f-model","f-drawingNo","f-requesterName","f-originalDept","f-voucherNo","f-desiredDate","f-detail"]
+    .forEach(id => document.getElementById(id).disabled = disabled);
 }
 
 window.openDetail = function(id) {
@@ -573,7 +619,11 @@ window.openDetail = function(id) {
   const r = requests[id]; if (!r) return;
   editPhotos = (r.photos || []).slice();
 
-  document.getElementById("d-title").innerHTML = `${esc(r.no||"")}<span class="vi" style="display:block;font-size:.7em;font-weight:400">${STATUS_LABEL[r.status]}</span>`;
+  // 單號要抄到對外採購單上，提供一鍵複製
+  document.getElementById("d-title").innerHTML =
+    `${esc(r.no||"")}<button class="btn btn-outline" style="margin-left:8px;padding:3px 10px;font-size:.72rem;font-weight:600"
+       onclick="copyNo('${esc(r.no||"")}')">📋 複製單號</button>` +
+    `<span class="vi" style="display:block;font-size:.7em;font-weight:400">${STATUS_LABEL[r.status]}</span>`;
   document.getElementById("d-meta").innerHTML = `<span class="badge badge-status st-${r.status}">${STATUS_LABEL[r.status]}</span>　委託人：${esc(r.requesterName||"—")}　委託日期：${fmtTime(r.createdAt)}`;
 
   populateCategoryInputs();
@@ -585,6 +635,9 @@ window.openDetail = function(id) {
     document.getElementById("f-category").appendChild(label);
   }
   document.getElementById("f-dept").value = r.deptId || "";
+  document.getElementById("f-model").value = r.model || "";
+  document.getElementById("f-drawingNo").value = r.drawingNo || "";
+  document.getElementById("f-requesterName").value = r.requesterName || "";
   document.getElementById("f-originalDept").value = r.originalDept || "";
   document.getElementById("f-voucherNo").value = r.voucherNo || "";
   document.getElementById("f-desiredDate").value = r.desiredDate || "";
@@ -614,12 +667,14 @@ window.openDetail = function(id) {
   const showAccept = ["pending_accept","in_progress","completed"].includes(r.status);
   secAccept.style.display = showAccept ? "" : "none";
   if (r.acceptedAt) {
-    document.getElementById("d-accept-info").textContent = `簽收人：${r.accepterName || "—"}　簽收時間：${fmtTime(r.acceptedAt)}　預定完成時間：${r.scheduledCompleteAt ? fmtDT(r.scheduledCompleteAt) : "—"}`;
+    document.getElementById("d-accept-info").textContent =
+      `簽收人：${r.accepterName || "—"}　擔當者：${r.assignee || "—"}　簽收時間：${fmtTime(r.acceptedAt)}　預定完成時間：${r.scheduledCompleteAt ? fmtDT(r.scheduledCompleteAt) : "—"}`;
   } else {
     document.getElementById("d-accept-info").textContent = `尚未受理`;
   }
   document.getElementById("d-accept-form-row").style.display = (r.status === "pending_accept" && isTechStaff()) ? "" : "none";
   document.getElementById("f-scheduledCompleteAt").value = "";
+  document.getElementById("f-assignee").value = "";
 
   // 完成資訊區
   const secComplete = document.getElementById("sec-complete");
@@ -633,19 +688,26 @@ window.openDetail = function(id) {
     completeInfo.style.display = "";
     costSummary.style.display = "";
     document.getElementById("d-complete-info-text").textContent =
-      `完成時間：${fmtTime(r.completedAt)}　工作人數：${r.workerCount ?? "—"}　工作總工時：${r.hoursH ?? 0} 時 ${r.hoursM ?? 0} 分　備註：${r.remarks || "（無）"}`;
+      `完成時間：${fmtTime(r.completedAt)}　擔當者：${r.assignee || "—"}　工作人數：${r.workerCount ?? "—"}　` +
+      `工作總工時：${r.hoursH ?? 0} 時 ${r.hoursM ?? 0} 分　維修次數：${r.repairCount ?? "—"}　` +
+      `委外廠商：${r.vendor || "（無委外）"}　備註：${r.remarks || "（無）"}`;
     document.getElementById("d-hourlyRate2").textContent = r.hourlyRate ?? "—";
     document.getElementById("d-laborCost2").textContent = r.laborCost ?? "—";
     document.getElementById("d-materialCost2").textContent = r.materialCost ?? "—";
+    document.getElementById("d-outsourceCost2").textContent = r.outsourceCost ?? "—";
     document.getElementById("d-totalCost2").textContent = r.totalCost ?? "—";
   } else if (r.status === "in_progress" && isTechStaff()) {
     completeForm.style.display = "";
     completeInfo.style.display = "none";
     costSummary.style.display = "none";
+    document.getElementById("f-assignee2").value = r.assignee ?? "";
     document.getElementById("f-workerCount").value = r.workerCount ?? "";
+    document.getElementById("f-repairCount").value = r.repairCount ?? "";
     document.getElementById("f-hoursH").value = r.hoursH ?? "";
     document.getElementById("f-hoursM").value = r.hoursM ?? "";
     document.getElementById("f-materialCost").value = r.materialCost ?? "";
+    document.getElementById("f-vendor").value = r.vendor ?? "";
+    document.getElementById("f-outsourceCost").value = r.outsourceCost ?? "";
     document.getElementById("f-remarks").value = r.remarks ?? "";
     document.getElementById("d-hourlyRate").textContent = config.hourlyRate ?? "—";
     recalcCost();
@@ -675,12 +737,13 @@ function recalcCost() {
   const h = Number(document.getElementById("f-hoursH").value) || 0;
   const m = Number(document.getElementById("f-hoursM").value) || 0;
   const mat = Number(document.getElementById("f-materialCost").value) || 0;
+  const out = Number(document.getElementById("f-outsourceCost").value) || 0;
   const rate = Number(config.hourlyRate) || 0;
   const decHours = h + m/60;
   const labor = Math.round(decHours * rate * 100) / 100;
   document.getElementById("d-hourlyRate").textContent = rate;
   document.getElementById("d-laborCost").textContent = labor;
-  document.getElementById("d-totalCost").textContent = Math.round((labor + mat) * 100) / 100;
+  document.getElementById("d-totalCost").textContent = Math.round((labor + mat + out) * 100) / 100;
 }
 window.recalcCost = recalcCost;
 
@@ -741,6 +804,11 @@ function readBaseFields() {
     category,
     deptId,
     deptName: dept ? dept.name : "",
+    model: document.getElementById("f-model").value.trim(),
+    drawingNo: document.getElementById("f-drawingNo").value.trim(),
+    // 委託人可自行填寫（例如代他人送單）；權限判斷一律以帳號 requesterUid 為準
+    requesterName: document.getElementById("f-requesterName").value.trim()
+      || trUser.name || trUser.employeeId,
     originalDept: document.getElementById("f-originalDept").value.trim(),
     voucherNo: document.getElementById("f-voucherNo").value.trim(),
     desiredDate: document.getElementById("f-desiredDate").value || null,
@@ -749,13 +817,21 @@ function readBaseFields() {
   };
 }
 
+// 單號格式：YYMM + 四位流水號，例如 26080001 =（20)26 年 8 月第 1 號。
+// 流水號每月重新從 0001 起算，方便對外採購單填寫同一組號碼追蹤。
+function currentPeriod() {
+  const d = new Date();
+  return String(d.getFullYear() % 100).padStart(2, "0") + String(d.getMonth() + 1).padStart(2, "0");
+}
 async function nextRequestNo() {
+  const period = currentPeriod();
   return await runTransaction(db, async (tx) => {
     const snap = await tx.get(counterRef);
     const data = snap.exists() ? snap.data() : {};
-    const seq = (data.seq || 0) + 1;
-    tx.set(counterRef, { seq }, { merge: true });
-    return "委-" + String(seq).padStart(5, "0");
+    // 換月就重新計數
+    const seq = data.period === period ? (data.seq || 0) + 1 : 1;
+    tx.set(counterRef, { period, seq });
+    return period + String(seq).padStart(4, "0");
   });
 }
 
@@ -770,7 +846,8 @@ window.submitNewRequest = async function() {
   const no = await nextRequestNo();
   await addDoc(reqCol, {
     no, ...f,
-    requesterUid: trUser.uid, requesterName: trUser.name || trUser.employeeId, requesterEmpId: trUser.employeeId,
+    // requesterName 來自 f（可自行填寫）；requesterUid 固定為登入帳號，權限一律以它為準
+    requesterUid: trUser.uid, requesterEmpId: trUser.employeeId,
     supervisorUid: dept.supervisorUid, supervisorName: dept.supervisorName || "",
     status: "pending_approval",
     createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
@@ -839,6 +916,7 @@ window.acceptRequest = async function() {
   if (!sched) { showToast("⚠️ 請填寫預定完成時間 / Nhập thời gian dự kiến hoàn thành"); return; }
   await updateDoc(doc(db, "treq_requests", detailId), {
     status: "in_progress", accepterUid: trUser.uid, accepterName: trUser.name || trUser.employeeId,
+    assignee: document.getElementById("f-assignee").value.trim(),
     acceptedAt: serverTimestamp(), scheduledCompleteAt: sched, updatedAt: serverTimestamp(),
   });
   showToast("✅ 已受理，開始處理");
@@ -850,14 +928,19 @@ window.completeRequest = async function() {
   const hoursH = Number(document.getElementById("f-hoursH").value) || 0;
   const hoursM = Number(document.getElementById("f-hoursM").value) || 0;
   const materialCost = Number(document.getElementById("f-materialCost").value) || 0;
+  const outsourceCost = Number(document.getElementById("f-outsourceCost").value) || 0;
+  const repairCount = Number(document.getElementById("f-repairCount").value) || 0;
+  const vendor = document.getElementById("f-vendor").value.trim();
+  const assignee = document.getElementById("f-assignee2").value.trim();
   const remarks = document.getElementById("f-remarks").value.trim();
   if (!hoursH && !hoursM) { showToast("⚠️ 請填寫工作總工時 / Nhập tổng giờ công"); return; }
   const rate = Number(config.hourlyRate) || 0;
   const decHours = hoursH + hoursM/60;
   const laborCost = Math.round(decHours * rate * 100) / 100;
-  const totalCost = Math.round((laborCost + materialCost) * 100) / 100;
+  const totalCost = Math.round((laborCost + materialCost + outsourceCost) * 100) / 100;
   await updateDoc(doc(db, "treq_requests", detailId), {
     status: "completed", workerCount, hoursH, hoursM, materialCost,
+    assignee, vendor, outsourceCost, repairCount,
     hourlyRate: rate, laborCost, totalCost, remarks,
     completedAt: serverTimestamp(), completedBy: trUser.name || trUser.employeeId, updatedAt: serverTimestamp(),
   });

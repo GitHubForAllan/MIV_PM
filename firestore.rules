@@ -154,11 +154,12 @@ service cloud.firestore {
     }
 
     // 單號流水號：每位委託人送單時都要遞增，因此所有角色皆可寫，
-    // 但限制只能有 seq 一個欄位，避免被塞入其他資料。
+    // 但限制只能有 period（年月，如 2608）與 seq 兩個欄位，避免被塞入其他資料。
     match /treq_meta/counter {
       allow read: if anyStaff();
       allow write: if anyStaff()
-        && request.resource.data.keys().hasOnly(['seq'])
+        && request.resource.data.keys().hasOnly(['period', 'seq'])
+        && request.resource.data.period is string
         && request.resource.data.seq is number;
     }
 

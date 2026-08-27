@@ -139,8 +139,8 @@
 
   <div class="toolbar">
     <input class="search-box" id="search-input" placeholder="搜尋描述 / 站點…" oninput="render()">
-    <select class="filter-select" id="filter-building" onchange="render()">
-      <option value="">所有棟別</option><option value="A">A棟</option><option value="B">B棟</option><option value="C">C棟</option>
+    <select class="filter-select" id="filter-station" onchange="render()">
+      <option value="">所有站點</option>
     </select>
     <select class="filter-select" id="filter-severity" onchange="render()">
       <option value="">所有等級</option><option value="CR">CR 嚴重</option><option value="MA">MA 主要</option><option value="MI">MI 次要</option>
@@ -254,7 +254,17 @@ function canManage(){ return piUser.role === "quality" || piUser.role === "admin
 let issues = {}, areas = {}, currentView = "kanban";
 const recordCache = {}; // recordId -> {modelName, partOrModelNo} | null
 
-onSnapshot(areasCol, snap => { areas = {}; snap.forEach(d => areas[d.id] = { id: d.id, ...d.data() }); render(); });
+onSnapshot(areasCol, snap => { areas = {}; snap.forEach(d => areas[d.id] = { id: d.id, ...d.data() }); populateStationFilter(); render(); });
+
+function populateStationFilter() {
+  const sel = document.getElementById("filter-station");
+  const prev = sel.value;
+  const list = Object.values(areas).sort((a,b) => a.building.localeCompare(b.building) || (a.sortOrder||0)-(b.sortOrder||0));
+  sel.innerHTML = `<option value="">所有站點</option>` + list.map(a =>
+    `<option value="${a.id}">${esc(a.building)}棟 ${esc(a.stationName)}${a.lineNo?'第'+esc(a.lineNo)+'線':''}</option>`
+  ).join("");
+  if (list.some(a => a.id === prev)) sel.value = prev;
+}
 onSnapshot(issuesCol, snap => {
   issues = {};
   snap.forEach(d => issues[d.id] = { id: d.id, ...d.data() });
@@ -312,11 +322,11 @@ function updateStats() {
 
 function filteredList() {
   const q = (document.getElementById("search-input").value || "").toLowerCase();
-  const bf = document.getElementById("filter-building").value;
+  const stationF = document.getElementById("filter-station").value;
   const sf = document.getElementById("filter-severity").value;
   const stf = document.getElementById("filter-status").value;
   return Object.values(issues).filter(i => {
-    if (bf && areas[i.areaId]?.building !== bf) return false;
+    if (stationF && i.areaId !== stationF) return false;
     if (sf && i.severity !== sf) return false;
     if (stf && i.status !== stf) return false;
     if (q && !((i.description||"") + areaLabel(i.areaId)).toLowerCase().includes(q)) return false;

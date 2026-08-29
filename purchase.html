@@ -142,6 +142,20 @@
   .section-title { font-size: .82rem; font-weight: 700; margin: 20px 0 8px; padding-bottom: 5px; border-bottom: 1px solid var(--border);
     display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 
+  /* 可搜尋的廠商選單 */
+  .combo { position: relative; }
+  .combo-pop { position: absolute; left: 0; right: 0; top: 100%; z-index: 30; margin-top: 2px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+    box-shadow: 0 10px 28px rgba(0,0,0,.16); max-height: 264px; overflow-y: auto; display: none; }
+  .combo-pop.on { display: block; }
+  .combo-item { padding: 6px 10px; cursor: pointer; font-size: .8rem; line-height: 1.35; border-bottom: 1px solid #f1f5f9; }
+  .combo-item:last-child { border-bottom: none; }
+  .combo-item:hover, .combo-item.sel { background: #eff6ff; }
+  .combo-item .c1 { font-weight: 700; }
+  .combo-item .c1 code { font-weight: 400; font-size: .74em; color: var(--text-soft); margin-left: 6px; }
+  .combo-item .c2 { display: block; font-size: .7rem; color: var(--text-soft); }
+  .combo-empty { padding: 12px 10px; font-size: .78rem; color: var(--text-soft); }
+
   .steps-editor { border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
   .step-row { display: grid; grid-template-columns: 52px 1fr 108px 128px 120px 1fr; gap: 8px; align-items: center;
     padding: 7px 10px; border-bottom: 1px solid var(--border); font-size: .8rem; }
@@ -172,7 +186,7 @@
 </style>
 </head>
 <body>
-<script type="module" src="auth-guard.js?v=2"></script>
+<script type="module" src="auth-guard.js?v=3"></script>
 
 <div class="topbar">
   <div class="topbar-left">
@@ -229,7 +243,7 @@
         <table id="tbl">
           <thead><tr>
             <th>單號<span class="vi">Số</span></th>
-            <th class="nw">單位<span class="vi">Bộ phận</span></th>
+            <th class="nw">採購單位 / 請購單位<span class="vi">BP mua / BP yêu cầu</span></th>
             <th>廠商 / 採購項目<span class="vi">NCC / Hạng mục</span></th>
             <th class="mid">流程<span class="vi">Đường dẫn</span></th>
             <th>步驟進度<span class="vi">Tiến độ các bước</span></th>
@@ -351,8 +365,13 @@
       <div class="grid">
         <div class="field"><label>採購單位 <span class="vi">Bộ phận mua</span></label>
           <select id="fdUnit"></select></div>
-        <div class="field"><label>廠商 <span class="vi">Nhà cung cấp</span></label>
-          <input id="fdVendor" list="vendorList" placeholder="輸入或選擇"><datalist id="vendorList"></datalist></div>
+        <div class="field"><label>請購單位 <span class="vi">BP yêu cầu</span></label>
+          <input id="fdReqDept" placeholder="提出需求的單位，如 冲压、焊接、工具室">
+          <span class="hint">來自原表的「請購單位」欄，與上方的採購單位不同</span></div>
+        <div class="field combo"><label>廠商 <span class="vi">Nhà cung cấp</span></label>
+          <input id="fdVendor" autocomplete="off" placeholder="輸入代號、全稱、合約代碼或簡稱搜尋">
+          <div class="combo-pop" id="vendorPop"></div>
+          <span class="hint" id="vendorHint"></span></div>
         <div class="field"><label>採購項目（中文） <span class="vi">Hạng mục (TQ)</span></label>
           <input id="fdItem"></div>
         <div class="field"><label>採購項目（越南文） <span class="vi">Hạng mục (VN)</span></label>
@@ -409,12 +428,12 @@ import {
   getFirestore, collection, doc, addDoc, updateDoc, deleteDoc,
   onSnapshot, runTransaction, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { mivAuthReady } from "./auth-guard.js?v=2";
+import { mivAuthReady, mivDenyScreen } from "./auth-guard.js?v=3";
 import {
   stepsOf, progressOf, slackDays, riskOf, RISK, suggestPath,
   COMMON_STEPS, PATH_A_STEPS, PATH_B_STEPS, THRESHOLD, DEFAULT_FX_TO_TWD,
   DEFAULT_PAY_TERMS, parseTerm, formatTerm, dueFromTerm
-} from "./purchase-flow.js?v=2";
+} from "./purchase-flow.js?v=3";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs",
@@ -442,6 +461,7 @@ let cases = [], units = [], vendors = [], config = { fxToTWD: DEFAULT_FX_TO_TWD,
 // 付款條件類型清單：管理員可在 purchase-admin.html 維護，未設定時用出廠預設
 const termDefs = () => (config.payTerms && config.payTerms.length ? config.payTerms : DEFAULT_PAY_TERMS);
 let me = null, canEdit = false, editingId = null, draftSteps = {}, draftPays = [];
+let draftVendorCode = "", comboIdx = -1, comboList = [];
 let tab = "board";
 
 const toast = msg => {
@@ -460,12 +480,18 @@ function fmtMoney(v, cur) {
 const money = (v, cur) => v === null || v === undefined || v === "" ? "" : fmtMoney(v, cur) + (cur ? " " + cur : "");
 
 // ── 登入與權限 ───────────────────────────────────────────────
+// 進入本頁需「採購進度追蹤 → 使用」；建案／編輯／刪除與後台主檔另需
+// 「採購進度追蹤 → 管理」。權限在 admin-users.html 勾選。
 me = await mivAuthReady;
-canEdit = ["admin", "quality", "toolroom", "production"].includes(me.role);
-if (me.role === "admin") $("adminLink").style.display = "";
+if (!me.can("purchase")) {
+  mivDenyScreen("purchase", "use");
+  throw new Error("insufficient permission for purchase.html");
+}
+canEdit = me.canManage("purchase");
+if (canEdit) $("adminLink").style.display = "";
 if (!canEdit) {
   $("btnNew").style.display = "none";
-  fatal("您目前是唯讀身分（角色：" + (me.role || "未指派") + "），可檢視但無法編輯。／ Bạn chỉ có quyền xem.");
+  fatal("您目前是唯讀身分（沒有採購系統的管理權限），可檢視但無法編輯。／ Bạn chỉ có quyền xem.");
 }
 
 // ── 訂閱資料 ─────────────────────────────────────────────────
@@ -475,9 +501,16 @@ onSnapshot(unitCol, snap => {
   fillUnitSelects(); render();
 }, onDbError);
 
+// 廠商主檔欄位：code 廠商代號／fullName 全稱／contractCode 合約代碼／shortName 廠商簡稱。
+// 舊資料只有 name／nameVi，這裡一律用下面三個取值函式讀，兩種格式都相容。
+const vShort = v => (v.shortName || v.name || "").trim();
+const vFull = v => (v.fullName || v.nameVi || "").trim();
+const vHay = v => [v.code, v.contractCode, vShort(v), vFull(v)].filter(Boolean).join(" ").toLowerCase();
+
 onSnapshot(vendorCol, snap => {
-  vendors = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => String(a.name).localeCompare(String(b.name)));
-  $("vendorList").innerHTML = vendors.map(v => `<option value="${esc(v.name)}">${esc(v.nameVi || "")}</option>`).join("");
+  vendors = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+    .sort((a, b) => vShort(a).localeCompare(vShort(b)));
+  if ($("modal").classList.contains("on")) renderVendorHint();
 }, onDbError);
 
 onSnapshot(configRef, snap => {
@@ -525,7 +558,8 @@ function visibleCases() {
     if (fp && c.path !== fp) return false;
     if (fr && c.risk.key !== fr) return false;
     if (q) {
-      const hay = [c.no, c.vendor, c.item, c.itemVi, c.poNo, c.remark, c.unit].join(" ").toLowerCase();
+      const hay = [c.no, c.vendor, c.vendorCode, c.item, c.itemVi, c.poNo, c.remark, c.unit, c.requestDept]
+        .join(" ").toLowerCase();
       if (!hay.includes(q)) return false;
     }
     return true;
@@ -567,7 +601,7 @@ function renderStats(list) {
 function trackHtml(c) {
   return `<div class="track">` + c.prog.list.map((s, i) => {
     const cls = s.state === "done" ? "done" : s.state === "doing" ? "doing" : s.state === "skip" ? "skip" : "";
-    const tip = `${s.key}. ${s.zh}${s.star ? "（條件步驟）" : ""}${s.date ? " — " + s.date : ""}${s.by ? " (" + s.by + ")" : ""}`;
+    const tip = `${s.label}. ${s.zh}${s.star ? "（條件步驟）" : ""}${s.date ? " — " + s.date : ""}${s.by ? " (" + s.by + ")" : ""}`;
     return `<span class="dot ${cls}${s.star ? " opt" : ""}" title="${esc(tip)}">${i + 1}</span>`;
   }).join("") + `</div>`;
 }
@@ -576,11 +610,11 @@ function renderTable(list) {
   $("emptyRow").style.display = list.length ? "none" : "block";
   $("tbody").innerHTML = list.map(c => {
     const cur = c.prog.current;
-    const next = cur ? `${cur.key}. ${cur.zh}<span class="vi">${esc(cur.vi)}</span>`
+    const next = cur ? `${cur.label}. ${cur.zh}<span class="vi">${esc(cur.vi)}</span>`
                      : `<span class="pill risk-low">流程已走完 / Hoàn tất</span>`;
     return `<tr data-id="${c.id}">
       <td style="white-space:nowrap">${esc(c.no || "—")}${c.needsReview ? ` <span class="pill tag-review">待覆核</span>` : ""}${c.status === "closed" ? ` <span class="pill tag-closed">結案</span>` : ""}</td>
-      <td class="nw">${esc(c.unit || "—")}</td>
+      <td class="nw">${esc(c.unit || "—")}${c.requestDept ? `<span class="vi">${esc(c.requestDept)}</span>` : ""}</td>
       <td><b>${esc(c.vendor || "—")}</b><br>${esc(c.item || "")}${c.poNo ? `<br><span class="vi">${esc(c.poNo)}</span>` : ""}</td>
       <td class="mid"><span class="pill path-${c.path}">${c.path}</span></td>
       <td>${trackHtml(c)}<div class="bar" style="margin-top:5px"><i style="width:${c.prog.percent}%"></i></div>
@@ -606,7 +640,7 @@ async function advanceStep(id) {
   const c = cases.find(x => x.id === id); if (!c) return;
   const prog = progressOf(c);
   if (!prog.current) return;
-  if (!confirm(`確定將「${prog.current.key}. ${prog.current.zh}」標記為完成（${todayISO()}）？`)) return;
+  if (!confirm(`確定將「${prog.current.label}. ${prog.current.zh}」標記為完成（${todayISO()}）？`)) return;
   const steps = { ...(c.steps || {}) };
   steps[prog.current.key] = {
     ...(steps[prog.current.key] || {}), state: "done",
@@ -622,7 +656,7 @@ async function advanceStep(id) {
       steps, updatedAt: serverTimestamp(), updatedBy: me.name || me.employeeId,
       ...(nxt ? {} : { status: "closed" }),
     });
-    toast(nxt ? `已完成，下一步：${nxt.key}. ${nxt.zh}` : "流程已全部完成，案件自動結案");
+    toast(nxt ? `已完成，下一步：${nxt.label}. ${nxt.zh}` : "流程已全部完成，案件自動結案");
   } catch (e) { alert("更新失敗：" + e.message); }
 }
 
@@ -803,7 +837,7 @@ function renderStat() {
     const typical = s.days ? `${s.days[0]}-${s.days[1]} 天` : "依合約";
     const over = avg !== null && s.days && avg > s.days[1];
     return `<tr>
-      <td><b>${esc(s.key)}</b>${s.star ? ` <span title="條件步驟">★</span>` : ""}</td>
+      <td><b>${esc(s.label)}</b>${s.star ? ` <span title="條件步驟">★</span>` : ""}</td>
       <td>${esc(s.zh)}<span class="vi">${esc(s.vi)}</span></td>
       <td><span class="vi" style="font-style:normal">${esc(s.owner)}</span></td>
       <td class="num">${typical}</td>
@@ -825,10 +859,12 @@ function renderFlowDoc() {
         <th>執行單位<span class="vi">Đơn vị</span></th><th>說明<span class="vi">Giải thích</span></th>
         <th>典型天數<span class="vi">Số ngày</span></th></tr></thead>
         <tbody>${arr.map(s => `<tr${s.star ? ' style="background:var(--warn-bg)"' : ""}>
-          <td><b>${esc(s.key)}</b>${s.star ? " ★" : ""}</td>
+          <td><b>${esc(s.label)}</b>${s.star ? " ★" : ""}</td>
           <td>${esc(s.zh)}<span class="vi">${esc(s.vi)}</span></td>
           <td>${esc(s.owner)}<span class="vi">${esc(s.ownerVi)}</span></td>
-          <td style="min-width:280px">${esc(s.desc)}<span class="vi">${esc(s.descVi)}</span></td>
+          <td style="min-width:280px">${esc(s.desc)}
+            ${s.link ? `<br><a href="${esc(s.link)}" target="_blank" rel="noopener">🔗 表單連結 / Link biểu mẫu</a>` : ""}
+            <span class="vi">${esc(s.descVi)}</span></td>
           <td class="num">${s.days ? s.days[0] + "-" + s.days[1] + " 天" : "依合約"}</td>
         </tr>`).join("")}</tbody>
       </table></div>
@@ -856,8 +892,8 @@ function renderStepsEditor(path) {
     const st = r.state || "todo";
     const cls = st === "done" ? "is-done" : (first && first.key === s.key ? "is-current" : "");
     return `<div class="step-row ${cls}" data-key="${s.key}">
-      <span class="k">${esc(s.key)}${s.star ? "★" : ""}</span>
-      <span class="nm">${esc(s.zh)}<small>${esc(s.vi)}</small></span>
+      <span class="k">${esc(s.label)}${s.star ? "★" : ""}</span>
+      <span class="nm">${esc(s.zh)}${s.link ? ` <a href="${esc(s.link)}" target="_blank" rel="noopener" title="開啟表單">🔗</a>` : ""}<small>${esc(s.vi)}</small></span>
       <select class="st" ${canEdit ? "" : "disabled"}>
         <option value="todo"${st === "todo" ? " selected" : ""}>未開始</option>
         <option value="doing"${st === "doing" ? " selected" : ""}>進行中</option>
@@ -890,7 +926,7 @@ function renderStepsEditor(path) {
 function updateStepSummary() {
   const p = progressOf({ path: $("fdPath").value, steps: draftSteps });
   $("stepSummary").textContent = p.current
-    ? `目前步驟：${p.current.key}. ${p.current.zh}（${p.doneCount}/${p.totalCount}）`
+    ? `目前步驟：${p.current.label}. ${p.current.zh}（${p.doneCount}/${p.totalCount}）`
     : `流程已全部完成（${p.doneCount}/${p.totalCount}）`;
 }
 
@@ -986,6 +1022,83 @@ function updatePaySum() {
     : "尚未設定付款期別。";
 }
 
+// 依輸入字串比對廠商代號、合約代碼、簡稱與全稱；空字串時列出全部
+function searchVendors(q) {
+  const t = q.trim().toLowerCase();
+  if (!t) return vendors.slice(0, 50);
+  const hit = vendors.filter(v => vHay(v).includes(t));
+  // 簡稱或代號開頭符合的排前面，比較符合直覺
+  hit.sort((a, b) => {
+    const rank = v => (vShort(v).toLowerCase().startsWith(t) ? 0
+                     : String(v.code || "").toLowerCase().startsWith(t) ? 1 : 2);
+    return rank(a) - rank(b) || vShort(a).localeCompare(vShort(b));
+  });
+  return hit.slice(0, 50);
+}
+
+function renderCombo(q) {
+  comboList = searchVendors(q);
+  comboIdx = -1;
+  const pop = $("vendorPop");
+  if (!comboList.length) {
+    pop.innerHTML = `<div class="combo-empty">找不到符合的廠商。可直接輸入名稱新建，或到主檔管理新增。
+      <span class="vi">Không tìm thấy NCC; có thể nhập trực tiếp.</span></div>`;
+  } else {
+    pop.innerHTML = comboList.map((v, i) => `
+      <div class="combo-item" data-i="${i}">
+        <span class="c1">${esc(vShort(v))}${v.code ? `<code>${esc(v.code)}</code>` : ""}</span>
+        <span class="c2">${esc(vFull(v))}${v.contractCode ? `　合約代碼 ${esc(v.contractCode)}` : ""}</span>
+      </div>`).join("");
+    pop.querySelectorAll(".combo-item").forEach(el =>
+      el.addEventListener("mousedown", e => { e.preventDefault(); pickVendor(comboList[Number(el.dataset.i)]); }));
+  }
+  pop.classList.add("on");
+}
+
+function pickVendor(v) {
+  $("fdVendor").value = vShort(v);
+  draftVendorCode = v.code || "";
+  $("vendorPop").classList.remove("on");
+  renderVendorHint();
+}
+
+function renderVendorHint() {
+  const name = $("fdVendor").value.trim();
+  // 先前選過的代號，只有在名稱仍相符時才算數；使用者改了字就要重新比對
+  let v = draftVendorCode ? vendors.find(x => x.code === draftVendorCode) : null;
+  if (v && vShort(v) !== name) v = null;
+  if (!v) v = vendors.find(x => vShort(x) === name) || null;
+  if (v) {
+    draftVendorCode = v.code || "";
+    $("vendorHint").innerHTML = `✓ ${esc(vFull(v)) || esc(vShort(v))}` +
+      (v.code ? `　代號 ${esc(v.code)}` : "") + (v.contractCode ? `　合約 ${esc(v.contractCode)}` : "");
+    $("vendorHint").style.color = "var(--ok)";
+  } else {
+    draftVendorCode = "";
+    $("vendorHint").textContent = name ? "未對應到主檔廠商，將以輸入的文字儲存" : "";
+    $("vendorHint").style.color = "";
+  }
+}
+
+function moveCombo(step) {
+  const items = $("vendorPop").querySelectorAll(".combo-item");
+  if (!items.length) return;
+  comboIdx = (comboIdx + step + items.length) % items.length;
+  items.forEach((el, i) => el.classList.toggle("sel", i === comboIdx));
+  items[comboIdx].scrollIntoView({ block: "nearest" });
+}
+
+$("fdVendor").addEventListener("input", () => { renderCombo($("fdVendor").value); renderVendorHint(); });
+$("fdVendor").addEventListener("focus", () => renderCombo($("fdVendor").value));
+$("fdVendor").addEventListener("blur", () => setTimeout(() => $("vendorPop").classList.remove("on"), 120));
+$("fdVendor").addEventListener("keydown", e => {
+  const open = $("vendorPop").classList.contains("on");
+  if (e.key === "ArrowDown") { e.preventDefault(); open ? moveCombo(1) : renderCombo($("fdVendor").value); }
+  else if (e.key === "ArrowUp") { e.preventDefault(); moveCombo(-1); }
+  else if (e.key === "Enter" && open && comboIdx >= 0) { e.preventDefault(); pickVendor(comboList[comboIdx]); }
+  else if (e.key === "Escape" && open) { e.stopPropagation(); $("vendorPop").classList.remove("on"); }
+});
+
 function refreshPathHint() {
   const amt = Number($("fdAmount").value) || 0, cur = $("fdCur").value;
   const first = draftPays.find(p => p.seq === 1) || draftPays[0];
@@ -1001,7 +1114,10 @@ function openModal(id) {
   const c = id ? cases.find(x => x.id === id) : null;
   $("mTitle").textContent = c ? `${c.no || "案件"}　${c.vendor || ""}` : "新增採購案件 / Thêm hồ sơ mua hàng";
   $("fdUnit").value = c?.unit || "";
+  $("fdReqDept").value = c?.requestDept || "";
   $("fdVendor").value = c?.vendor || "";
+  draftVendorCode = c?.vendorCode || "";
+  $("vendorPop").classList.remove("on");
   $("fdItem").value = c?.item || "";
   $("fdItemVi").value = c?.itemVi || "";
   $("fdCur").value = c?.currency || "";
@@ -1023,11 +1139,12 @@ function openModal(id) {
     if (pay.amtManual === undefined) pay.amtManual = pay.amount !== null && pay.amount !== undefined;
     return pay;
   });
-  $("mDelete").style.display = c && me.role === "admin" ? "" : "none";
+  $("mDelete").style.display = c && canEdit ? "" : "none";
   $("mSave").style.display = canEdit ? "" : "none";
   renderStepsEditor($("fdPath").value);
   renderPayEditor();
   refreshPathHint();
+  renderVendorHint();
   $("modal").classList.add("on");
 }
 const closeModal = () => { $("modal").classList.remove("on"); editingId = null; };
@@ -1053,6 +1170,8 @@ async function save() {
   if (!vendor && !item) return alert("請至少填寫廠商或採購項目 / Nhập nhà cung cấp hoặc hạng mục");
   const payload = {
     unit, vendor, item,
+    vendorCode: draftVendorCode,
+    requestDept: $("fdReqDept").value.trim(),
     itemVi: $("fdItemVi").value.trim(),
     currency: $("fdCur").value,
     amount: $("fdAmount").value === "" ? null : Number($("fdAmount").value),
@@ -1086,7 +1205,7 @@ async function save() {
 }
 
 async function removeCase() {
-  if (!editingId || me.role !== "admin") return;
+  if (!editingId || !canEdit) return;
   const c = cases.find(x => x.id === editingId);
   if (!confirm(`確定刪除案件「${c?.no || ""} ${c?.vendor || ""}」？此動作無法復原。`)) return;
   try { await deleteDoc(doc(db, "purchase_cases", editingId)); toast("已刪除"); closeModal(); }
@@ -1108,10 +1227,10 @@ function download(name, text) {
 
 $("btnCsv").addEventListener("click", () => {
   const list = visibleCases();
-  const rows = [["單號", "採購單位", "廠商", "採購項目", "流程", "目前步驟", "進度", "幣別", "金額", "單號(PO/CON)", "必要日期", "預計完成日", "餘裕天數", "風險", "狀態", "備註"]];
+  const rows = [["單號", "採購單位", "請購單位", "廠商代號", "廠商", "採購項目", "流程", "目前步驟", "進度", "幣別", "金額", "單號(PO/CON)", "必要日期", "預計完成日", "餘裕天數", "風險", "狀態", "備註"]];
   list.forEach(c => rows.push([
-    c.no, c.unit, c.vendor, c.item, c.path,
-    c.prog.current ? c.prog.current.key + ". " + c.prog.current.zh : "已完成",
+    c.no, c.unit, c.requestDept ?? "", c.vendorCode ?? "", c.vendor, c.item, c.path,
+    c.prog.current ? c.prog.current.label + ". " + c.prog.current.zh : "已完成",
     c.prog.doneCount + "/" + c.prog.totalCount, c.currency, c.amount ?? "", c.poNo,
     c.requiredDate ?? "", c.etaDate ?? "", c.slack ?? "", c.risk.zh, c.status, (c.remark || "").replace(/\n/g, " / "),
   ]));

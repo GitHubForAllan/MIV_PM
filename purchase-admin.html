@@ -62,7 +62,7 @@
 </style>
 </head>
 <body>
-<script type="module" src="auth-guard.js?v=2"></script>
+<script type="module" src="auth-guard.js?v=3"></script>
 
 <div class="topbar">
   <div class="topbar-left">
@@ -106,17 +106,46 @@
 
   <!-- 廠商 -->
   <section id="tab-vendors" hidden>
+    <div class="note">主檔欄位：<b>廠商代號</b>（唯一鍵，匯入時用它去重）、<b>全稱</b>、<b>合約代碼</b>、<b>廠商簡稱</b>。
+      案件的廠商欄顯示簡稱，並另存廠商代號。
+      <span class="vi">Mã NCC là khóa duy nhất dùng để chống trùng khi nhập.</span></div>
+
+    <div class="panel">
+      <div class="panel-head">📥 匯入廠商主檔 <span class="vi">Nhập danh mục NCC</span>
+        <span class="vi">支援 CSV／TSV，欄位順序：廠商代號、全稱、合約代碼、廠商簡稱</span></div>
+      <div class="panel-body">
+        <div class="row" style="margin-bottom:10px">
+          <input type="file" id="vFile" accept=".csv,.tsv,.txt">
+          <span class="vi" style="font-style:normal">或直接把 Google 試算表的內容複製貼到下面（含標題列也可以）</span>
+        </div>
+        <textarea id="vPaste" rows="5" style="width:100%;font-family:ui-monospace,Consolas,monospace;font-size:.78rem"
+          placeholder="廠商代號,全稱,合約代碼,廠商簡稱&#10;BVN00001,JOHNSON HEALTH TECH.(SHANGHAI)CO., LTD.,JHTSH,上海喬山"></textarea>
+        <div class="row" style="margin-top:10px">
+          <button class="btn btn-outline" id="vParse">解析並預覽</button>
+          <button class="btn btn-ok" id="vImport" disabled>✓ 確認匯入</button>
+          <label class="vi" style="font-style:normal"><input type="checkbox" id="vOverwrite"> 代號已存在時覆蓋既有內容</label>
+          <span id="vPrevSum" style="font-size:.82rem"></span>
+        </div>
+        <div class="table-wrap" style="max-height:300px;margin-top:10px"><table>
+          <thead><tr><th>廠商代號</th><th>全稱</th><th>合約代碼</th><th>廠商簡稱</th><th>狀態</th></tr></thead>
+          <tbody id="vPrevBody"></tbody>
+        </table></div>
+      </div>
+    </div>
+
     <div class="panel">
       <div class="panel-head">廠商主檔 <span class="vi">Danh mục nhà cung cấp</span><span id="vCount"></span></div>
       <div class="panel-body">
         <div class="row" style="margin-bottom:12px">
-          <input id="vName" placeholder="廠商名稱（中文）" style="min-width:180px">
-          <input id="vNameVi" placeholder="Tên NCC (tiếng Việt)" style="min-width:200px">
+          <input id="vCode" placeholder="廠商代號" style="width:130px">
+          <input id="vFull" placeholder="全稱" style="min-width:240px">
+          <input id="vContract" placeholder="合約代碼" style="width:120px">
+          <input id="vShort" placeholder="廠商簡稱" style="min-width:150px">
           <button class="btn btn-primary" id="vAdd">＋ 新增廠商</button>
-          <input id="vSearch" placeholder="搜尋…" style="min-width:140px">
+          <input id="vSearch" placeholder="搜尋代號／全稱／合約代碼／簡稱…" style="min-width:220px">
         </div>
         <div class="table-wrap"><table>
-          <thead><tr><th>廠商名稱</th><th>Tên tiếng Việt</th><th>案件數</th><th></th></tr></thead>
+          <thead><tr><th>廠商代號</th><th>全稱</th><th>合約代碼</th><th>廠商簡稱</th><th class="num">案件數</th><th></th></tr></thead>
           <tbody id="vBody"></tbody>
         </table></div>
       </div>
@@ -192,7 +221,14 @@
 
     <div class="panel" id="mapPanel" hidden>
       <div class="panel-head">② 請購單位對應 <span class="vi">Ánh xạ bộ phận</span>
-        <span class="vi">把原表的寫法對應到正式單位；選「略過」的案件不會匯入</span></div>
+        <div class="row">
+          <span class="vi" style="font-style:normal">整批設為同一採購單位：</span>
+          <select id="mapAll" style="min-width:150px"></select>
+          <button class="btn btn-outline btn-sm" id="mapAllApply">套用到全部</button>
+        </div></div>
+      <div class="panel-body" style="padding-bottom:0"><p style="font-size:.78rem;color:var(--text-soft)">
+        原表那欄是「請購單位」（誰提的需求）。若整份檔案的採購作業都由同一個單位承辦，用上方快捷鍵整批設定即可；
+        原文會另存為案件的「請購單位」欄位，不會遺失。</p></div>
       <div class="panel-body"><div class="table-wrap"><table>
         <thead><tr><th>原表寫法</th><th>筆數</th><th>對應到採購單位</th></tr></thead>
         <tbody id="mapBody"></tbody>
@@ -210,7 +246,7 @@
       <div class="panel-body">
         <p id="prevSum" style="margin-bottom:10px;font-size:.85rem"></p>
         <div class="table-wrap"><table>
-          <thead><tr><th>來源</th><th>採購單位</th><th>廠商</th><th>採購項目</th><th>流程</th><th>幣別</th><th>金額</th><th>單號</th><th>步驟</th><th>狀態</th></tr></thead>
+          <thead><tr><th>來源</th><th>採購單位</th><th>請購單位（原文）</th><th>廠商</th><th>採購項目</th><th>流程</th><th>幣別</th><th>金額</th><th>單號</th><th>步驟</th><th>狀態</th></tr></thead>
           <tbody id="prevBody"></tbody>
         </table></div>
         <div class="log" id="log"></div>
@@ -228,8 +264,8 @@
 </div>
 
 <div class="deny" id="deny" hidden>
-  <h2 style="font-size:1.1rem;margin-bottom:10px">⛔ 僅限系統管理員</h2>
-  <p style="font-size:.88rem;color:var(--text-soft)">此頁需要 admin 角色。<br><span class="vi">Trang này chỉ dành cho quản trị viên.</span></p>
+  <h2 style="font-size:1.1rem;margin-bottom:10px">⛔ 權限不足</h2>
+  <p style="font-size:.88rem;color:var(--text-soft)">此頁需要「採購進度追蹤」的管理權限，請聯絡系統管理員於「使用者權限管理」勾選。<br><span class="vi">Trang này yêu cầu quyền quản trị hệ thống mua hàng.</span></p>
   <p style="margin-top:16px"><a class="btn btn-outline" href="purchase.html">回追蹤系統</a></p>
 </div>
 
@@ -241,8 +277,8 @@ import {
   getFirestore, collection, doc, addDoc, setDoc, updateDoc, deleteDoc,
   onSnapshot, writeBatch, runTransaction, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { mivAuthReady } from "./auth-guard.js?v=2";
-import { DEFAULT_FX_TO_TWD, DEFAULT_PAY_TERMS } from "./purchase-flow.js?v=2";
+import { mivAuthReady } from "./auth-guard.js?v=3";
+import { DEFAULT_FX_TO_TWD, DEFAULT_PAY_TERMS } from "./purchase-flow.js?v=3";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs",
@@ -266,8 +302,14 @@ const log = m => { const el = $("log"); el.style.display = "block"; el.textConte
 
 let me = null, units = [], vendors = [], cases = [], seed = null, unitMap = {}, payTerms = [];
 
+// 廠商顯示名：新格式用簡稱，舊資料（只有 name/nameVi）沿用 name
+const vShortOf = v => (v.shortName || v.name || "").trim();
+const vFullOf = v => (v.fullName || v.nameVi || "").trim();
+const vHay = v => [v.code, vFullOf(v), v.contractCode, vShortOf(v), v.nameVi].join(" ").toLowerCase();
+
+
 me = await mivAuthReady;
-if (me.role !== "admin") { $("deny").hidden = false; throw new Error("not admin"); }
+if (!me.canManage("purchase")) { $("deny").hidden = false; throw new Error("no purchase manage permission"); }
 $("main").hidden = false;
 
 onSnapshot(unitCol, s => { units = s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.order ?? 99) - (b.order ?? 99)); renderUnits(); renderMap(); });
@@ -332,32 +374,164 @@ $("uAdd").addEventListener("click", async () => {
 // ── 廠商 ─────────────────────────────────────────────────────
 function renderVendors() {
   const q = $("vSearch").value.trim().toLowerCase();
-  const list = vendors.filter(v => !q || (v.name + " " + (v.nameVi || "")).toLowerCase().includes(q));
-  $("vCount").innerHTML = `<span class="vi">共 ${vendors.length} 家</span>`;
+  const list = vendors.filter(v => !q || vHay(v).includes(q));
+  const legacy = vendors.filter(v => !v.code).length;
+  $("vCount").innerHTML = `<span class="vi">共 ${vendors.length} 家${legacy ? `，其中 ${legacy} 筆尚無廠商代號` : ""}</span>`;
   $("vBody").innerHTML = list.map(v => {
-    const n = cases.filter(c => c.vendor === v.name).length;
-    return `<tr data-id="${v.id}"><td><b>${esc(v.name)}</b></td><td>${esc(v.nameVi || "")}</td><td class="num">${n}</td>
+    const short = vShortOf(v);
+    // 案件的 vendor 欄存的是字串，簡稱或全稱對得上就算
+    const n = cases.filter(c => c.vendorCode ? c.vendorCode === v.code
+                                             : (c.vendor === short || c.vendor === vFullOf(v))).length;
+    return `<tr data-id="${v.id}">
+      <td>${v.code ? `<b>${esc(v.code)}</b>` : `<span class="pill warn">無代號</span>`}</td>
+      <td style="min-width:260px">${esc(vFullOf(v))}</td>
+      <td>${esc(v.contractCode || "")}</td>
+      <td><b>${esc(short)}</b></td>
+      <td class="num">${n || "—"}</td>
       <td><button class="btn btn-outline btn-sm v-edit">編輯</button>
           <button class="btn btn-danger btn-sm v-del">刪除</button></td></tr>`;
-  }).join("") || `<tr><td colspan="4" style="text-align:center;color:var(--text-soft);padding:24px">無資料</td></tr>`;
+  }).join("") || `<tr><td colspan="6" style="text-align:center;color:var(--text-soft);padding:24px">無資料</td></tr>`;
+
   $("vBody").querySelectorAll(".v-edit").forEach(b => b.addEventListener("click", async () => {
     const id = b.closest("tr").dataset.id, v = vendors.find(x => x.id === id);
-    const name = prompt("廠商名稱（中文）", v.name); if (name === null) return;
-    const nameVi = prompt("Tên tiếng Việt", v.nameVi || ""); if (nameVi === null) return;
-    await updateDoc(doc(db, "purchase_vendors", id), { name: name.trim(), nameVi: nameVi.trim() }); toast("已更新");
+    const code = prompt("廠商代號", v.code || ""); if (code === null) return;
+    const fullName = prompt("全稱", vFullOf(v)); if (fullName === null) return;
+    const contractCode = prompt("合約代碼", v.contractCode || ""); if (contractCode === null) return;
+    const shortName = prompt("廠商簡稱", vShortOf(v)); if (shortName === null) return;
+    if (!shortName.trim()) return alert("廠商簡稱不能留空。");
+    await updateDoc(doc(db, "purchase_vendors", id), {
+      code: code.trim(), fullName: fullName.trim(),
+      contractCode: contractCode.trim(), shortName: shortName.trim(),
+      name: shortName.trim(),          // 與舊欄位並存，讓舊資料與舊頁面仍讀得到
+    });
+    toast("已更新");
   }));
   $("vBody").querySelectorAll(".v-del").forEach(b => b.addEventListener("click", async () => {
     const id = b.closest("tr").dataset.id, v = vendors.find(x => x.id === id);
-    if (!confirm(`刪除廠商「${v.name}」？（不影響既有案件）`)) return;
+    if (!confirm(`刪除廠商「${vShortOf(v)}」？（不影響既有案件）`)) return;
     await deleteDoc(doc(db, "purchase_vendors", id)); toast("已刪除");
   }));
 }
 $("vSearch").addEventListener("input", renderVendors);
+
 $("vAdd").addEventListener("click", async () => {
-  const name = $("vName").value.trim(); if (!name) return alert("請輸入廠商名稱");
-  if (vendors.some(v => v.name === name)) return alert("此廠商已存在");
-  await addDoc(vendorCol, { name, nameVi: $("vNameVi").value.trim() });
-  $("vName").value = $("vNameVi").value = ""; toast("已新增");
+  const shortName = $("vShort").value.trim();
+  const code = $("vCode").value.trim();
+  if (!shortName) return alert("請至少輸入廠商簡稱");
+  if (code && vendors.some(v => v.code === code)) return alert("此廠商代號已存在");
+  await addDoc(vendorCol, {
+    code, fullName: $("vFull").value.trim(), contractCode: $("vContract").value.trim(),
+    shortName, name: shortName,
+  });
+  ["vCode", "vFull", "vContract", "vShort"].forEach(id => $(id).value = "");
+  toast("已新增");
+});
+
+// ── 廠商主檔匯入 ─────────────────────────────────────────────
+// 支援 CSV／TSV，含引號跳脫（全稱裡有逗號，例如 "Rexon Industrial Corp., LTD"）
+function parseDelimited(text) {
+  const firstLine = text.split("\n")[0] || "";
+  const sep = (firstLine.match(/\t/g) || []).length >= 2 ? "\t" : ",";
+  const rows = [];
+  let row = [], field = "", inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (inQ) {
+      if (ch === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else inQ = false; }
+      else field += ch;
+    } else if (ch === '"') inQ = true;
+    else if (ch === sep) { row.push(field); field = ""; }
+    else if (ch === "\n") { row.push(field); rows.push(row); row = []; field = ""; }
+    else if (ch !== "\r") field += ch;
+  }
+  if (field !== "" || row.length) { row.push(field); rows.push(row); }
+  return rows.filter(r => r.some(c => String(c).trim() !== ""));
+}
+
+let vPreview = [];
+
+function parseVendorText(text) {
+  const rows = parseDelimited(text);
+  if (!rows.length) return [];
+  const head = rows[0].map(c => String(c).trim());
+  const hasHead = /廠商代號|厂商代号|code/i.test(head[0] || "");   // 有標題列就跳過
+  const body = hasHead ? rows.slice(1) : rows;
+  return body.map(r => ({
+    code: String(r[0] ?? "").trim(),
+    fullName: String(r[1] ?? "").trim(),
+    contractCode: String(r[2] ?? "").trim(),
+    shortName: String(r[3] ?? "").trim(),
+  })).filter(v => v.code || v.shortName);
+}
+
+function renderVendorPreview() {
+  const seen = new Set();
+  vPreview.forEach(v => {
+    const byCode = v.code ? vendors.find(x => x.code === v.code) : null;
+    // 舊資料沒有代號，只要簡稱相同就視為同一家，直接補上代號合併，避免產生同名兩筆
+    const byName = byCode ? null
+      : vendors.find(x => !x.code && vShortOf(x) && vShortOf(x) === v.shortName);
+    const dupInFile = v.code && seen.has(v.code);
+    if (v.code) seen.add(v.code);
+    v._exist = byCode || byName || null;
+    v._merge = !byCode && !!byName;
+    v._skip = !!dupInFile || (!!byCode && !$("vOverwrite").checked) || !v.shortName;
+    v._act = dupInFile ? "檔案內重複" : !v.shortName ? "缺簡稱"
+           : byName ? "補代號" : byCode ? ($("vOverwrite").checked ? "覆蓋" : "已存在") : "新增";
+  });
+  const add = vPreview.filter(v => !v._skip && !v._exist).length;
+  const mer = vPreview.filter(v => !v._skip && v._merge).length;
+  const upd = vPreview.filter(v => !v._skip && v._exist && !v._merge).length;
+  $("vPrevSum").innerHTML = vPreview.length
+    ? `解析 <b>${vPreview.length}</b> 筆　｜　新增 <b style="color:var(--ok)">${add}</b>　｜　補代號 <b>${mer}</b>　｜　覆蓋 <b>${upd}</b>　｜　略過 <b>${vPreview.length - add - mer - upd}</b>`
+    : "";
+  $("vImport").disabled = !(add + upd);
+  $("vPrevBody").innerHTML = vPreview.slice(0, 300).map(v => `
+    <tr style="${v._skip ? "opacity:.45" : ""}">
+      <td><b>${esc(v.code)}</b></td><td>${esc(v.fullName)}</td>
+      <td>${esc(v.contractCode)}</td><td>${esc(v.shortName)}</td>
+      <td>${v._skip ? `<span class="pill warn">${esc(v._act)}</span>`
+                    : `<span class="pill" style="background:var(--ok-bg);color:#15803d">${esc(v._act)}</span>`}</td>
+    </tr>`).join("");
+  if (vPreview.length > 300) $("vPrevBody").insertAdjacentHTML("beforeend",
+    `<tr><td colspan="5" style="text-align:center;color:var(--text-soft)">… 另有 ${vPreview.length - 300} 筆未顯示</td></tr>`);
+}
+
+$("vParse").addEventListener("click", () => {
+  vPreview = parseVendorText($("vPaste").value);
+  if (!vPreview.length) return alert("解析不到資料，請確認欄位順序為：廠商代號、全稱、合約代碼、廠商簡稱");
+  renderVendorPreview();
+});
+$("vOverwrite").addEventListener("change", () => { if (vPreview.length) renderVendorPreview(); });
+$("vFile").addEventListener("change", async e => {
+  const f = e.target.files[0]; if (!f) return;
+  $("vPaste").value = await f.text();
+  vPreview = parseVendorText($("vPaste").value);
+  renderVendorPreview();
+});
+
+$("vImport").addEventListener("click", async () => {
+  const rows = vPreview.filter(v => !v._skip);
+  if (!rows.length) return;
+  if (!confirm(`確定匯入 ${rows.length} 筆廠商？`)) return;
+  $("vImport").disabled = true;
+  try {
+    for (let i = 0; i < rows.length; i += 400) {
+      const batch = writeBatch(db);
+      rows.slice(i, i + 400).forEach(v => {
+        const payload = {
+          code: v.code, fullName: v.fullName, contractCode: v.contractCode,
+          shortName: v.shortName, name: v.shortName,
+        };
+        if (v._exist) batch.update(doc(db, "purchase_vendors", v._exist.id), payload);
+        else batch.set(doc(vendorCol), payload);
+      });
+      await batch.commit();
+    }
+    toast(`廠商主檔匯入完成，共 ${rows.length} 筆`);
+    vPreview = []; $("vPaste").value = ""; $("vPrevBody").innerHTML = ""; $("vPrevSum").textContent = "";
+  } catch (err) { alert("匯入失敗：" + err.message); }
+  finally { $("vImport").disabled = false; }
 });
 
 // ── 參數 ─────────────────────────────────────────────────────
@@ -403,6 +577,13 @@ function renderPayTerms() {
     });
   });
 }
+
+$("mapAllApply").addEventListener("click", () => {
+  const v = $("mapAll").value;
+  if (!confirm(v ? `把全部請購單位寫法都對應到「${v}」？` : "把全部對應清成「略過」？")) return;
+  document.querySelectorAll(".map-sel").forEach(sel => { sel.value = v; unitMap[sel.dataset.raw] = v; });
+  renderPreview();
+});
 
 $("ptAdd").addEventListener("click", () => {
   payTerms.push({ code: "", label: "", labelVi: "", days: true, monthEnd: false });
@@ -452,6 +633,13 @@ $("fileInput").addEventListener("change", async e => {
 });
 
 function renderMap() {
+  const all = $("mapAll");
+  if (all) {
+    const keep = all.value;
+    all.innerHTML = `<option value="">— 略過 —</option>` +
+      units.map(u => `<option value="${esc(u.name)}">${esc(u.name)}</option>`).join("");
+    all.value = keep;
+  }
   if (!seed) return;
   const counts = seed.unitRawCounts || {};
   const keys = Object.keys(counts);
@@ -504,7 +692,8 @@ function renderPreview() {
   $("prevBody").innerHTML = rows.slice(0, 400).map(r => `
     <tr style="${r._skip ? "opacity:.45" : ""}">
       <td>${esc(r._kind)}</td>
-      <td>${r.unit ? esc(r.unit) : `<span class="pill warn">${esc(r._raw || "未填")}</span>`}</td>
+      <td>${r.unit ? esc(r.unit) : `<span class="pill warn">未指定</span>`}</td>
+      <td>${esc(r._raw || r.unitRaw || "—")}</td>
       <td>${esc(r.vendor || "")}</td>
       <td>${esc(r.item || "")}</td>
       <td>${r.path ? `<span class="pill ${r.path.toLowerCase()}">${esc(r.path)}</span>` : "—"}</td>
@@ -515,7 +704,7 @@ function renderPreview() {
       <td>${r._skip ? `<span class="pill warn">略過：${esc(r._reason)}</span>` : `<span class="pill" style="background:var(--ok-bg);color:#15803d">匯入</span>`}</td>
     </tr>`).join("");
   if (rows.length > 400) $("prevBody").insertAdjacentHTML("beforeend",
-    `<tr><td colspan="10" style="text-align:center;color:var(--text-soft)">… 另有 ${rows.length - 400} 筆未顯示</td></tr>`);
+    `<tr><td colspan="11" style="text-align:center;color:var(--text-soft)">… 另有 ${rows.length - 400} 筆未顯示</td></tr>`);
 }
 ["chkCases", "chkOrders"].forEach(id => $(id).addEventListener("change", renderPreview));
 
@@ -548,7 +737,8 @@ $("doImport").addEventListener("click", async () => {
       chunk.forEach((r, j) => {
         batch.set(doc(caseCol), {
           no: nos[i + j],
-          unit: r.unit, vendor: r.vendor || "", item: r.item || "", itemVi: r.itemVi || "",
+          unit: r.unit, requestDept: r._raw || r.unitRaw || "",
+          vendor: r.vendor || "", item: r.item || "", itemVi: r.itemVi || "",
           path: r.path || "A", steps: r.steps || {},
           currency: r.currency || "", amount: r.amount ?? null, payments: r.payments || [],
           poNo: r.poNo || "", requiredDate: r.requiredDate || null, etaDate: r.etaDate || null,

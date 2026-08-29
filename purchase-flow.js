@@ -9,8 +9,10 @@ export const THRESHOLD = { prepayTWD: 300000, totalTWD: 1000000 };
 // 實際匯率變動時由管理員在 purchase-admin.html 調整（存 purchase_meta/config.fxToTWD）。
 export const DEFAULT_FX_TO_TWD = { TWD: 1, USD: 32, VND: 0.00125 };
 
-const S = (key, zh, vi, owner, ownerVi, desc, descVi, days, star) =>
-  ({ key, zh, vi, owner, ownerVi, desc, descVi, days, star: !!star });
+// label 是畫面上顯示的步驟編號，key 是存進 Firestore 的識別碼。
+// 兩者刻意分開：流程調整時只改 label，既有案件的步驟進度就不必做資料轉換。
+const S = (key, zh, vi, owner, ownerVi, desc, descVi, days, star, link, label) =>
+  ({ key, label: label || key, zh, vi, owner, ownerVi, desc, descVi, days, star: !!star, link: link || "" });
 
 // 共用步驟（A/B 皆走）
 export const COMMON_STEPS = [
@@ -76,27 +78,28 @@ export const PATH_A_STEPS = [
 ];
 
 // B 訂貨契約單流程（預付款 < 30萬 且 總價 < 100萬）
+// 2026-08 調整：原「郵件提供財務部資料」取消，改由請購單位填 Google 表單；
+// 取號改到最前面，先拿到 PO 編號再填訂貨契約單送簽。
+// 注意：key 是存進 Firestore 的識別碼，刻意維持原值不動，
+// 這樣既有案件的步驟進度不需要做資料轉換；label 才是畫面上顯示的編號。
 export const PATH_B_STEPS = [
+  S("B3", "取得訂貨契約單編號（PO-XXX）", "Lấy số phiếu đặt hàng (PO-XXX)",
+    "財務部 / 採購單位", "Bộ phận tài chính / Mua hàng",
+    "請購單位填寫 Google 表單；財務部確認基本資料後，填寫訂貨契約單編號（PO-XXX）",
+    "Bộ phận yêu cầu điền Google Form; sau khi bộ phận tài chính xác nhận thông tin cơ bản, điền số phiếu đặt hàng (PO-XXX)",
+    [1, 2], false,
+    "https://docs.google.com/forms/d/e/1FAIpQLSd8VJSWO3RHKaCWZS4v1ARBAxYxOhgTsR9fXHM-7xvicjMnYw/viewform",
+    "B1"),
   S("B1", "填寫申請文件 → 部門主管", "Điền hồ sơ đăng ký → Trưởng bộ phận",
     "請購單位 / 部門主管", "Bộ phận yêu cầu / Trưởng bộ phận",
     "填寫訂貨契約單與用印申請單，完成部門主管簽核",
-    "Điền phiếu đặt hàng và phiếu yêu cầu đóng dấu, hoàn tất ký duyệt của trưởng BP",
-    [1, 2]),
-  S("B2", "郵件提供財務部資料", "Gửi email tài liệu cho tài chính",
-    "採購單位", "Bộ phận mua hàng",
-    "以郵件將已簽核之用印申請單與訂貨契約單提供給財務部",
-    "Gửi email phiếu yêu cầu đóng dấu đã ký và phiếu đặt hàng cho tài chính",
-    [1, 1]),
-  S("B3", "取得訂貨契約單編號（PO-XXX）", "Lấy số phiếu đặt hàng (PO-XXX)",
-    "財務部 / 採購單位", "Bộ phận tài chính / Mua hàng",
-    "財務部確認基本資料後，填寫訂貨契約單編號（PO-XXX）",
-    "Sau khi tài chính xác nhận thông tin, điền số phiếu đặt hàng (PO-XXX)",
-    [1, 2]),
-  S("B4", "送件辦理用印 → 財務部", "Nộp hồ sơ đóng dấu → Tài chính",
+    "Điền phiếu đặt hàng và phiếu yêu cầu đóng dấu, hoàn tất ký duyệt của trưởng bộ phận",
+    [1, 2], false, "", "B2"),
+  S("B4", "送件辦理用印 → 財務部", "Nộp hồ sơ đóng dấu → Bộ phận tài chính",
     "採購單位 / 財務部", "Bộ phận mua hàng / Tài chính",
     "依部門需求列印份數；送件用印申請單與訂貨契約單至財務部辦理用印",
-    "In số bản theo nhu cầu; nộp phiếu yêu cầu đóng dấu và phiếu đặt hàng đến tài chính",
-    [1, 2]),
+    "In số bản theo nhu cầu bộ phận; nộp phiếu yêu cầu đóng dấu và phiếu đặt hàng đến tài chính để đóng dấu",
+    [1, 2], false, "", "B3"),
 ];
 
 /** 取得指定路徑的完整步驟清單（共用 2 步 + 分支步驟） */

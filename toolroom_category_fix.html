@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>分類名稱統一 / Chuẩn hóa phân loại</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f6fa;color:#1a1d23;min-height:100vh}
+.topbar{background:#1e293b;padding:0 24px;height:64px;display:flex;align-items:center;gap:16px}
+.topbar h1{color:#fff;font-size:1.1rem}.topbar .sub{color:#94a3b8;font-size:.85rem}
+.wrap{max-width:860px;margin:32px auto;padding:0 16px}
+.card{background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:24px;margin-bottom:24px}
+.card h2{font-size:1rem;font-weight:700;margin-bottom:14px;color:#1e293b}
+.info{background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:12px 16px;font-size:.88rem;color:#1d4ed8;margin-bottom:16px;line-height:1.7}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;border:none;border-radius:6px;font-size:.95rem;font-weight:600;cursor:pointer}
+.btn-primary{background:#2563eb;color:#fff}.btn-primary:hover{background:#1d4ed8}
+.btn-primary:disabled{background:#93c5fd;cursor:not-allowed}
+.log{margin-top:14px;max-height:340px;overflow-y:auto;font-size:.82rem;background:#f8fafc;border:1px solid #e2e5ed;border-radius:6px;padding:10px 12px;line-height:1.9}
+.ok{color:#16a34a;font-weight:600}.err{color:#dc2626;font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:#f1f5f9;padding:8px 12px;text-align:left;border-bottom:2px solid #e2e5ed}
+td{padding:8px 12px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+code{font-family:ui-monospace,monospace;background:#f1f5f9;padding:1px 6px;border-radius:3px;font-size:.8rem;font-weight:600}
+.arrow{color:#94a3b8;padding:0 8px}
+.canon{color:#16a34a;font-weight:700;font-size:1rem}
+.badge{display:inline-block;font-size:.7rem;font-weight:700;padding:2px 7px;border-radius:99px;white-space:nowrap}
+.badge-red{background:#fef2f2;color:#dc2626;border:1px solid #fca5a5}
+.badge-amber{background:#fffbeb;color:#b45309;border:1px solid #fcd34d}
+.badge-blue{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
+.count{font-size:.78rem;color:#64748b;font-weight:600}
+.section-head{background:#f8fafc;font-weight:700;color:#475569;font-size:.78rem;letter-spacing:.04em}
+.keep{color:#0369a1;font-weight:600}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1>🗂 分類名稱統一</h1>
+  <span class="sub">/ Chuẩn hóa phân loại — 79 筆</span>
+</div>
+<div class="wrap">
+  <div class="card">
+    <h2>統一規則（3 個標準分類）</h2>
+    <div class="info">
+      系統中同一分類出現多種寫法（含中越雙語混合、殘缺越文、錯別字），共 4 個分類變體群，合計影響 <b>79 筆</b>品項。<br>
+      統一後保留純中文短名，越文翻譯僅保留在 UI 標籤中，不寫入資料庫。
+    </div>
+    <table>
+      <thead>
+        <tr><th>現有寫法</th><th>筆數</th><th></th><th>統一後標準值</th><th>說明</th></tr>
+      </thead>
+      <tbody>
+        <tr class="section-head"><td colspan="5">▌ 耗材 群組 — 6 種寫法 → 1 種（57 筆）</td></tr>
+        <tr><td><code>耗品</code></td><td class="count">13</td><td class="arrow">→</td><td class="canon">耗材</td><td><span class="badge badge-red">不同用字</span></td></tr>
+        <tr><td><code>消耗</code></td><td class="count">6</td><td class="arrow">→</td><td class="canon">耗材</td><td><span class="badge badge-red">不完整</span></td></tr>
+        <tr><td><code>耗材/Vật tư tiêu hao</code></td><td class="count">20</td><td class="arrow">→</td><td class="canon">耗材</td><td><span class="badge badge-amber">含越文</span></td></tr>
+        <tr><td><code>耗材Vật tư tiêu hao</code></td><td class="count">1</td><td class="arrow">→</td><td class="canon">耗材</td><td><span class="badge badge-amber">含越文（無分隔）</span></td></tr>
+        <tr><td><code>耗材Vật tư tiêu ha</code></td><td class="count">17</td><td class="arrow">→</td><td class="canon">耗材</td><td><span class="badge badge-red">截斷錯字</span></td></tr>
+        <tr><td><code>耗材Vật tư tiêu ha1</code></td><td class="count">1</td><td class="arrow">→</td><td class="canon">耗材</td><td><span class="badge badge-red">截斷+多餘字元</span></td></tr>
+        <tr class="section-head"><td colspan="5">▌ 手工具 群組 — 2 種寫法 → 1 種（19 筆）</td></tr>
+        <tr><td><code>手工具/Dụng cụ cầm tay</code></td><td class="count">19</td><td class="arrow">→</td><td class="canon">手工具</td><td><span class="badge badge-amber">含越文</span></td></tr>
+        <tr class="section-head"><td colspan="5">▌ 電氣動工具 群組 — 2 種寫法 → 1 種（2 筆）</td></tr>
+        <tr><td><code>電氣動工具/Dụng cụ điện và khí nén</code></td><td class="count">1</td><td class="arrow">→</td><td class="canon">電氣動工具</td><td><span class="badge badge-amber">含越文</span></td></tr>
+        <tr><td><code>（空白）</code></td><td class="count">1</td><td class="arrow">→</td><td class="canon">電氣動工具</td><td><span class="badge badge-red">空白</span> 4LIA-01 電動磨刻機，補正分類</td></tr>
+        <tr class="section-head"><td colspan="5">▌ 保留不動</td></tr>
+        <tr><td><code>耗材</code></td><td class="count">130</td><td></td><td class="keep">耗材 ✓</td><td>已是標準值</td></tr>
+        <tr><td><code>手工具</code></td><td class="count">123</td><td></td><td class="keep">手工具 ✓</td><td>已是標準值</td></tr>
+        <tr><td><code>電氣動工具</code></td><td class="count">15</td><td></td><td class="keep">電氣動工具 ✓</td><td>已是標準值</td></tr>
+        <tr><td><code>檢驗儀器</code></td><td class="count">2</td><td></td><td class="keep">檢驗儀器 ✓</td><td>唯一，保留</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:20px">
+      <button class="btn btn-primary" id="run-btn" onclick="runFix()">▶ 執行統一（79 筆）</button>
+    </div>
+    <div class="log" id="log" style="display:none"></div>
+  </div>
+</div>
+
+<script type="module">
+import { mivAuthReady } from "./auth-guard.js?v=3";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const cfg = {apiKey:"AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs",authDomain:"miv-1426c.firebaseapp.com",projectId:"miv-1426c",storageBucket:"miv-1426c.firebasestorage.app",messagingSenderId:"398934341623",appId:"1:398934341623:web:4af46c057d2e202855a0f2"};
+const db = getFirestore(initializeApp(cfg));
+
+// key = 現有值（空字串代表未填）, value = 標準值
+const CATEGORY_MAP = {
+  '耗品':                              '耗材',
+  '消耗':                              '耗材',
+  '耗材/Vật tư tiêu hao':             '耗材',
+  '耗材Vật tư tiêu hao':              '耗材',
+  '耗材Vật tư tiêu ha':               '耗材',
+  '耗材Vật tư tiêu ha1':              '耗材',
+  '手工具/Dụng cụ cầm tay':           '手工具',
+  '電氣動工具/Dụng cụ điện và khí nén': '電氣動工具',
+  '':                                  '電氣動工具',  // 4LIA-01 電動磨刻機
+};
+
+const log = (msg, cls='') => {
+  const el = document.getElementById('log');
+  el.style.display = '';
+  el.innerHTML += `<div class="${cls}">${msg}</div>`;
+  el.scrollTop = el.scrollHeight;
+};
+
+window.runFix = async function() {
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = '驗證登入中…';
+  await mivAuthReady;
+  btn.textContent = '執行中…';
+  log('📡 讀取 Firestore 品項清單…');
+  try {
+    const snap = await getDocs(collection(db, 'toolroom_items'));
+    const batches = [];
+    let batch = writeBatch(db);
+    let opsInBatch = 0;
+    let count = 0;
+    const tally = {};
+
+    snap.docs.forEach(d => {
+      const cat = d.data().category ?? '';
+      if (CATEGORY_MAP[cat] !== undefined) {
+        if (opsInBatch >= 490) { batches.push(batch); batch = writeBatch(db); opsInBatch = 0; }
+        batch.update(d.ref, { category: CATEGORY_MAP[cat] });
+        tally[cat] = (tally[cat] || 0) + 1;
+        opsInBatch++;
+        count++;
+      }
+    });
+    if (opsInBatch > 0) batches.push(batch);
+
+    if (count === 0) {
+      log('⚠ 未找到任何需統一的分類名稱', 'err');
+    } else {
+      log(`找到 ${count} 筆，提交更新…`);
+      for (const b of batches) await b.commit();
+      Object.entries(tally).forEach(([old, n]) => {
+        log(`  <span class="ok">✔</span> <b>${old || '（空白）'}</b> → <b>${CATEGORY_MAP[old]}</b>　${n} 筆`);
+      });
+      log(`<span class="ok">✅ 完成！共統一 ${count} 筆分類名稱。</span>`);
+    }
+  } catch(e) {
+    log('❌ 錯誤：' + e.message, 'err');
+  }
+  btn.textContent = '✅ 執行完畢';
+};
+</script>
+</body>
+</html>

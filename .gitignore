@@ -1,4 +1,16 @@
+# 本機開發用的簡易伺服器
 serve.ps1
 serve.pl
+
+# 工具與代理程式的產物，不屬於專案原始碼
 .claude/
+.agents/
+skills-lock.json
+
+# Firebase CLI 的部署快取與模擬器日誌
+.firebase/
+firestore-debug.log
+*-debug.log
+
+# 本地預覽用的假 Firebase 環境（由 scratchpad 的 build_preview.py 產生）
 _preview-*

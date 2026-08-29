@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>料號修正 v5 — 4K / 5 系列 / Sửa mã 4K / 5 series</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f6fa;color:#1a1d23;min-height:100vh}
+.topbar{background:#1e293b;padding:0 24px;height:64px;display:flex;align-items:center;gap:16px}
+.topbar h1{color:#fff;font-size:1.1rem}.topbar .sub{color:#94a3b8;font-size:.85rem}
+.wrap{max-width:1020px;margin:32px auto;padding:0 16px}
+.card{background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:24px;margin-bottom:24px}
+.card h2{font-size:1rem;font-weight:700;margin-bottom:14px;color:#1e293b}
+.info{background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:12px 16px;font-size:.88rem;color:#1d4ed8;margin-bottom:16px;line-height:1.7}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;border:none;border-radius:6px;font-size:.95rem;font-weight:600;cursor:pointer}
+.btn-primary{background:#2563eb;color:#fff}.btn-primary:hover{background:#1d4ed8}
+.btn-primary:disabled{background:#93c5fd;cursor:not-allowed}
+.log{margin-top:14px;max-height:360px;overflow-y:auto;font-size:.82rem;background:#f8fafc;border:1px solid #e2e5ed;border-radius:6px;padding:10px 12px;line-height:1.9}
+.ok{color:#16a34a;font-weight:600}.err{color:#dc2626;font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+th{background:#f1f5f9;padding:7px 10px;text-align:left;border-bottom:2px solid #e2e5ed;white-space:nowrap}
+td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+code{font-family:ui-monospace,monospace;background:#f1f5f9;padding:1px 5px;border-radius:3px;font-size:.8rem;font-weight:600}
+code.after{color:#16a34a}
+.arrow{color:#94a3b8;padding:0 4px;white-space:nowrap}
+.badge{display:inline-block;font-size:.7rem;font-weight:700;padding:2px 6px;border-radius:99px;white-space:nowrap}
+.badge-red{background:#fef2f2;color:#dc2626;border:1px solid #fca5a5}
+.badge-amber{background:#fffbeb;color:#b45309;border:1px solid #fcd34d}
+.badge-blue{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
+.section-head{background:#f8fafc;font-weight:700;color:#475569;font-size:.78rem;letter-spacing:.04em}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1>🔧 料號修正 v5 — 4K / 5 系列</h1>
+  <span class="sub">共 27 筆 / 27 mục</span>
+</div>
+<div class="wrap">
+  <div class="card">
+    <h2>修正清單（27 筆）</h2>
+    <div class="info">
+      4K 套筒類統一改為 4KAA 流水號（12 筆）、錘類格式修正（5 筆）；
+      5 系列分類錯誤、缺機種碼及特殊字元問題（10 筆）。
+    </div>
+    <table>
+      <thead>
+        <tr><th>現有料號</th><th>品名</th><th></th><th>修正後料號</th><th>原因</th></tr>
+      </thead>
+      <tbody>
+
+        <!-- 4KA 套筒類統一 -->
+        <tr class="section-head"><td colspan="5">▌ 4KA — 套筒/轉換頭類：機種碼規格化，統一為 4KAA 流水號</td></tr>
+        <tr><td><code>4KAG003-01</code></td><td>套筒轉換頭 3/8×1/2</td><td class="arrow">→</td><td><code class="after">4KAA-01</code></td><td><span class="badge badge-red">機種碼錯誤</span> G003→A</td></tr>
+        <tr><td><code>4KAG003-02</code></td><td>套筒轉換頭 3/8"×1/4</td><td class="arrow">→</td><td><code class="after">4KAA-02</code></td><td><span class="badge badge-red">機種碼錯誤</span></td></tr>
+        <tr><td><code>4KAG004-01</code></td><td>套筒轉換頭 1/2×3/8</td><td class="arrow">→</td><td><code class="after">4KAA-03</code></td><td><span class="badge badge-red">機種碼錯誤</span> G004→A</td></tr>
+        <tr><td><code>4KAG005-01</code></td><td>套筒轉換頭 1/4×3/8</td><td class="arrow">→</td><td><code class="after">4KAA-04</code></td><td><span class="badge badge-red">機種碼錯誤</span> G005→A</td></tr>
+        <tr><td><code>4KAG005-02</code></td><td>套筒轉換頭 1/4×1/4</td><td class="arrow">→</td><td><code class="after">4KAA-05</code></td><td><span class="badge badge-red">機種碼錯誤</span></td></tr>
+        <tr><td><code>4KAG005-03</code></td><td>套筒轉換頭 3/8"×1/4</td><td class="arrow">→</td><td><code class="after">4KAA-06</code></td><td><span class="badge badge-red">機種碼錯誤</span></td></tr>
+        <tr><td><code>4KAG006-01</code></td><td>套筒轉換頭 3/4×1/2</td><td class="arrow">→</td><td><code class="after">4KAA-07</code></td><td><span class="badge badge-red">機種碼錯誤</span> G006→A</td></tr>
+        <tr><td><code>4KAH-1-1</code></td><td>起子變換頭 1/4×6.35</td><td class="arrow">→</td><td><code class="after">4KAA-08</code></td><td><span class="badge badge-red">子類型錯誤</span> H→A（套筒類轉換頭）</td></tr>
+        <tr><td><code>4KAH-2-1</code></td><td>起子變換頭 3/8-H8</td><td class="arrow">→</td><td><code class="after">4KAA-09</code></td><td><span class="badge badge-red">子類型錯誤</span> H→A</td></tr>
+        <tr><td><code>4KAH-3-1</code></td><td>起子變換頭 1/2-H8</td><td class="arrow">→</td><td><code class="after">4KAA-10</code></td><td><span class="badge badge-red">子類型錯誤</span> H→A</td></tr>
+        <tr><td><code>4KAI-1-01</code></td><td>六角變換頭 3/8</td><td class="arrow">→</td><td><code class="after">4KAA-11</code></td><td><span class="badge badge-red">子類型錯誤</span> I→A（套筒類）</td></tr>
+        <tr><td><code>4KAI-2-01</code></td><td>六角變換頭 1/2</td><td class="arrow">→</td><td><code class="after">4KAA-12</code></td><td><span class="badge badge-red">子類型錯誤</span> I→A</td></tr>
+
+        <!-- 4KC 錘類格式 -->
+        <tr class="section-head"><td colspan="5">▌ 4KC — 錘類：缺機種碼 / 多餘後綴</td></tr>
+        <tr><td><code>4KC-01</code></td><td>長柄大槌 10LB</td><td class="arrow">→</td><td><code class="after">4KCC-01</code></td><td><span class="badge badge-amber">缺機種碼</span> C=錘類，C=大槌型</td></tr>
+        <tr><td><code>4KCB-01-01</code></td><td>香檳鎚 E-035</td><td class="arrow">→</td><td><code class="after">4KCB-01</code></td><td><span class="badge badge-amber">格式錯誤</span> 多餘 -01 後綴</td></tr>
+        <tr><td><code>4KCB-02-01</code></td><td>香檳鎚 E-050</td><td class="arrow">→</td><td><code class="after">4KCB-02</code></td><td><span class="badge badge-amber">格式錯誤</span></td></tr>
+        <tr><td><code>4KCB-03-01</code></td><td>香檳鎚 E-30</td><td class="arrow">→</td><td><code class="after">4KCB-03</code></td><td><span class="badge badge-amber">格式錯誤</span></td></tr>
+        <tr><td><code>4KCB-04-01</code></td><td>香檳鎚 E-65</td><td class="arrow">→</td><td><code class="after">4KCB-04</code></td><td><span class="badge badge-amber">格式錯誤</span></td></tr>
+
+        <!-- 5 系列：4KAH 快速接頭移入 -->
+        <tr class="section-head"><td colspan="5">▌ 5 系列 56 — 4KAH 快速接頭：分類錯誤，從 4K 移入 5·6（快速接頭）</td></tr>
+        <tr><td><code>4KAH-1-2</code></td><td>快速接頭 C式 SH-40（母頭）</td><td class="arrow">→</td><td><code class="after">56C-01</code></td><td><span class="badge badge-red">分類錯誤</span> 氣管配件→5·6</td></tr>
+        <tr><td><code>4KAH-1-3</code></td><td>快速接頭 C式 SH-40（母頭）</td><td class="arrow">→</td><td><code class="after">56C-02</code></td><td><span class="badge badge-red">分類錯誤</span> 氣管配件→5·6</td></tr>
+        <tr><td><code>4KAH-1-4</code></td><td>快速接頭 C式 SH-40（公頭）</td><td class="arrow">→</td><td><code class="after">56C-03</code></td><td><span class="badge badge-red">分類錯誤</span> 氣管配件→5·6</td></tr>
+
+        <!-- 5 系列：缺機種碼 -->
+        <tr class="section-head"><td colspan="5">▌ 5 系列 52 — 缺機種碼</td></tr>
+        <tr><td><code>52-01</code></td><td>紅色噴霧瓶 700ml</td><td class="arrow">→</td><td><code class="after">52A-01</code></td><td><span class="badge badge-amber">缺機種碼</span> 補A（噴霧/油壺型）</td></tr>
+        <tr><td><code>52-02</code></td><td>白毛板刷 3號</td><td class="arrow">→</td><td><code class="after">52B-01</code></td><td><span class="badge badge-amber">缺機種碼</span> 補B（刷類）</td></tr>
+
+        <!-- 5 系列：子類型分類錯誤 -->
+        <tr class="section-head"><td colspan="5">▌ 5 系列 532 — 砂布輪/油石 歸在子類型 3（口罩/刀片螺絲），應移至 D（切斷/研磨耗材）</td></tr>
+        <tr><td><code>532-2-01</code></td><td>平面砂布輪 厚11mm-80#</td><td class="arrow">→</td><td><code class="after">5DB-01</code></td><td><span class="badge badge-red">分類錯誤</span> 子類型3→D，B=研磨砂布輪型</td></tr>
+        <tr><td><code>532-2-03</code></td><td>油石 200×50×25mm 600#</td><td class="arrow">→</td><td><code class="after">5DB-02</code></td><td><span class="badge badge-red">分類錯誤</span> 子類型3→D</td></tr>
+        <tr><td><code>532-2-04</code></td><td>平面砂布輪 80#</td><td class="arrow">→</td><td><code class="after">5DB-03</code></td><td><span class="badge badge-red">分類錯誤</span> 子類型3→D</td></tr>
+
+        <!-- 5 系列：特殊字元 -->
+        <tr class="section-head"><td colspan="5">▌ 5 系列 — 特殊字元 / 機種碼含字母問題</td></tr>
+        <tr><td><code>551–6–1-1</code></td><td>氣動十字頭 6×60mm</td><td class="arrow">→</td><td><code class="after">551-6-01</code></td><td><span class="badge badge-red">特殊字元</span> en-dash「–」→連字符「-」，補流水號零</td></tr>
+        <tr><td><code>50I-04-02</code></td><td>强力磁铁（圓形）</td><td class="arrow">→</td><td><code class="after">4NMF-01</code></td><td><span class="badge badge-red">分類+格式</span> 磁鐵移至4N·M（手工具雜項），機種F</td></tr>
+
+      </tbody>
+    </table>
+    <div style="margin-top:20px">
+      <button class="btn btn-primary" id="run-btn" onclick="runFix()">▶ 執行修正（27 筆）</button>
+    </div>
+    <div class="log" id="log" style="display:none"></div>
+  </div>
+</div>
+
+<script type="module">
+import { mivAuthReady } from "./auth-guard.js?v=3";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const cfg = {apiKey:"AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs",authDomain:"miv-1426c.firebaseapp.com",projectId:"miv-1426c",storageBucket:"miv-1426c.firebasestorage.app",messagingSenderId:"398934341623",appId:"1:398934341623:web:4af46c057d2e202855a0f2"};
+const db = getFirestore(initializeApp(cfg));
+
+const CODE_CHANGES = {
+  // 4KA 套筒/轉換頭統一
+  '4KAG003-01': '4KAA-01',
+  '4KAG003-02': '4KAA-02',
+  '4KAG004-01': '4KAA-03',
+  '4KAG005-01': '4KAA-04',
+  '4KAG005-02': '4KAA-05',
+  '4KAG005-03': '4KAA-06',
+  '4KAG006-01': '4KAA-07',
+  '4KAH-1-1':   '4KAA-08',
+  '4KAH-2-1':   '4KAA-09',
+  '4KAH-3-1':   '4KAA-10',
+  '4KAI-1-01':  '4KAA-11',
+  '4KAI-2-01':  '4KAA-12',
+  // 4KC 錘類
+  '4KC-01':       '4KCC-01',
+  '4KCB-01-01':   '4KCB-01',
+  '4KCB-02-01':   '4KCB-02',
+  '4KCB-03-01':   '4KCB-03',
+  '4KCB-04-01':   '4KCB-04',
+  // 4KAH 快速接頭移入 5·6
+  '4KAH-1-2':   '56C-01',
+  '4KAH-1-3':   '56C-02',
+  '4KAH-1-4':   '56C-03',
+  // 5 系列缺機種碼
+  '52-01':       '52A-01',
+  '52-02':       '52B-01',
+  // 5 系列 532 分類錯誤
+  '532-2-01':    '5DB-01',
+  '532-2-03':    '5DB-02',
+  '532-2-04':    '5DB-03',
+  // 5 系列特殊字元（en-dash）
+  '551–6–1-1': '551-6-01',
+  // 50I 磁鐵移至 4NMF
+  '50I-04-02':   '4NMF-01',
+};
+
+const log = (msg, cls='') => {
+  const el = document.getElementById('log');
+  el.style.display = '';
+  el.innerHTML += `<div class="${cls}">${msg}</div>`;
+  el.scrollTop = el.scrollHeight;
+};
+
+window.runFix = async function() {
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = '驗證登入中…';
+  await mivAuthReady;
+  btn.textContent = '執行中…';
+  log('📡 讀取 Firestore 品項清單…');
+  try {
+    const snap = await getDocs(collection(db, 'toolroom_items'));
+    const batch = writeBatch(db);
+    let count = 0;
+    const notFound = new Set(Object.keys(CODE_CHANGES));
+    snap.docs.forEach(d => {
+      const code = d.data().code;
+      if (CODE_CHANGES[code] !== undefined) {
+        batch.update(d.ref, { code: CODE_CHANGES[code] });
+        log(`  <span class="ok">✔</span> <b>${code}</b> → <b>${CODE_CHANGES[code]}</b>`);
+        notFound.delete(code);
+        count++;
+      }
+    });
+    if (notFound.size > 0) {
+      log(`⚠ 未找到（可能已修正或不存在）：${[...notFound].join('、')}`, 'err');
+    }
+    if (count === 0) {
+      log('⚠ 未找到任何需修正的料號', 'err');
+    } else {
+      await batch.commit();
+      log(`<span class="ok">✅ 完成！共修正 ${count} 筆料號。</span>`);
+    }
+  } catch(e) {
+    log('❌ 錯誤：' + e.message, 'err');
+  }
+  btn.textContent = '✅ 執行完畢';
+};
+</script>
+</body>
+</html>

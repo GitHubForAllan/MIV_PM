@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="zh-Hant" data-page-key="dashboard">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>安燈看板</title>
+  <link rel="stylesheet" href="andon.css">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
+</head>
+<body class="dash-body">
+
+  <header class="dash-header">
+    <div style="display:flex;align-items:center;gap:12px">
+      <img src="Rexon%20logo.png" alt="REXON VN" style="height:48px;object-fit:contain;flex-shrink:0;border-radius:10px">
+      <div>
+        <h1 data-i18n="dashTitle">安燈看板</h1>
+        <div class="subtitle" id="dash-date"></div>
+      </div>
+    </div>
+    <div id="alert-global-badge" class="alert-global-badge hidden">
+      <span class="dot"></span>
+      <span id="alert-count-text">0 條異常</span>
+    </div>
+    <div class="dash-header-right">
+      <div class="dash-clock" id="dash-clock">--:--:--</div>
+      <a href="index.html" class="admin-link-btn">🏠 首頁</a>
+      <button id="btn-mute" class="admin-link-btn" data-i18n="btnMuteOn">🔔 蜂鳴器</button>
+      <a href="vietnam-dashboard.html" class="admin-link-btn" data-i18n="btnVietnam">🏭 戰情看板</a>
+      <button class="lang-btn" title="Chuyển sang Tiếng Việt">VI</button>
+      <a href="andon-admin.html" class="admin-link-btn" data-i18n="btnAdmin">⚙ 管理設定</a>
+    </div>
+  </header>
+
+  <main id="board" class="line-grid">
+    <div class="spinner"></div>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { initLang, t } from "./lang.js";
+
+    const db = getFirestore(initializeApp({
+      apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs",
+      authDomain: "miv-1426c.firebaseapp.com",
+      projectId: "miv-1426c",
+      storageBucket: "miv-1426c.firebasestorage.app",
+      messagingSenderId: "398934341623",
+      appId: "1:398934341623:web:4af46c057d2e202855a0f2"
+    }));
+    const configRef = doc(db, "andon", "config");
+
+    let currentData = null;
+    let muteOn = false;
+
+    /* ── 語言初始化（切換時重新 render） */
+    initLang(() => {
+      if (currentData) renderBoard(currentData);
+      const btn = document.getElementById("btn-mute");
+      btn.textContent = muteOn ? t("btnMuteOff") : t("btnMuteOn");
+    });
+
+    /* ── Buzzer */
+    let audioCtx = null, buzzerInterval = null, buzzerActive = false;
+    let audioUnlocked = false;  // 瀏覽器需要一次使用者互動才能播音
+
+    function getAudioCtx() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      return audioCtx;
+    }
+    function beep(freq=880, duration=0.12, volume=0.6) {
+      const ctx = getAudioCtx();
+      if (ctx.state === "suspended") return; // 未解鎖時靜默
+      const osc = ctx.createOscillator(), gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = "square"; osc.frequency.setValueAtTime(freq, ctx.currentTime);
+      gain.gain.setValueAtTime(volume, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + duration);
+    }
+    function startBuzzer() {
+      if (buzzerActive) return; buzzerActive = true; let tick = 0;
+      function pattern() { if (!buzzerActive) return; if (tick++ % 4 < 2) beep(880, 0.12); }
+      pattern(); buzzerInterval = setInterval(pattern, 300);
+    }
+    function stopBuzzer() { buzzerActive = false; clearInterval(buzzerInterval); buzzerInterval = null; }
+
+    // 解鎖音效：使用者第一次互動後恢復 AudioContext，並補啟動蜂鳴器
+    async function unlockAudio() {
+      if (audioUnlocked) return;
+      const ctx = getAudioCtx();
+      if (ctx.state === "suspended") await ctx.resume();
+      audioUnlocked = true;
+      hideSoundBanner();
+      // 若目前有警示且未靜音，補啟動蜂鳴器
+      if (!muteOn && currentData && Object.values(currentData.lines ?? {}).some(l => !!l.alert)) {
+        buzzerActive = false; // 重置讓 startBuzzer 可以重新啟動
+        startBuzzer();
+      }
+    }
+    document.addEventListener("click", unlockAudio, { capture: true });
+
+    /* ── 聲音提示橫幅（瀏覽器限制需要點擊才能播音） */
+    function showSoundBanner() {
+      if (audioUnlocked || muteOn) return;
+      let banner = document.getElementById("sound-unlock-banner");
+      if (!banner) {
+        banner = document.createElement("div");
+        banner.id = "sound-unlock-banner";
+        banner.style.cssText = `
+          position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+          background:#dc2626; color:#fff; padding:12px 24px; border-radius:30px;
+          font-size:.88rem; font-weight:700; cursor:pointer; z-index:999;
+          box-shadow:0 4px 20px rgba(220,38,38,.5);
+          animation:pulse-alert 1.2s ease-in-out infinite;
+          white-space:nowrap;
+        `;
+        banner.textContent = "🔔 點此啟用聲音警示 / Nhấn để bật âm thanh";
+        banner.onclick = unlockAudio;
+        document.body.appendChild(banner);
+      }
+      banner.style.display = "block";
+    }
+    function hideSoundBanner() {
+      const banner = document.getElementById("sound-unlock-banner");
+      if (banner) banner.style.display = "none";
+    }
+
+    /* ── Clock */
+    function tickClock() {
+      const now = new Date();
+      document.getElementById("dash-clock").textContent = now.toLocaleTimeString("zh-TW", { hour12:false });
+      document.getElementById("dash-date").textContent  = now.toLocaleDateString("zh-TW", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+      if (currentData) rerenderElapsed();
+    }
+    setInterval(tickClock, 1000); tickClock();
+
+    /* ── Helpers */
+    function esc(s) {
+      return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+    function elapsedStr(ts) {
+      if (!ts) return "";
+      const ms = Date.now() - (ts.toMillis ? ts.toMillis() : ts);
+      const m = Math.floor(ms/60000), h = Math.floor(m/60);
+      if (h > 0) return `${h} h ${m%60} min`;
+      return `${m} min`;
+    }
+
+    /* ── Render board */
+    function renderBoard(data) {
+      currentData = data;
+      const board = document.getElementById("board");
+      const lines = data?.lines ?? {};
+      const lineArr = Object.entries(lines).sort((a,b) => a[1].name.localeCompare(b[1].name,"zh-TW"));
+
+      if (lineArr.length === 0) {
+        board.innerHTML = `<div class="dash-empty">${esc(t("emptyBoard"))} <a href="andon-admin.html">${esc(t("btnAdmin"))}</a></div>`;
+        document.getElementById("alert-global-badge").classList.add("hidden");
+        return;
+      }
+
+      const alertCount = lineArr.filter(([,l]) => !!l.alert).length;
+      const badge = document.getElementById("alert-global-badge");
+      if (alertCount > 0) {
+        document.getElementById("alert-count-text").textContent = `${alertCount} ${t("abnormalLines")}`;
+        badge.classList.remove("hidden");
+        if (!muteOn) {
+          if (audioUnlocked) startBuzzer();
+          else showSoundBanner();
+        }
+      } else {
+        badge.classList.add("hidden");
+        stopBuzzer();
+        hideSoundBanner();
+      }
+
+      const AT = {
+        quality:   { label: t("typeQualityS"),   icon: "⚠️" },
+        material:  { label: t("typeMaterialS"),  icon: "📦" },
+        equipment: { label: t("typeEquipmentS"), icon: "🔧" },
+        other:     { label: t("typeOtherS"),     icon: "❗" },
+      };
+
+      board.innerHTML = lineArr.map(([id, line]) => {
+        const hasAlert = !!line.alert;
+        const at = hasAlert ? (AT[line.alert.type] ?? AT.other) : null;
+        const units = hasAlert
+          ? (line.alert.requestUnits?.length ? line.alert.requestUnits : (line.alert.requestUnit ? [line.alert.requestUnit] : []))
+          : [];
+        return `
+          <a href="andon-line.html?line=${encodeURIComponent(id)}"
+             class="line-card ${hasAlert ? "line-card--alert" : "line-card--ok"}">
+            <div class="card-building">${esc(line.name)}</div>
+            <div class="card-mid-row">
+              <div class="card-category">${esc(line.category || "—")}</div>
+              ${hasAlert
+                ? `<span class="status-chip status-chip--alert">${t("statusAlert")}</span>`
+                : `<span class="status-chip status-chip--ok">${t("statusOk")}</span>`}
+            </div>
+            <div class="card-bottom">
+              <div class="card-model-label">${t("cardProduction")}</div>
+              <div class="card-model">${line.model ? esc(line.model) : `<span class="no-model">${esc(t("noModel"))}</span>`}</div>
+            </div>
+            ${hasAlert ? `
+              <div class="card-alert-info">
+                <div class="alert-type-row">${at.icon} ${at.label}</div>
+                ${line.alert.description ? `<div class="alert-desc">${esc(line.alert.description)}</div>` : ""}
+                <div class="alert-meta">
+                  ${units.length ? `📋 ${esc(units.join("、"))}　` : ""}
+                  ${line.alert.triggeredBy ? esc(line.alert.triggeredBy) + "　" : ""}
+                  ${t("elapsed")} <span class="elapsed" data-ts="${line.alert.triggeredAt?.toMillis?.()??0}">${elapsedStr(line.alert.triggeredAt)}</span>
+                </div>
+              </div>` : ""}
+          </a>`;
+      }).join("");
+    }
+
+    function rerenderElapsed() {
+      document.querySelectorAll(".elapsed[data-ts]").forEach(el => {
+        const ts = parseInt(el.dataset.ts, 10);
+        if (ts) el.textContent = elapsedStr({ toMillis: () => ts });
+      });
+    }
+
+    onSnapshot(configRef, snap => renderBoard(snap.data()));
+
+    /* ── 靜音按鈕 */
+    document.getElementById("btn-mute").addEventListener("click", () => {
+      muteOn = !muteOn;
+      const btn = document.getElementById("btn-mute");
+      if (muteOn) {
+        stopBuzzer(); btn.textContent = t("btnMuteOff"); btn.classList.add("muted");
+      } else {
+        btn.textContent = t("btnMuteOn"); btn.classList.remove("muted");
+        const hasAlert = currentData && Object.values(currentData.lines??{}).some(l=>!!l.alert);
+        if (hasAlert) startBuzzer();
+      }
+    });
+
+  </script>
+</body>
+</html>

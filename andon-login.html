@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-Hant" data-page-key="login">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>安燈系統 — 登入</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
+</head>
+<body>
+  <!-- 安燈系統已改用共用的工號登入（login.html + auth-guard.js），
+       這個舊網址僅做轉址，保留是因為可能還有人加到書籤或分享連結。 -->
+  <script>
+    const returnUrl = new URLSearchParams(location.search).get("return") || "andon.html";
+    location.replace("login.html?redirect=" + encodeURIComponent(returnUrl));
+  </script>
+</body>
+</html>

@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>工具室領用查詢 / Báo Cáo Lĩnh Dụng Cụ</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f6fa;color:#1a1d23;min-height:100vh}
+.topbar{background:#1e293b;border-bottom:1px solid rgba(255,255,255,.08);padding:0 24px;height:72px;display:flex;align-items:center;justify-content:space-between}
+.topbar-left{display:flex;align-items:center;gap:16px}
+.topbar img{height:44px}
+.topbar-title h1{color:#fff;font-size:1.1rem;font-weight:700;line-height:1.2}
+.topbar-title p{color:#94a3b8;font-size:.78rem}
+.topbar-actions{display:flex;gap:10px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border:none;border-radius:6px;font-size:.88rem;font-weight:600;cursor:pointer;transition:.15s;text-decoration:none}
+.btn-outline{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.25);color:#fff}
+.btn-outline:hover{background:rgba(255,255,255,.15)}
+.btn-primary{background:#3b82f6;color:#fff}
+.btn-primary:hover{background:#2563eb}
+.wrap{max-width:1280px;margin:28px auto;padding:0 20px}
+.filter-card{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:20px 24px;margin-bottom:20px}
+.filter-card h2{font-size:.95rem;font-weight:700;color:#1e293b;margin-bottom:14px}
+.filter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;align-items:end}
+.form-label{display:block;font-size:.78rem;font-weight:600;color:#475569;margin-bottom:4px}
+.form-input{width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:.85rem;outline:none;transition:.15s}
+.form-input:focus{border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,.15)}
+.summary-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.summary-card{background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:14px 18px}
+.summary-label{font-size:.75rem;color:#64748b;font-weight:600;margin-bottom:4px}
+.summary-value{font-size:1.4rem;font-weight:700;color:#1e293b}
+.summary-card.blue .summary-value{color:#2563eb}
+.summary-card.green .summary-value{color:#059669}
+.result-card{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);overflow:hidden}
+.result-card table{width:100%;border-collapse:collapse;font-size:.84rem}
+.result-card thead th{background:#f8fafc;padding:10px 12px;text-align:left;font-weight:600;color:#475569;border-bottom:1px solid #e2e5ed;white-space:nowrap}
+.result-card tbody td{padding:10px 12px;border-bottom:1px solid #f1f5f9;vertical-align:top}
+.result-card tbody tr:last-child td{border-bottom:none}
+.result-card tbody tr:hover{background:#fafbfc}
+.status-badge{display:inline-block;padding:2px 9px;border-radius:99px;font-size:.72rem;font-weight:700}
+.s-pending{background:#fef3c7;color:#b45309}
+.s-preparing{background:#dbeafe;color:#1e40af}
+.s-ready{background:#d1fae5;color:#065f46}
+.s-done{background:#f1f5f9;color:#475569}
+.s-rejected{background:#fee2e2;color:#b91c1c}
+.items-mini{font-size:.78rem;color:#64748b;line-height:1.6}
+.empty-state{text-align:center;padding:60px 20px;color:#9ca3af}
+.empty-icon{font-size:2.5rem;margin-bottom:12px}
+.dept-group-header{background:#f0f4ff;padding:8px 12px;font-weight:700;font-size:.82rem;color:#1e40af;border-bottom:1px solid #e2e5ed}
+.total-row td{background:#f8fafc;font-weight:700;color:#1e293b}
+</style>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
+</head>
+<body>
+<script type="module" src="auth-guard.js?v=3"></script>
+<div class="topbar">
+  <div class="topbar-left">
+    <img src="Rexon logo.png" alt="Rexon">
+    <div class="topbar-title">
+      <h1>工具室領用查詢 / Báo Cáo Lĩnh Dụng Cụ</h1>
+      <p>Rexon Industrial Co., Ltd.</p>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <a href="toolroom_req.html" class="btn btn-outline">📋 領用管理</a>
+    <a href="toolroom.html" class="btn btn-outline">← 庫存管理</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <!-- 篩選列 -->
+  <div class="filter-card">
+    <h2>🔍 查詢條件 / Điều kiện tìm kiếm</h2>
+    <div class="filter-grid">
+      <div>
+        <label class="form-label">申請部門（大分類）</label>
+        <select class="form-input" id="f-dept1" onchange="onDept1Change()">
+          <option value="">全部部門</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">細分類</label>
+        <select class="form-input" id="f-dept2" disabled>
+          <option value="">全部</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">申請日期（起）</label>
+        <input type="date" class="form-input" id="f-from">
+      </div>
+      <div>
+        <label class="form-label">申請日期（迄）</label>
+        <input type="date" class="form-input" id="f-to">
+      </div>
+      <div>
+        <label class="form-label">狀態</label>
+        <select class="form-input" id="f-status">
+          <option value="">全部狀態</option>
+          <option value="待處理">待處理</option>
+          <option value="備料中">備料中</option>
+          <option value="可領取">可領取</option>
+          <option value="已完成">已完成</option>
+          <option value="已拒絕">已拒絕</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" style="flex:1" onclick="runQuery()">🔍 查詢</button>
+        <button class="btn" style="background:#f1f5f9;color:#374151;flex:1" onclick="resetQuery()">重置</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 統計摘要 -->
+  <div class="summary-row" id="summary-row" style="display:none">
+    <div class="summary-card">
+      <div class="summary-label">查詢筆數</div>
+      <div class="summary-value" id="s-count">0</div>
+    </div>
+    <div class="summary-card blue">
+      <div class="summary-label">領用總金額 (VND)</div>
+      <div class="summary-value" id="s-total">0</div>
+    </div>
+    <div class="summary-card green">
+      <div class="summary-label">已完成金額 (VND)</div>
+      <div class="summary-value" id="s-done">0</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">涉及品項數</div>
+      <div class="summary-value" id="s-items">0</div>
+    </div>
+  </div>
+
+  <!-- 結果表格 -->
+  <div class="result-card" id="result-card" style="display:none">
+    <table>
+      <thead>
+        <tr>
+          <th>單號</th>
+          <th>申請日期</th>
+          <th>申請人</th>
+          <th>部門</th>
+          <th>申請品項</th>
+          <th style="text-align:right">金額 (VND)</th>
+          <th>狀態</th>
+          <th>建立時間</th>
+        </tr>
+      </thead>
+      <tbody id="result-tbody"></tbody>
+    </table>
+    <div class="empty-state" id="result-empty" style="display:none">
+      <div class="empty-icon">📭</div>
+      <div>查無符合條件的領用記錄</div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore, collection, getDocs, query, orderBy
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey:"AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs",
+  authDomain:"miv-1426c.firebaseapp.com",
+  projectId:"miv-1426c"
+});
+const db = getFirestore(app);
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtVnd(n){ return n!=null?Number(n).toLocaleString('vi-VN'):'—'; }
+
+const DEPT_TREE = [
+  {code:'A100',name:'董事長室',subs:[]},
+  {code:'A200',name:'總經理室',subs:[]},
+  {code:'B000',name:'總管理處',subs:[]},
+  {code:'G100',name:'營業部',subs:[{code:'G110',name:'營業課'},{code:'G120',name:'業管課'}]},
+  {code:'B100',name:'財務部',subs:[{code:'B110',name:'財務課'}]},
+  {code:'B200',name:'資訊管理課',subs:[]},
+  {code:'B300',name:'管理部',subs:[{code:'B310',name:'人資課'},{code:'B320',name:'總務課'}]},
+  {code:'R000',name:'技術處',subs:[{code:'R100',name:'開發部'},{code:'R110',name:'生技課'},{code:'R120',name:'技術課'},{code:'R130',name:'開發課'}]},
+  {code:'S100',name:'品保部',subs:[{code:'S110',name:'品保課'},{code:'S120',name:'檢驗課'}]},
+  {code:'M100',name:'資材部',subs:[{code:'M110',name:'採購課'},{code:'M120',name:'成本課'},{code:'M130',name:'物料課'}]},
+  {code:'P000',name:'製造本部',subs:[
+    {code:'P010',name:'生管部'},{code:'P100',name:'製造一部'},
+    {code:'P110',name:'沖床課'},{code:'P120',name:'焊接課'},{code:'P130',name:'噴漆課'},
+    {code:'P200',name:'製造二部'},{code:'P210',name:'生產一課'},
+    {code:'P210A',name:'生產一課 A組'},{code:'P210B',name:'生產一課 B組'},
+    {code:'P210C',name:'生產一課 C組'},{code:'P210D',name:'生產一課 D組'},
+    {code:'P210E',name:'生產一課 E組'},{code:'P210F',name:'生產一課 F組'},
+    {code:'P210G',name:'生產一課 G組'},{code:'P220',name:'生產二課'},
+    {code:'P220A',name:'生產二課 A組'},{code:'P220B',name:'生產二課 B組'},
+    {code:'P220C',name:'生產二課 C組'},{code:'P220D',name:'生產二課 D組'},
+    {code:'P220E',name:'生產二課 E組'},{code:'P220F',name:'生產二課 F組'},
+    {code:'P220G',name:'生產二課 G組'},{code:'P300',name:'製造三部'},{code:'P310',name:'加工課'}
+  ]},
+];
+
+// 初始化部門下拉
+const d1sel = document.getElementById('f-dept1');
+DEPT_TREE.forEach(d => {
+  const o = document.createElement('option');
+  o.value = d.code; o.textContent = d.code + ' ' + d.name;
+  d1sel.appendChild(o);
+});
+
+window.onDept1Change = function() {
+  const code = d1sel.value;
+  const d2sel = document.getElementById('f-dept2');
+  const dept = DEPT_TREE.find(d => d.code === code);
+  if (!dept || dept.subs.length === 0) {
+    d2sel.innerHTML = '<option value="">全部</option>';
+    d2sel.disabled = true; return;
+  }
+  d2sel.disabled = false;
+  d2sel.innerHTML = '<option value="">全部細分類</option>';
+  dept.subs.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s.code; o.textContent = s.code + ' ' + s.name;
+    d2sel.appendChild(o);
+  });
+};
+
+const SC = {'待處理':'s-pending','備料中':'s-preparing','可領取':'s-ready','已完成':'s-done','已拒絕':'s-rejected'};
+
+window.resetQuery = function() {
+  document.getElementById('f-dept1').value = '';
+  document.getElementById('f-dept2').innerHTML = '<option value="">全部</option>';
+  document.getElementById('f-dept2').disabled = true;
+  document.getElementById('f-from').value = '';
+  document.getElementById('f-to').value = '';
+  document.getElementById('f-status').value = '';
+  document.getElementById('summary-row').style.display = 'none';
+  document.getElementById('result-card').style.display = 'none';
+};
+
+window.runQuery = async function() {
+  const d1v    = document.getElementById('f-dept1').value;
+  const d2v    = document.getElementById('f-dept2').value;
+  const from   = document.getElementById('f-from').value;
+  const to     = document.getElementById('f-to').value;
+  const status = document.getElementById('f-status').value;
+
+  const btn = document.querySelector('.btn-primary');
+  btn.textContent = '查詢中…'; btn.disabled = true;
+
+  const snap = await getDocs(query(collection(db,'toolroom_requisitions'), orderBy('date','desc')));
+  let list = snap.docs.map(d => ({id:d.id,...d.data()}));
+
+  // 篩選
+  if (d1v)    list = list.filter(r => (r.dept1||'').startsWith(d1v) || (r.dept||'').includes(d1v));
+  if (d2v)    list = list.filter(r => (r.dept2||'').startsWith(d2v) || (r.dept||'').includes(d2v));
+  if (from)   list = list.filter(r => (r.date||'') >= from);
+  if (to)     list = list.filter(r => (r.date||'') <= to);
+  if (status) list = list.filter(r => r.status === status);
+
+  btn.textContent = '🔍 查詢'; btn.disabled = false;
+
+  // 統計
+  const totalAmt  = list.reduce((s,r) => s+(r.totalAmount||0), 0);
+  const doneAmt   = list.filter(r=>r.status==='已完成').reduce((s,r) => s+(r.totalAmount||0), 0);
+  const itemCount = list.reduce((s,r) => s+(r.items||[]).length, 0);
+  document.getElementById('s-count').textContent  = list.length;
+  document.getElementById('s-total').textContent  = fmtVnd(totalAmt);
+  document.getElementById('s-done').textContent   = fmtVnd(doneAmt);
+  document.getElementById('s-items').textContent  = itemCount;
+  document.getElementById('summary-row').style.display = '';
+  document.getElementById('result-card').style.display = '';
+
+  const tbody = document.getElementById('result-tbody');
+  const empty = document.getElementById('result-empty');
+  if (list.length === 0) { tbody.innerHTML = ''; empty.style.display = ''; return; }
+  empty.style.display = 'none';
+
+  tbody.innerHTML = list.map(r => {
+    const dt = r.createdAt?.toDate?.()?.toLocaleString('zh-TW',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) || '—';
+    const itemsSummary = (r.items||[]).map(it =>
+      `<div>${esc(it.code)} ${esc(it.name)} × ${it.qty} ${esc(it.unit||'')}${it.unitPrice?' ('+fmtVnd(it.unitPrice)+'đ)':''}</div>`
+    ).join('');
+    const sc = SC[r.status]||'';
+    return `<tr>
+      <td style="white-space:nowrap"><code style="background:#f1f5f9;padding:1px 6px;border-radius:3px;font-size:.78rem">${esc(r.reqNo||r.id)}</code></td>
+      <td style="white-space:nowrap">${esc(r.date||'—')}</td>
+      <td style="white-space:nowrap">${esc(r.person||'—')}</td>
+      <td style="font-size:.82rem">${esc(r.dept||'—')}</td>
+      <td><div class="items-mini">${itemsSummary}</div></td>
+      <td style="text-align:right;font-weight:700;color:#1e40af;white-space:nowrap">${fmtVnd(r.totalAmount||0)}</td>
+      <td><span class="status-badge ${sc}">${esc(r.status)}</span></td>
+      <td style="color:#9ca3af;font-size:.78rem;white-space:nowrap">${dt}</td>
+    </tr>`;
+  }).join('');
+};
+
+// 預設日期為本月
+(function setDefaultDates(){
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth()+1).padStart(2,'0');
+  document.getElementById('f-from').value = `${y}-${m}-01`;
+  const last = new Date(y, now.getMonth()+1, 0).getDate();
+  document.getElementById('f-to').value = `${y}-${m}-${String(last).padStart(2,'0')}`;
+})();
+</script>
+</body>
+</html>

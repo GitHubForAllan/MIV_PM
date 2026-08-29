@@ -1,0 +1,694 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>工具室領用管理 / Quản Lý Phiếu Lĩnh</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f6fa;color:#1a1d23;min-height:100vh}
+.topbar{background:#1e293b;border-bottom:1px solid rgba(255,255,255,.08);padding:0 24px;height:72px;display:flex;align-items:center;justify-content:space-between}
+.topbar-left{display:flex;align-items:center;gap:16px}
+.topbar img{height:44px}
+.topbar-title h1{color:#fff;font-size:1.1rem;font-weight:700;line-height:1.2}
+.topbar-title p{color:#94a3b8;font-size:.78rem}
+.topbar-actions{display:flex;gap:10px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border:none;border-radius:6px;font-size:.88rem;font-weight:600;cursor:pointer;transition:.15s;text-decoration:none}
+.btn-outline{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.25);color:#fff}
+.btn-outline:hover{background:rgba(255,255,255,.15)}
+.wrap{max-width:1200px;margin:28px auto;padding:0 20px}
+.filter-bar{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:center}
+.filter-btn{padding:6px 16px;border-radius:99px;border:1px solid #e2e5ed;background:#fff;font-size:.82rem;cursor:pointer;font-weight:500;transition:.15s;color:#374151}
+.filter-btn.active,.filter-btn:hover{background:#1e293b;color:#fff;border-color:#1e293b}
+.count-badge{display:inline-block;background:#ef4444;color:#fff;border-radius:99px;font-size:.7rem;padding:1px 6px;margin-left:4px;font-weight:700;vertical-align:middle}
+.card-grid{display:flex;flex-direction:column;gap:14px}
+.req-card{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-left:4px solid #e5e7eb;padding:18px 20px;transition:.15s}
+.req-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.10)}
+.req-card.s-pending{border-left-color:#f59e0b}
+.req-card.s-preparing{border-left-color:#3b82f6}
+.req-card.s-ready{border-left-color:#10b981}
+.req-card.s-done{border-left-color:#6b7280}
+.req-card.s-rejected{border-left-color:#ef4444;opacity:.75}
+.card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;gap:12px;flex-wrap:wrap}
+.req-no{font-size:.75rem;color:#6b7280;font-family:monospace}
+.req-dept{font-size:.95rem;font-weight:700;color:#1e293b;margin-top:2px}
+.req-meta{font-size:.8rem;color:#6b7280;margin-top:3px}
+.status-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:99px;font-size:.8rem;font-weight:600;white-space:nowrap}
+.s-pending .status-badge{background:#fef3c7;color:#92400e}
+.s-preparing .status-badge{background:#dbeafe;color:#1e40af}
+.s-ready .status-badge{background:#d1fae5;color:#065f46}
+.s-done .status-badge{background:#f3f4f6;color:#374151}
+.s-rejected .status-badge{background:#fee2e2;color:#b91c1c}
+.items-table{width:100%;border-collapse:collapse;font-size:.82rem;margin-bottom:12px}
+.items-table th{background:#f8fafc;padding:6px 10px;text-align:left;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600}
+.items-table td{padding:7px 10px;border-bottom:1px solid #f1f5f9}
+.items-table tr:last-child td{border-bottom:none}
+.card-note{font-size:.8rem;color:#6b7280;background:#f8fafc;padding:8px 12px;border-radius:6px;margin-bottom:12px}
+.card-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.action-btn{padding:7px 16px;border-radius:6px;border:none;font-size:.82rem;font-weight:600;cursor:pointer;transition:.15s}
+.btn-start{background:#dbeafe;color:#1e40af}.btn-start:hover{background:#bfdbfe}
+.btn-ready{background:#d1fae5;color:#065f46}.btn-ready:hover{background:#a7f3d0}
+.btn-done{background:#1e293b;color:#fff}.btn-done:hover{background:#0f172a}
+.btn-reject{background:#fee2e2;color:#b91c1c}.btn-reject:hover{background:#fecaca}
+.hidden{display:none!important}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px}
+.modal-overlay.hidden{display:none!important}
+.modal-box{background:#fff;border-radius:12px;width:100%;max-width:640px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
+.modal-box h2{font-size:1.1rem;font-weight:700;margin-bottom:18px;color:#1e293b}
+.modal-body{overflow-y:auto;padding:28px;flex:1;min-height:0}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.form-label{font-size:.82rem;color:#6b7280;display:block;margin-bottom:4px}
+.form-input{width:100%;border:1px solid #e2e5ed;border-radius:6px;padding:8px 10px;font-size:.88rem;color:#1a1d23;background:#fff;outline:none;transition:.15s}
+.form-input:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;border-top:1px solid #f1f5f9;padding-top:16px}
+.btn-cancel{background:#f3f4f6;color:#374151;border:none}.btn-cancel:hover{background:#e5e7eb}
+.btn-submit{background:#2563eb;color:#fff;border:none}.btn-submit:hover{background:#1d4ed8}
+.empty{text-align:center;padding:60px 20px;color:#9ca3af;font-size:.95rem}
+.empty-icon{font-size:2.5rem;margin-bottom:10px}
+.loading{text-align:center;padding:40px;color:#9ca3af}
+/* 雙語 */
+.bi{display:flex;flex-direction:column;line-height:1.25}
+.vi{font-size:1em;font-weight:600;color:inherit}
+.zh{font-size:.82em;color:#64748b;font-weight:400}
+.bi-inline{display:inline-flex;flex-direction:column;line-height:1.2;vertical-align:middle}
+.topbar-title .vi{font-size:1.05rem;font-weight:700;color:#fff}
+.topbar-title .zh{font-size:.78rem;font-weight:400;color:#94a3b8}
+
+/* ── 手機響應式 ─────────────────────────── */
+@media(max-width:640px){
+  /* 頂列：隱藏 logo、縮小標題、按鈕只顯示圖示 */
+  .topbar{padding:0 12px;height:auto;min-height:56px;flex-wrap:wrap;gap:6px;padding-top:8px;padding-bottom:8px}
+  .topbar img{height:32px}
+  .topbar-title .vi{font-size:.9rem}
+  .topbar-title .zh{font-size:.72rem}
+  .topbar-actions{gap:6px}
+  .topbar-actions .btn{padding:6px 10px;font-size:.78rem}
+  .topbar-actions .btn .bi-inline .zh{display:none} /* 按鈕只顯示越文 */
+
+  /* 主內容 */
+  .wrap{margin:14px auto;padding:0 10px}
+
+  /* 篩選列：捲動式不換行 */
+  .filter-bar{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:6px;gap:6px;margin-bottom:12px}
+  .filter-bar::-webkit-scrollbar{height:3px}
+  .filter-btn{white-space:nowrap;flex-shrink:0;padding:5px 12px;font-size:.78rem}
+  .filter-btn .bi-inline .zh{display:none} /* 篩選按鈕只顯示越文 */
+
+  /* 卡片 */
+  .req-card{padding:12px 14px}
+  .req-dept{font-size:.88rem}
+  .req-meta{font-size:.74rem;line-height:1.6}
+
+  /* 品項表格：水平捲動 */
+  .items-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:12px}
+  .items-table{font-size:.76rem;min-width:520px;margin-bottom:0}
+  .items-table th,.items-table td{padding:5px 7px}
+
+  /* 操作按鈕：全寬換行 */
+  .card-actions{flex-direction:column;gap:6px}
+  .action-btn{width:100%;text-align:center;padding:10px 14px;font-size:.85rem}
+
+  /* Modal：幾乎全螢幕 */
+  .modal-overlay{padding:0;align-items:flex-end}
+  .modal-box{border-radius:16px 16px 0 0;max-height:95vh;max-width:100%}
+  .modal-body{padding:18px 16px}
+  .modal-footer{padding:12px 16px}
+
+  /* Modal 表單：單欄 */
+  .form-grid{grid-template-columns:1fr}
+}
+</style>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
+</head>
+<body>
+<script type="module" src="auth-guard.js?v=3"></script>
+<header class="topbar">
+  <div class="topbar-left">
+    <img src="Rexon logo.png" alt="REXON">
+    <div class="topbar-title">
+      <div class="bi">
+        <span class="vi">Quản Lý Phiếu Lĩnh Dụng Cụ</span>
+        <span class="zh">工具室領用管理</span>
+      </div>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn btn-outline" onclick="openReqModal()" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);color:#fff;font-weight:700">
+      <span class="bi-inline"><span class="vi">📝 Lập phiếu lĩnh</span><span class="zh">開立領用單</span></span>
+    </button>
+    <a href="toolroom_report.html" class="btn btn-outline"><span class="bi-inline"><span class="vi">📊 Báo cáo</span><span class="zh">領用查詢</span></span></a>
+    <a href="toolroom.html" class="btn btn-outline"><span class="bi-inline"><span class="vi">← Tồn kho</span><span class="zh">庫存管理</span></span></a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="filter-bar">
+    <button class="filter-btn active" data-status="all" onclick="setFilter('all')"><span class="bi-inline"><span class="vi">Tất cả</span><span class="zh">全部</span></span> <span class="count-badge" id="cnt-all">0</span></button>
+    <button class="filter-btn" data-status="待處理" onclick="setFilter('待處理')">📋 <span class="bi-inline"><span class="vi">Chờ xử lý</span><span class="zh">待處理</span></span> <span class="count-badge" id="cnt-pending" style="background:#f59e0b">0</span></button>
+    <button class="filter-btn" data-status="備料中" onclick="setFilter('備料中')">🔧 <span class="bi-inline"><span class="vi">Đang chuẩn bị</span><span class="zh">備料中</span></span> <span class="count-badge" id="cnt-preparing" style="background:#3b82f6">0</span></button>
+    <button class="filter-btn" data-status="可領取" onclick="setFilter('可領取')">✅ <span class="bi-inline"><span class="vi">Sẵn sàng lấy</span><span class="zh">可領取</span></span> <span class="count-badge" id="cnt-ready" style="background:#10b981">0</span></button>
+    <button class="filter-btn" data-status="已完成" onclick="setFilter('已完成')">📦 <span class="bi-inline"><span class="vi">Hoàn thành</span><span class="zh">已完成</span></span> <span class="count-badge" id="cnt-done" style="background:#6b7280">0</span></button>
+    <button class="filter-btn" data-status="已拒絕" onclick="setFilter('已拒絕')">❌ <span class="bi-inline"><span class="vi">Từ chối</span><span class="zh">已拒絕</span></span> <span class="count-badge" id="cnt-rejected" style="background:#ef4444">0</span></button>
+  </div>
+  <div class="loading" id="loading">Đang tải… / 載入中…</div>
+  <div class="card-grid" id="card-grid"></div>
+  <div class="empty hidden" id="empty-state">
+    <div class="empty-icon">📭</div>
+    <p>Không có phiếu nào / 此分類目前沒有單據</p>
+  </div>
+</div>
+
+<!-- 領用申請 Modal -->
+<div class="modal-overlay hidden" id="req-modal">
+  <div class="modal-box">
+    <div class="modal-body">
+    <h2><div class="bi"><span class="vi">📝 Phiếu yêu cầu lĩnh vật tư</span><span class="zh">開立領用單</span></div></h2>
+    <div class="form-grid">
+      <div>
+        <label class="form-label"><div class="bi"><span class="vi">Ngày yêu cầu</span><span class="zh">申請日期</span></div></label>
+        <input type="date" id="req-date" class="form-input">
+      </div>
+      <div>
+        <label class="form-label"><div class="bi"><span class="vi">Người yêu cầu</span><span class="zh">申請人</span></div></label>
+        <input type="text" id="req-person" class="form-input" placeholder="Họ tên / 姓名">
+      </div>
+      <div>
+        <label class="form-label"><div class="bi"><span class="vi">Phòng ban</span><span class="zh">申請部門（大分類）</span></div></label>
+        <select id="req-dept1" class="form-input" onchange="onDept1Change()">
+          <option value="">-- Chọn phòng ban / 請選擇 --</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label"><div class="bi"><span class="vi">Bộ phận</span><span class="zh">細分類</span></div></label>
+        <select id="req-dept2" class="form-input" disabled>
+          <option value="">-- Chọn phòng ban trước / 請先選大分類 --</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <label class="form-label" style="margin:0"><div class="bi"><span class="vi">Vật tư yêu cầu</span><span class="zh">申請品項</span></div></label>
+        <button class="btn btn-cancel btn-sm" style="padding:4px 12px;font-size:.8rem;border-radius:5px;cursor:pointer" onclick="addReqRow()">＋ <span class="bi-inline"><span class="vi">Thêm mục</span><span class="zh">新增品項</span></span></button>
+      </div>
+      <div style="border:1px solid #e2e5ed;border-radius:6px;overflow:hidden">
+        <table style="width:100%;border-collapse:collapse;font-size:.82rem">
+          <thead><tr style="background:#f8fafc">
+            <th style="padding:7px 10px;text-align:left;border-bottom:1px solid #e2e5ed;color:#6b7280"><div class="bi"><span class="vi">Mặt hàng</span><span class="zh">品項</span></div></th>
+            <th style="padding:7px 10px;text-align:center;border-bottom:1px solid #e2e5ed;color:#6b7280;width:75px"><div class="bi"><span class="vi">SL</span><span class="zh">數量</span></div></th>
+            <th style="padding:7px 10px;text-align:right;border-bottom:1px solid #e2e5ed;color:#6b7280;width:100px"><div class="bi"><span class="vi">Đơn giá</span><span class="zh">單價(VND)</span></div></th>
+            <th style="padding:7px 10px;text-align:right;border-bottom:1px solid #e2e5ed;color:#6b7280;width:110px"><div class="bi"><span class="vi">Thành tiền</span><span class="zh">小計(VND)</span></div></th>
+            <th style="padding:7px 10px;border-bottom:1px solid #e2e5ed;width:32px"></th>
+          </tr></thead>
+          <tbody id="req-items-body"></tbody>
+        </table>
+        <div style="text-align:right;padding:8px 12px;font-weight:700;color:#1e293b;font-size:.88rem;border-top:1px solid #e2e5ed">
+          <span class="bi-inline" style="text-align:right"><span class="vi">Tổng cộng：<span id="req-total">0</span> VND</span><span class="zh">合計</span></span>
+        </div>
+      </div>
+    </div>
+    <div style="margin-bottom:4px">
+      <label class="form-label"><div class="bi"><span class="vi">Mục đích sử dụng / Ghi chú</span><span class="zh">用途 / 備註</span></div></label>
+      <textarea id="req-note" class="form-input" rows="2" placeholder="Ghi rõ mục đích sử dụng… / 請說明領用用途…" style="resize:vertical"></textarea>
+    </div>
+    </div><!-- end modal-body -->
+    <div class="modal-footer" style="padding:14px 28px;margin:0;border-top:1px solid #f1f5f9;flex-shrink:0">
+      <button class="btn btn-cancel" onclick="closeReqModal()" style="padding:8px 18px;border-radius:6px;cursor:pointer"><span class="bi-inline"><span class="vi">Hủy</span><span class="zh">取消</span></span></button>
+      <button class="btn btn-submit" onclick="submitReq()" style="padding:8px 18px;border-radius:6px;cursor:pointer">📨 <span class="bi-inline"><span class="vi">Gửi yêu cầu</span><span class="zh">送出申請</span></span></button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { mivRequireApp } from "./auth-guard.js?v=3";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore, collection, doc, onSnapshot, setDoc,
+  updateDoc, getDoc, arrayUnion, Timestamp, writeBatch, deleteDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const cfg = {
+  apiKey:"AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs",
+  authDomain:"miv-1426c.firebaseapp.com",
+  projectId:"miv-1426c",
+  storageBucket:"miv-1426c.firebasestorage.app",
+  messagingSenderId:"398934341623",
+  appId:"1:398934341623:web:4af46c057d2e202855a0f2"
+};
+const db = getFirestore(initializeApp(cfg));
+const reqCol   = collection(db, "toolroom_requisitions");
+const itemsCol = collection(db, "toolroom_items");
+
+let reqs = {}, currentFilter = 'all';
+
+// 進入本頁需「工具室系統 → 使用」，可檢視並送出領用申請（submitReq）；
+// 審核/處理領用單（開始備料、備料完成、拒絕、刪除）另需「工具室系統 → 管理」。
+let canManage = false;
+mivRequireApp("toolroom").then(user => {
+  canManage = user.canManage("toolroom");
+  render();
+}).catch(() => {});   // 權限不足時 mivRequireApp 已顯示提示畫面
+
+const SC = { 待處理:'s-pending', 備料中:'s-preparing', 可領取:'s-ready', 已完成:'s-done', 已拒絕:'s-rejected' };
+const SI = { 待處理:'📋', 備料中:'🔧', 可領取:'✅', 已完成:'📦', 已拒絕:'❌' };
+const ORDER = { 待處理:0, 備料中:1, 可領取:2, 已完成:9, 已拒絕:9 };
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+onSnapshot(reqCol, snap => {
+  snap.docChanges().forEach(c => {
+    if (c.type === 'removed') delete reqs[c.doc.id];
+    else reqs[c.doc.id] = { id: c.doc.id, ...c.doc.data() };
+  });
+  render(); updateCounts();
+  document.getElementById('loading').style.display = 'none';
+});
+
+function updateCounts() {
+  const all = Object.values(reqs);
+  document.getElementById('cnt-all').textContent       = all.length;
+  document.getElementById('cnt-pending').textContent   = all.filter(r => r.status === '待處理').length;
+  document.getElementById('cnt-preparing').textContent = all.filter(r => r.status === '備料中').length;
+  document.getElementById('cnt-ready').textContent     = all.filter(r => r.status === '可領取').length;
+  document.getElementById('cnt-done').textContent      = all.filter(r => r.status === '已完成').length;
+  document.getElementById('cnt-rejected').textContent  = all.filter(r => r.status === '已拒絕').length;
+}
+
+window.setFilter = function(f) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.status === f));
+  render();
+};
+
+function render() {
+  const grid  = document.getElementById('card-grid');
+  const empty = document.getElementById('empty-state');
+  let list = Object.values(reqs).sort((a,b) => {
+    const od = (ORDER[a.status]??5) - (ORDER[b.status]??5);
+    if (od !== 0) return od;
+    return (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0);
+  });
+  if (currentFilter !== 'all') list = list.filter(r => r.status === currentFilter);
+  if (list.length === 0) { grid.innerHTML = ''; empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden');
+  grid.innerHTML = list.map(cardHtml).join('');
+}
+
+const oosEditMode = new Set(); // 記錄哪些卡片目前在「缺貨編輯模式」
+
+window.toggleOosEdit = function(id) {
+  if (oosEditMode.has(id)) oosEditMode.delete(id);
+  else oosEditMode.add(id);
+  render();
+};
+
+function cardHtml(r) {
+  const sc = SC[r.status] || '';
+  const si = SI[r.status] || '';
+  const dt = r.createdAt?.toDate?.()?.toLocaleString('zh-TW',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) || '—';
+  const isPreparing = r.status === '備料中';
+  const editMode = oosEditMode.has(r.id);
+  const rows = (r.items||[]).map((it, idx) => {
+    const oos = !!it.outOfStock;
+    const strike = oos ? 'text-decoration:line-through;opacity:.4;' : '';
+    const oosTag = oos
+      ? `<span style="font-size:.72rem;background:#fee2e2;color:#b91c1c;border-radius:3px;padding:1px 6px;margin-left:6px;font-weight:600">⚠ Hết hàng／缺貨</span>`
+      : '';
+    const currentStock = itemsMap[it.itemId]?.qty;
+    const shortage = (currentStock != null && it.qty > currentStock) ? it.qty - currentStock : 0;
+    const stockWarnTag = (!oos && shortage > 0)
+      ? `<span style="font-size:.72rem;background:#fee2e2;color:#dc2626;border-radius:3px;padding:1px 6px;margin-left:6px;font-weight:600">⚠ Thiếu ${shortage} ${esc(it.unit||'')}／缺 ${shortage} ${esc(it.unit||'')}</span>`
+      : '';
+    const oosCell = isPreparing && editMode
+      ? `<td style="padding:4px 6px;white-space:nowrap">
+           <button onclick="toggleOutOfStock('${esc(r.id)}',${idx})"
+             style="font-size:.75rem;padding:3px 8px;border-radius:4px;border:1px solid ${oos?'#10b981':'#e2e5ed'};background:${oos?'#d1fae5':'#f8fafc'};color:${oos?'#065f46':'#6b7280'};cursor:pointer;font-weight:600">
+             ${oos ? '✓ Khôi phục／恢復' : '⚠ Hết hàng／缺貨'}
+           </button>
+         </td>`
+      : (isPreparing ? '<td></td>' : '');
+    return `<tr style="${oos?'background:#fff7f7':''}">
+      <td style="${strike}"><code style="background:#f1f5f9;padding:1px 5px;border-radius:3px;font-size:.78rem">${esc(it.code)}</code></td>
+      <td style="${strike}">${esc(it.name)}${it.spec?` <span style="color:#9ca3af;font-size:.78rem">[${esc(it.spec)}]</span>`:''}${oosTag}${stockWarnTag}</td>
+      <td style="text-align:center;font-weight:700;color:#1e293b;${strike}">${it.qty}</td>
+      <td style="color:#6b7280;${strike}">${esc(it.unit||'')}</td>
+      <td style="${strike}"><code style="background:#f0fdf4;color:#166534;padding:1px 6px;border-radius:3px;font-size:.78rem">${esc(it.location||'—')}</code></td>
+      <td style="text-align:right;color:#475569;${strike}">${it.unitPrice!=null?fmtVnd(it.unitPrice):'—'}</td>
+      <td style="text-align:right;font-weight:600;${oos?'color:#dc2626;text-decoration:line-through;opacity:.4':'color:#1e293b'}">${it.subtotal!=null?fmtVnd(it.subtotal):'—'}</td>
+      ${oosCell}
+    </tr>`;
+  }).join('');
+  const note = r.note ? `<div class="card-note">💬 ${esc(r.note)}</div>` : '';
+  const rej  = r.rejectReason ? `<div class="card-note" style="background:#fee2e2;color:#b91c1c"><span style="font-size:1em;font-weight:600">Lý do từ chối</span> <span style="font-size:.85em;color:#9b1c1c">／ 拒絕原因</span>：${esc(r.rejectReason)}</div>` : '';
+  return `
+  <div class="req-card ${sc}">
+    <div class="card-header">
+      <div>
+        <div class="req-no">${esc(r.reqNo||r.id)}</div>
+        <div class="req-dept">${esc(r.dept||'—')}</div>
+        <div class="req-meta">
+          <span style="font-size:1em">Người YC</span><span style="font-size:.85em;color:#9ca3af">／申請人</span>：${esc(r.person||'—')}
+          ／ <span style="font-size:1em">Ngày YC</span><span style="font-size:.85em;color:#9ca3af">／申請日</span>：${esc(r.date||'—')}
+          ／ <span style="font-size:1em">Tạo lúc</span><span style="font-size:.85em;color:#9ca3af">／建立</span>：${dt}
+        </div>
+      </div>
+      <span class="status-badge">${si} ${esc(r.status)}</span>
+    </div>
+    <div class="items-table-wrap">
+    <table class="items-table">
+      <thead><tr>
+        <th><span style="font-size:1em;display:block">Mã hàng</span><span style="font-size:.82em;color:#9ca3af">料號</span></th>
+        <th><span style="font-size:1em;display:block">Tên hàng</span><span style="font-size:.82em;color:#9ca3af">品名</span></th>
+        <th style="text-align:center"><span style="font-size:1em;display:block">SL</span><span style="font-size:.82em;color:#9ca3af">數量</span></th>
+        <th><span style="font-size:1em;display:block">ĐVT</span><span style="font-size:.82em;color:#9ca3af">單位</span></th>
+        <th><span style="font-size:1em;display:block">Vị trí</span><span style="font-size:.82em;color:#9ca3af">儲位</span></th>
+        <th style="text-align:right"><span style="font-size:1em;display:block">Đơn giá</span><span style="font-size:.82em;color:#9ca3af">單價(VND)</span></th>
+        <th style="text-align:right"><span style="font-size:1em;display:block">Thành tiền</span><span style="font-size:.82em;color:#9ca3af">小計(VND)</span></th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr>
+        <td colspan="6" style="text-align:right;padding:6px 10px;font-weight:700;color:#1e293b;border-top:1px solid #e2e5ed">
+          <span style="font-size:1em">Tổng cộng</span> <span style="font-size:.82em;color:#64748b">／合計</span>
+        </td>
+        <td style="text-align:right;padding:6px 10px;font-weight:700;color:#1e40af;border-top:1px solid #e2e5ed">${fmtVnd(r.totalAmount||0)}</td>
+      </tr></tfoot>
+    </table>
+    </div>
+    ${note}${rej}
+    <div class="card-actions">${actionBtns(r)}</div>
+  </div>`;
+}
+
+function bi(vi, zh) {
+  return `<span style="display:inline-flex;flex-direction:column;line-height:1.2;vertical-align:middle"><span style="font-size:1em;font-weight:600">${vi}</span><span style="font-size:.8em;font-weight:400;opacity:.7">${zh}</span></span>`;
+}
+
+function actionBtns(r) {
+  if (!canManage) return '';
+  const id = r.id;
+  const delBtn = `<button class="action-btn" style="background:#f1f5f9;color:#64748b;margin-left:auto" onclick="deleteReq('${id}')">🗑 ${bi('Xóa','刪除')}</button>`;
+  if (r.status === '待處理')  return `
+    <button class="action-btn btn-start"  onclick="changeStatus('${id}','備料中')">🔧 ${bi('Bắt đầu chuẩn bị','開始備料')}</button>
+    <button class="action-btn btn-reject" onclick="rejectReq('${id}')">❌ ${bi('Từ chối','拒絕')}</button>${delBtn}`;
+  if (r.status === '備料中') {
+    const editActive = oosEditMode.has(id);
+    return `
+    <button class="action-btn btn-ready"  onclick="changeStatus('${id}','可領取')">✅ ${bi('Xong, thông báo lấy','備料完成，通知領取')}</button>
+    <button class="action-btn" onclick="toggleOosEdit('${id}')"
+      style="background:${editActive?'#fef3c7':'#f8fafc'};color:${editActive?'#92400e':'#64748b'};border:1px solid ${editActive?'#f59e0b':'#e2e5ed'}">
+      ⚠ ${bi(editActive?'Xong chỉnh sửa／完成編輯':'Đánh dấu hết hàng','標記缺貨')}
+    </button>
+    <button class="action-btn btn-reject" onclick="rejectReq('${id}')">❌ ${bi('Từ chối','拒絕')}</button>${delBtn}`;
+  }
+  if (r.status === '可領取')  return `
+    <button class="action-btn btn-done"   onclick="confirmPickup('${id}')">📦 ${bi('Xác nhận lĩnh (trừ kho)','確認領取（扣庫存）')}</button>
+    <button class="action-btn btn-reject" onclick="rejectReq('${id}')">❌ ${bi('Từ chối','拒絕')}</button>${delBtn}`;
+  return delBtn;
+}
+
+window.deleteReq = async function(id) {
+  if (!canManage) { alert("權限不足，僅工具室／管理員可操作 / Không đủ quyền hạn"); return; }
+  if (!confirm('Xóa phiếu lĩnh này?\n確定要刪除這張領用單？\n\n（Không thể khôi phục / 此動作無法復原）')) return;
+  await deleteDoc(doc(reqCol, id));
+};
+
+window.changeStatus = async function(id, status) {
+  if (!canManage) { alert("權限不足，僅工具室／管理員可操作 / Không đủ quyền hạn"); return; }
+  await updateDoc(doc(reqCol, id), { status, updatedAt: Timestamp.now() });
+};
+
+window.rejectReq = async function(id) {
+  if (!canManage) { alert("權限不足，僅工具室／管理員可操作 / Không đủ quyền hạn"); return; }
+  const reason = prompt('拒絕原因（選填）/ Lý do từ chối:');
+  if (reason === null) return;
+  await updateDoc(doc(reqCol, id), { status:'已拒絕', rejectReason: reason, updatedAt: Timestamp.now() });
+};
+
+window.toggleOutOfStock = async function(id, idx) {
+  if (!canManage) { alert("權限不足，僅工具室／管理員可操作 / Không đủ quyền hạn"); return; }
+  const r = reqs[id];
+  if (!r) return;
+  const items = (r.items || []).map((it, i) =>
+    i === idx ? { ...it, outOfStock: !it.outOfStock } : it
+  );
+  await updateDoc(doc(reqCol, id), { items, updatedAt: Timestamp.now() });
+};
+
+window.confirmPickup = async function(id) {
+  if (!canManage) { alert("權限不足，僅工具室／管理員可操作 / Không đủ quyền hạn"); return; }
+  const r = reqs[id];
+  if (!r) return;
+  const activeItems = (r.items || []).filter(it => !it.outOfStock);
+  const oosItems    = (r.items || []).filter(it =>  it.outOfStock);
+  let msg = '確認領取並扣除庫存？\nXác nhận lĩnh và trừ tồn kho?\n';
+  if (oosItems.length > 0) {
+    msg += `\n⚠ 以下 ${oosItems.length} 項標記缺貨，不會扣庫存：\n`;
+    msg += oosItems.map(it => `  • ${it.code} ${it.name}`).join('\n');
+  }
+  if (!confirm(msg)) return;
+  const batch = writeBatch(db);
+  const now   = Timestamp.now();
+  for (const ri of activeItems) {
+    if (!ri.itemId) continue;
+    const snap = await getDoc(doc(itemsCol, ri.itemId));
+    if (!snap.exists()) continue;
+    const newQty = Math.max(0, (snap.data().qty ?? 0) - ri.qty);
+    batch.update(doc(itemsCol, ri.itemId), {
+      qty: newQty,
+      updatedAt: now,
+      txLog: arrayUnion({
+        type:'out', qty: ri.qty,
+        reason: '領用單 ' + (r.reqNo || id),
+        recipient: (r.dept||'') + ' ／ ' + (r.person||''),
+        operator: '工具室',
+        note: r.note || '',
+        at: now
+      })
+    });
+  }
+  batch.update(doc(reqCol, id), { status:'已完成', completedAt: now, updatedAt: now });
+  await batch.commit();
+  alert('✅ 已確認領取，庫存已扣除！\nĐã xác nhận lĩnh, đã trừ tồn kho!');
+};
+
+// ══ 領用申請表單 ══
+let itemsMap = {};
+let itemsReady = false;
+onSnapshot(itemsCol, snap => {
+  itemsMap = {};
+  snap.docs.forEach(d => { itemsMap[d.id] = { id: d.id, ...d.data() }; });
+  itemsReady = true;
+});
+
+const DEPT_TREE = [
+  {code:'A100',name:'董事長室',subs:[]},
+  {code:'A200',name:'總經理室',subs:[]},
+  {code:'B000',name:'總管理處',subs:[]},
+  {code:'G100',name:'營業部',subs:[{code:'G110',name:'營業課'},{code:'G120',name:'業管課'}]},
+  {code:'B100',name:'財務部',subs:[{code:'B110',name:'財務課'}]},
+  {code:'B200',name:'資訊管理課',subs:[]},
+  {code:'B300',name:'管理部',subs:[{code:'B310',name:'人資課'},{code:'B320',name:'總務課'}]},
+  {code:'R000',name:'技術處',subs:[{code:'R100',name:'開發部'},{code:'R110',name:'生技課'},{code:'R120',name:'技術課'},{code:'R130',name:'開發課'}]},
+  {code:'S100',name:'品保部',subs:[{code:'S110',name:'品保課'},{code:'S120',name:'檢驗課'}]},
+  {code:'M100',name:'資材部',subs:[{code:'M110',name:'採購課'},{code:'M120',name:'成本課'},{code:'M130',name:'物料課'}]},
+  {code:'P000',name:'製造本部',subs:[
+    {code:'P010',name:'生管部'},{code:'P100',name:'製造一部'},
+    {code:'P110',name:'沖床課'},{code:'P120',name:'焊接課'},{code:'P130',name:'噴漆課'},
+    {code:'P200',name:'製造二部'},{code:'P210',name:'生產一課'},
+    {code:'P210A',name:'生產一課 A組'},{code:'P210B',name:'生產一課 B組'},
+    {code:'P210C',name:'生產一課 C組'},{code:'P210D',name:'生產一課 D組'},
+    {code:'P210E',name:'生產一課 E組'},{code:'P210F',name:'生產一課 F組'},
+    {code:'P210G',name:'生產一課 G組'},{code:'P220',name:'生產二課'},
+    {code:'P220A',name:'生產二課 A組'},{code:'P220B',name:'生產二課 B組'},
+    {code:'P220C',name:'生產二課 C組'},{code:'P220D',name:'生產二課 D組'},
+    {code:'P220E',name:'生產二課 E組'},{code:'P220F',name:'生產二課 F組'},
+    {code:'P220G',name:'生產二課 G組'},{code:'P300',name:'製造三部'},{code:'P310',name:'加工課'}
+  ]},
+];
+
+(function initDept(){
+  const sel = document.getElementById('req-dept1');
+  DEPT_TREE.forEach(d => {
+    const o = document.createElement('option');
+    o.value = d.code; o.textContent = d.code + ' ' + d.name;
+    sel.appendChild(o);
+  });
+})();
+
+window.onDept1Change = function() {
+  const code = document.getElementById('req-dept1').value;
+  const sel2 = document.getElementById('req-dept2');
+  const dept = DEPT_TREE.find(d => d.code === code);
+  if (!dept || dept.subs.length === 0) {
+    sel2.innerHTML = '<option value="">（無細分類）</option>';
+    sel2.disabled = true; return;
+  }
+  sel2.disabled = false;
+  sel2.innerHTML = '<option value="">-- 請選擇細分類 --</option>';
+  dept.subs.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s.code; o.textContent = s.code + ' ' + s.name;
+    sel2.appendChild(o);
+  });
+};
+
+window.openReqModal = async function() {
+  // 等待品項資料從 Firestore 載入完成（最多 5 秒）
+  if (!itemsReady) {
+    const btn = document.querySelector('[onclick="openReqModal()"]');
+    const orig = btn?.textContent;
+    if (btn) btn.textContent = '⏳ 載入中…';
+    await new Promise((res, rej) => {
+      let t = 0;
+      const iv = setInterval(() => {
+        if (itemsReady) { clearInterval(iv); res(); }
+        if (++t > 50) { clearInterval(iv); rej(new Error('timeout')); }
+      }, 100);
+    }).catch(() => alert('品項資料載入逾時，請重新整理頁面'));
+    if (btn) btn.textContent = orig;
+    if (!itemsReady) return;
+  }
+  document.getElementById('req-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('req-person').value = '';
+  document.getElementById('req-dept1').value = '';
+  document.getElementById('req-dept2').innerHTML = '<option value="">（請先選大分類）</option>';
+  document.getElementById('req-dept2').disabled = true;
+  document.getElementById('req-note').value = '';
+  document.getElementById('req-items-body').innerHTML = '';
+  addReqRow();
+  document.getElementById('req-modal').classList.remove('hidden');
+};
+window.closeReqModal = () => document.getElementById('req-modal').classList.add('hidden');
+
+window.fmtVnd = function(n) { return n != null ? Number(n).toLocaleString('vi-VN') : '—'; }
+
+window.calcTotal = function() {
+  let total = 0;
+  document.querySelectorAll('#req-items-body tr').forEach(tr => {
+    const price = parseFloat(tr.dataset.price || 0);
+    const qty   = parseInt(tr.querySelector('input[type=number]')?.value || 0);
+    const sub   = price * qty;
+    const subEl = tr.querySelector('.row-subtotal');
+    if (subEl) subEl.textContent = fmtVnd(sub);
+    total += sub;
+  });
+  document.getElementById('req-total').textContent = fmtVnd(total);
+}
+
+function buildOpts(keyword) {
+  const kw = (keyword||'').toLowerCase();
+  const sorted = Object.values(itemsMap).sort((a,b)=>(a.code||'').localeCompare(b.code||''));
+  const matched = kw ? sorted.filter(it =>
+    (it.code||'').toLowerCase().includes(kw) ||
+    (it.name||'').toLowerCase().includes(kw)
+  ) : sorted;
+  return matched.map(it =>
+    `<option value="${esc(it.id)}" data-price="${it.unitPrice||0}" data-qty="${it.qty??0}">${esc(it.code)} ${esc(it.name)}${it.spec?' ['+esc(it.spec)+']':''}</option>`
+  ).join('');
+}
+
+window.filterRowItems = function(input) {
+  const tr  = input.closest('tr');
+  const sel = tr.querySelector('select');
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">-- Chọn / 選擇品項 --</option>' + buildOpts(input.value);
+  // 恢復先前選取（若關鍵字改變後該選項仍存在）
+  if (prev && sel.querySelector(`option[value="${prev}"]`)) sel.value = prev;
+};
+
+window.checkRowStock = function checkRowStock(tr) {
+  const sel   = tr.querySelector('select');
+  const opt   = sel?.selectedOptions[0];
+  const info  = tr.querySelector('.row-stock-info');
+  if (!info) return;
+  if (!sel?.value || !opt) { info.style.display = 'none'; return; }
+  const stock = parseInt(opt.dataset.qty ?? 0);
+  const need  = parseInt(tr.querySelector('input[type=number]')?.value ?? 0);
+  const unit  = itemsMap[sel.value]?.unit || '';
+  if (need > stock) {
+    info.style.color = '#dc2626';
+    info.innerHTML = `⚠ 庫存不足！現有 <b>${stock}</b> ${unit}<br><span style="font-size:.68rem">Tồn kho không đủ! Còn ${stock} ${unit}</span>`;
+  } else {
+    info.style.color = '#16a34a';
+    info.innerHTML = `✔ 現有庫存 <b>${stock}</b> ${unit}<br><span style="font-size:.68rem">Tồn kho hiện có: ${stock} ${unit}</span>`;
+  }
+  info.style.display = '';
+}
+
+window.onRowSelChange = function(sel) {
+  const tr  = sel.closest('tr');
+  const opt = sel.selectedOptions[0];
+  tr.dataset.price = opt?.dataset.price || 0;
+  tr.querySelector('.row-unit-price').textContent = sel.value ? fmtVnd(opt?.dataset.price) : '—';
+  checkRowStock(tr);
+  calcTotal();
+};
+
+window.addReqRow = function() {
+  const tbody = document.getElementById('req-items-body');
+  const tr = document.createElement('tr');
+  tr.style.borderBottom = '1px solid #f1f5f9';
+  tr.dataset.price = '0';
+  tr.innerHTML = `
+    <td style="padding:6px 8px">
+      <input type="search" placeholder="🔍 輸入料號或品名搜尋… / Nhập mã hoặc tên…"
+        class="form-input" style="font-size:.82rem;margin-bottom:4px"
+        oninput="filterRowItems(this)">
+      <select class="form-input" style="font-size:.82rem" onchange="onRowSelChange(this)">
+        <option value="">-- Chọn / 選擇品項 --</option>${buildOpts('')}
+      </select>
+      <div class="row-stock-info" style="display:none;font-size:.75rem;font-weight:600;margin-top:5px;line-height:1.4"></div>
+    </td>
+    <td style="padding:6px 8px;text-align:center">
+      <input type="number" min="1" value="1" class="form-input" style="width:60px;text-align:center;font-size:.82rem" oninput="calcTotal();checkRowStock(this.closest('tr'))">
+    </td>
+    <td style="padding:6px 8px;text-align:right;font-size:.82rem;color:#475569" class="row-unit-price">—</td>
+    <td style="padding:6px 8px;text-align:right;font-size:.82rem;font-weight:600;color:#1e293b" class="row-subtotal">0</td>
+    <td style="padding:6px 8px;text-align:center">
+      <button style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:1rem" onclick="this.closest('tr').remove();calcTotal()">✕</button>
+    </td>`;
+  tbody.appendChild(tr);
+  calcTotal();
+};
+
+window.submitReq = async function() {
+  const date   = document.getElementById('req-date').value;
+  const person = document.getElementById('req-person').value.trim();
+  const d1v    = document.getElementById('req-dept1').value;
+  const d2v    = document.getElementById('req-dept2').value;
+  if (!date || !person || !d1v) {
+    alert('請填寫申請日期、申請人及申請部門'); return;
+  }
+  const rows = [...document.querySelectorAll('#req-items-body tr')];
+  const reqItems = rows.map(tr => {
+    const sel = tr.querySelector('select');
+    const qty = parseInt(tr.querySelector('input[type=number]').value) || 0;
+    const it  = sel.value ? itemsMap[sel.value] : null;
+    const unitPrice = it.unitPrice || 0;
+    return it && qty > 0 ? { itemId:it.id, code:it.code, name:it.name, spec:it.spec||'', unit:it.unit||'', location:it.location||'', qty, unitPrice, subtotal: unitPrice * qty } : null;
+  }).filter(Boolean);
+  if (reqItems.length === 0) { alert('請至少選擇一項品項'); return; }
+
+  const dept1 = DEPT_TREE.find(d => d.code === d1v);
+  const dept2 = dept1?.subs.find(s => s.code === d2v);
+  const deptLabel = dept2 ? `${d1v} ${dept1?.name} ／ ${d2v} ${dept2.name}` : `${d1v} ${dept1?.name}`;
+  const reqNo = 'REQ-' + Date.now().toString(36).toUpperCase();
+
+  const totalAmount = reqItems.reduce((s, it) => s + (it.subtotal || 0), 0);
+  await setDoc(doc(collection(db,'toolroom_requisitions')), {
+    reqNo, date, person, dept: deptLabel,
+    dept1: `${d1v} ${dept1?.name}`,
+    dept2: dept2 ? `${d2v} ${dept2.name}` : '',
+    items: reqItems,
+    totalAmount,
+    note: document.getElementById('req-note').value.trim(),
+    status: '待處理',
+    createdAt: Timestamp.now()
+  });
+  alert('✅ 領用申請已送出！\n申請單號：' + reqNo);
+  closeReqModal();
+};
+</script>
+</body>
+</html>

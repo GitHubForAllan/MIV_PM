@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="zh-Hant" data-page-key="admin">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>安燈管理設定</title>
+  <link rel="stylesheet" href="andon.css">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
+</head>
+<body class="admin-body">
+  <script type="module" src="auth-guard.js?v=3"></script>
+
+  <header class="admin-header">
+    <div style="display:flex;align-items:center;gap:10px">
+      <img src="Rexon%20logo.png" alt="REXON VN" style="height:48px;object-fit:contain;border-radius:10px">
+      <h1>安燈管理設定</h1>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:.75rem;color:rgba(255,255,255,.5);padding:4px 10px;background:rgba(255,255,255,.08);border-radius:20px" data-i18n="roleAdmin">⚙ 管理員</span>
+      <button class="lang-btn" title="Chuyển sang Tiếng Việt">VI</button>
+      <button id="btn-logout-admin"
+        style="padding:6px 14px;background:transparent;border:1px solid rgba(255,255,255,.2);border-radius:8px;color:rgba(255,255,255,.6);font-size:.8rem;cursor:pointer">
+        登出
+      </button>
+      <a href="andon.html" class="admin-back">← 回看板</a>
+    </div>
+  </header>
+
+  <nav class="admin-tabs">
+    <div class="admin-tab active" data-tab="lines"     data-i18n="tabLines">產線管理</div>
+    <div class="admin-tab"        data-tab="buildings" data-i18n="tabBuildings">棟別設定</div>
+    <div class="admin-tab"        data-tab="logs"      data-i18n="tabLogs">安燈紀錄</div>
+    <div class="admin-tab"        data-tab="auth"      data-i18n="tabAuth">權限設定</div>
+  </nav>
+
+  <!-- ── 產線管理 ─────────────────────────────── -->
+  <div id="tab-lines" class="admin-content">
+    <div class="lines-toolbar">
+      <div class="section-title">產線列表</div>
+      <button class="btn-add" id="btn-add-line">＋ 新增產線</button>
+    </div>
+    <div id="spinner-lines" class="spinner"></div>
+    <div id="lines-list" class="lines-list hidden"></div>
+    <div id="lines-empty" class="logs-empty hidden">尚未設定任何產線，點擊右上角「新增產線」。</div>
+  </div>
+
+  <!-- ── 棟別設定 ─────────────────────────────── -->
+  <div id="tab-buildings" class="admin-content hidden">
+    <div class="lines-toolbar">
+      <div class="section-title">棟別與產線類別管理</div>
+      <button class="btn-add" id="btn-add-building">＋ 新增棟別</button>
+    </div>
+    <div id="spinner-buildings" class="spinner"></div>
+    <div id="buildings-list" class="hidden" style="display:flex;flex-direction:column;gap:16px;max-width:700px"></div>
+    <div id="buildings-empty" class="logs-empty hidden">尚未設定任何棟別。</div>
+  </div>
+
+  <!-- ── 安燈紀錄 ─────────────────────────────── -->
+  <div id="tab-logs" class="admin-content hidden">
+    <div class="logs-toolbar">
+      <div class="section-title">安燈歷史紀錄</div>
+      <div class="logs-filter">
+        <select class="filter-select" id="filter-line">
+          <option value="">全部產線</option>
+        </select>
+        <select class="filter-select" id="filter-type">
+          <option value="">全部類型</option>
+          <option value="quality">品質異常</option>
+          <option value="material">缺料</option>
+          <option value="equipment">設備故障</option>
+          <option value="other">其他異常</option>
+        </select>
+        <select class="filter-select" id="filter-status">
+          <option value="">全部狀態</option>
+          <option value="resolved">已解決</option>
+          <option value="ongoing">處理中</option>
+        </select>
+      </div>
+    </div>
+    <div id="spinner-logs" class="spinner"></div>
+    <div id="logs-wrap" class="hidden">
+      <div class="log-table-wrap">
+        <table class="log-table">
+          <thead>
+            <tr>
+              <th>時間</th>
+              <th>產線</th>
+              <th>類別</th>
+              <th>機種</th>
+              <th>異常類型</th>
+              <th>描述</th>
+              <th>希望處理單位</th>
+              <th>啟動人員</th>
+              <th>熄滅時間</th>
+              <th>持續時間</th>
+              <th>負責人</th>
+              <th>解決對策</th>
+            </tr>
+          </thead>
+          <tbody id="log-tbody"></tbody>
+        </table>
+      </div>
+      <div id="logs-empty-row" class="logs-empty hidden">目前沒有符合條件的紀錄。</div>
+    </div>
+  </div>
+
+  <!-- ── 權限設定 ────────────────────────────── -->
+  <div id="tab-auth" class="admin-content hidden">
+    <div class="lines-toolbar" style="margin-bottom:24px">
+      <div class="section-title">PIN 碼管理</div>
+    </div>
+    <div style="max-width:480px;display:flex;flex-direction:column;gap:16px">
+      <div class="info-card" style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,.08)">
+        <div style="font-size:.82rem;color:#64748b;margin-bottom:16px">⚠ 此 PIN 碼設定已不再用於權限控管（改為工號登入 + 角色管理），此區塊僅保留歷史資料，之後將移除。</div>
+        <div class="form-group">
+          <label>🔔 操作員 PIN（啟動／熄滅安燈）</label>
+          <div style="display:flex;gap:8px">
+            <input id="auth-operator-pin" type="password" inputmode="numeric" maxlength="8"
+                   placeholder="請輸入 4～8 位數字" style="flex:1;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:1rem">
+            <button class="btn-icon" id="toggle-op" title="顯示/隱藏" style="width:42px;flex-shrink:0">👁</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>⚙ 管理員 PIN（管理設定、操作員所有功能）</label>
+          <div style="display:flex;gap:8px">
+            <input id="auth-admin-pin" type="password" inputmode="numeric" maxlength="8"
+                   placeholder="請輸入 4～8 位數字" style="flex:1;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:1rem">
+            <button class="btn-icon" id="toggle-ad" title="顯示/隱藏" style="width:42px;flex-shrink:0">👁</button>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+          <div id="auth-msg" style="font-size:.83rem;color:#16a34a;min-height:20px"></div>
+          <button class="btn-add" id="btn-save-auth">儲存 PIN 設定</button>
+        </div>
+      </div>
+      <div style="background:#fef3c7;border-radius:10px;padding:14px 16px;font-size:.82rem;color:#92400e">
+        ⚠ 請妥善保管 PIN 碼。忘記管理員 PIN 時，可直接到 Firebase Console 的 <code>andon/auth</code> 文件修改。
+      </div>
+      <div style="background:#f0f9ff;border-radius:10px;padding:14px 16px;font-size:.82rem;color:#0369a1">
+        💡 看板頁面（andon.html）無需登入，適合在工廠大螢幕上顯示。
+      </div>
+      <button class="btn-secondary" id="btn-logout" style="width:auto;padding:10px 20px;border-radius:8px">登出目前帳號</button>
+    </div>
+  </div>
+
+  <!-- ── Modal：新增/編輯產線 ─────────────────── -->
+  <div id="modal-line" class="modal-overlay hidden">
+    <div class="modal">
+      <h2 id="modal-line-title">新增產線</h2>
+      <input type="hidden" id="edit-line-id">
+      <div class="form-group">
+        <label for="ml-name">生產建築 <span style="color:red">*</span></label>
+        <select id="ml-name">
+          <option value="">載入中…</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="ml-category">產線類別 <span style="color:red">*</span></label>
+        <select id="ml-category">
+          <option value="">請先選擇生產建築</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="ml-model">目前生產機種</label>
+        <input id="ml-model" type="text" placeholder="例：KS-1234（可之後再填）">
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="modal-line-cancel">取消</button>
+        <button class="btn-confirm" id="modal-line-confirm">儲存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Modal：新增棟別 ───────────────────────── -->
+  <div id="modal-building" class="modal-overlay hidden">
+    <div class="modal">
+      <h2 id="modal-building-title">新增棟別</h2>
+      <input type="hidden" id="edit-building-key">
+      <div class="form-group">
+        <label for="mb-name">棟別名稱 <span style="color:red">*</span></label>
+        <input id="mb-name" type="text" placeholder="例：D棟、E棟">
+      </div>
+      <div class="form-group">
+        <label>產線類別清單 <span style="color:red">*</span>
+          <span style="font-weight:400;color:#64748b;font-size:.8rem">（每行一個）</span>
+        </label>
+        <textarea id="mb-categories" rows="6" placeholder="每行輸入一個類別名稱，例如：&#10;A線&#10;B線&#10;C線"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="modal-building-cancel">取消</button>
+        <button class="btn-confirm" id="modal-building-confirm">儲存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Modal：確認刪除產線 ──────────────────── -->
+  <div id="modal-delete" class="modal-overlay hidden">
+    <div class="modal">
+      <h2>確認刪除產線</h2>
+      <p style="color:#374151;margin-bottom:16px">確定要刪除產線「<strong id="del-line-name"></strong>」嗎？此操作無法復原，歷史紀錄將保留。</p>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="modal-delete-cancel">取消</button>
+        <button class="btn-danger-confirm" id="modal-delete-confirm">確認刪除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Modal：確認刪除棟別 ──────────────────── -->
+  <div id="modal-delete-building" class="modal-overlay hidden">
+    <div class="modal">
+      <h2>確認刪除棟別</h2>
+      <p style="color:#374151;margin-bottom:16px">確定要刪除棟別「<strong id="del-building-name"></strong>」嗎？此操作無法復原。</p>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="modal-delete-building-cancel">取消</button>
+        <button class="btn-danger-confirm" id="modal-delete-building-confirm">確認刪除</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc, deleteField,
+      collection, getDocs, query, orderBy
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { initLang } from "./lang.js";
+    import { mivAuthReady, mivLogout, mivRequireApp } from "./auth-guard.js?v=3";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs",
+      authDomain: "miv-1426c.firebaseapp.com",
+      projectId: "miv-1426c",
+      storageBucket: "miv-1426c.firebasestorage.app",
+      messagingSenderId: "398934341623",
+      appId: "1:398934341623:web:4af46c057d2e202855a0f2"
+    };
+
+    const db = getFirestore(initializeApp(firebaseConfig));
+    const configRef    = doc(db, "andon", "config");
+    const authRef      = doc(db, "andon", "auth");
+    const buildingsRef = doc(db, "andon", "buildings");
+    const logsCol      = collection(db, "andon-logs");
+
+    const DEFAULT_BUILDINGS = {
+      "A棟": ["焊接線", "噴漆線", "沾膠線", "PU發泡線"],
+      "B棟": ["沖床線", "塑膠線", "雷射割板", "雷射割管", "3D雷割", "彎管"],
+      "C棟": ["A組", "B組", "C組", "D組", "E組", "F組", "G組"],
+    };
+
+    /* ── 權限驗證：需要「安燈系統」的管理權（admin-users.html 勾選）── */
+    const authUser = await mivRequireApp("andon", "manage", "andon.html");
+
+    const ALERT_TYPES = {
+      quality:   { label: "品質異常", cls: "log-badge--quality" },
+      material:  { label: "缺料",     cls: "log-badge--material" },
+      equipment: { label: "設備故障", cls: "log-badge--equipment" },
+      other:     { label: "其他異常", cls: "log-badge--other" },
+    };
+
+    function esc(s) {
+      return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+    function show(...ids) { ids.forEach(id => { const el = document.getElementById(id); if(el){ el.classList.remove("hidden"); if(el.style.display==="none") el.style.display=""; } }); }
+    function hide(...ids) { ids.forEach(id => document.getElementById(id)?.classList.add("hidden")); }
+
+    function fmtTime(ts) {
+      if (!ts) return "—";
+      const d = ts.toDate ? ts.toDate() : new Date(ts);
+      return d.toLocaleString("zh-TW", { year:"numeric", month:"2-digit", day:"2-digit",
+        hour:"2-digit", minute:"2-digit", hour12:false });
+    }
+
+    /* ══ 棟別資料（從 Firestore 讀取，首次自動初始化）══ */
+    let buildingsData = {}; // { "A棟": ["焊接線", ...], ... }
+
+    async function loadBuildings() {
+      const snap = await getDoc(buildingsRef);
+      if (snap.exists()) {
+        buildingsData = snap.data().buildings ?? {};
+      } else {
+        // 首次：寫入預設值
+        buildingsData = DEFAULT_BUILDINGS;
+        await setDoc(buildingsRef, { buildings: buildingsData });
+      }
+    }
+
+    /* ── Tabs ──────────────────────────────────── */
+    document.querySelectorAll(".admin-tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+        const name = tab.dataset.tab;
+        ["lines","buildings","logs","auth"].forEach(t =>
+          document.getElementById("tab-"+t).classList.toggle("hidden", name !== t)
+        );
+        if (name === "logs")      loadLogs();
+        if (name === "auth")      loadAuthPins();
+        if (name === "buildings") renderBuildings();
+      });
+    });
+
+    /* ── Auth / PIN 設定 ────────────────────────── */
+    async function loadAuthPins() {
+      try {
+        const snap = await getDoc(authRef);
+        const d = snap.data() ?? {};
+        document.getElementById("auth-operator-pin").value = d.operatorPin ?? "";
+        document.getElementById("auth-admin-pin").value    = d.adminPin    ?? "";
+      } catch(e) {}
+    }
+
+    document.getElementById("toggle-op").onclick = () => {
+      const el = document.getElementById("auth-operator-pin");
+      el.type = el.type === "password" ? "text" : "password";
+    };
+    document.getElementById("toggle-ad").onclick = () => {
+      const el = document.getElementById("auth-admin-pin");
+      el.type = el.type === "password" ? "text" : "password";
+    };
+
+    document.getElementById("btn-save-auth").onclick = async () => {
+      const opPin = document.getElementById("auth-operator-pin").value.trim();
+      const adPin = document.getElementById("auth-admin-pin").value.trim();
+      const msgEl = document.getElementById("auth-msg");
+
+      if (!/^\d{4,8}$/.test(opPin)) { msgEl.style.color="#dc2626"; msgEl.textContent = "操作員 PIN 須為 4～8 位數字"; return; }
+      if (!/^\d{4,8}$/.test(adPin)) { msgEl.style.color="#dc2626"; msgEl.textContent = "管理員 PIN 須為 4～8 位數字"; return; }
+      if (opPin === adPin) { msgEl.style.color="#dc2626"; msgEl.textContent = "兩組 PIN 碼不能相同"; return; }
+
+      const btn = document.getElementById("btn-save-auth");
+      btn.disabled = true; btn.textContent = "儲存中…";
+      try {
+        await setDoc(authRef, { operatorPin: opPin, adminPin: adPin });
+        msgEl.style.color="#16a34a"; msgEl.textContent = "✓ 已儲存";
+        setTimeout(() => msgEl.textContent = "", 3000);
+      } catch(e) {
+        msgEl.style.color="#dc2626"; msgEl.textContent = "儲存失敗：" + e.message;
+      } finally {
+        btn.disabled = false; btn.textContent = "儲存 PIN 設定";
+      }
+    };
+
+    document.getElementById("btn-logout").onclick = () => mivLogout();
+    document.getElementById("btn-logout-admin").onclick = () => mivLogout();
+
+    /* ══ LINES TAB ══════════════════════════════ */
+    let configData = null;
+
+    onSnapshot(configRef, snap => {
+      configData = snap.data() ?? { lines: {} };
+      renderLines(configData.lines ?? {});
+    });
+
+    function renderLines(lines) {
+      hide("spinner-lines");
+      const arr = Object.entries(lines).sort((a, b) => a[1].name.localeCompare(b[1].name, "zh-TW"));
+      if (arr.length === 0) {
+        hide("lines-list"); show("lines-empty"); return;
+      }
+      hide("lines-empty"); show("lines-list");
+      document.getElementById("lines-list").innerHTML = arr.map(([id, line]) => {
+        const hasAlert = !!line.alert;
+        return `
+          <div class="line-admin-card">
+            <div class="lac-status-dot ${hasAlert ? "lac-status-dot--alert" : "lac-status-dot--ok"}"></div>
+            <div class="lac-info">
+              <div class="lac-name">${esc(line.name)}</div>
+              <div class="lac-meta">${esc(line.category || "未分類")}　${line.model ? "機種：" + esc(line.model) : "機種未設定"}　${hasAlert ? "🔴 異常中" : "🟢 正常"}</div>
+            </div>
+            <a href="andon-line.html?line=${encodeURIComponent(id)}" class="btn-open" target="_blank">開啟操作頁</a>
+            <div class="lac-actions">
+              <button class="btn-icon" title="編輯" data-edit="${esc(id)}">✏️</button>
+              <button class="btn-icon btn-icon--danger" title="刪除" data-delete="${esc(id)}" data-name="${esc(line.name)}">🗑</button>
+            </div>
+          </div>`;
+      }).join("");
+
+      document.querySelectorAll("[data-edit]").forEach(btn => {
+        btn.onclick = () => openEditModal(btn.dataset.edit);
+      });
+      document.querySelectorAll("[data-delete]").forEach(btn => {
+        btn.onclick = () => openDeleteModal(btn.dataset.delete, btn.dataset.name);
+      });
+    }
+
+    /* ── 棟別 → 產線類別 連動（動態從 buildingsData 讀）── */
+    function updateBuildingOptions(selectedBuilding) {
+      const sel = document.getElementById("ml-name");
+      sel.innerHTML = `<option value="">請選擇</option>` +
+        Object.keys(buildingsData).map(b =>
+          `<option value="${esc(b)}" ${b === selectedBuilding ? "selected" : ""}>${esc(b)}</option>`
+        ).join("");
+    }
+
+    function updateCategoryOptions(building, selectedValue) {
+      const sel = document.getElementById("ml-category");
+      const options = buildingsData[building] ?? [];
+      if (options.length === 0) {
+        sel.innerHTML = `<option value="">請先選擇生產建築</option>`;
+      } else {
+        sel.innerHTML = options.map(o =>
+          `<option value="${esc(o)}" ${o === selectedValue ? "selected" : ""}>${esc(o)}</option>`
+        ).join("");
+      }
+    }
+
+    document.getElementById("ml-name").addEventListener("change", e => {
+      updateCategoryOptions(e.target.value, "");
+    });
+
+    /* ── Add / Edit Modal ──────────────────────── */
+    document.getElementById("btn-add-line").onclick = () => openEditModal(null);
+
+    function openEditModal(lineId) {
+      const isEdit = !!lineId;
+      document.getElementById("modal-line-title").textContent = isEdit ? "編輯產線" : "新增產線";
+      document.getElementById("edit-line-id").value = lineId ?? "";
+      const line = isEdit ? (configData?.lines?.[lineId] ?? {}) : {};
+      updateBuildingOptions(line.name ?? "");
+      updateCategoryOptions(line.name ?? "", line.category ?? "");
+      document.getElementById("ml-model").value = line.model ?? "";
+      show("modal-line");
+    }
+
+    document.getElementById("modal-line-cancel").onclick = () => hide("modal-line");
+    document.getElementById("modal-line").addEventListener("click", e => {
+      if (e.target === e.currentTarget) hide("modal-line");
+    });
+
+    document.getElementById("modal-line-confirm").onclick = async () => {
+      const nameEl  = document.getElementById("ml-name");
+      const catEl   = document.getElementById("ml-category");
+      const modelEl = document.getElementById("ml-model");
+      const editId  = document.getElementById("edit-line-id").value;
+
+      nameEl.style.borderColor = ""; catEl.style.borderColor = "";
+      if (!nameEl.value.trim()) { nameEl.style.borderColor="red"; nameEl.focus(); return; }
+      if (!catEl.value.trim())  { catEl.style.borderColor="red";  catEl.focus();  return; }
+
+      const btn = document.getElementById("modal-line-confirm");
+      btn.disabled = true; btn.textContent = "儲存中…";
+
+      try {
+        const lineId = editId || nameEl.value.trim().replace(/\s+/g, "-") + "-" + Date.now();
+        const existing = configData?.lines?.[lineId] ?? {};
+        await updateDoc(configRef, {
+          [`lines.${lineId}.name`]:     nameEl.value.trim(),
+          [`lines.${lineId}.category`]: catEl.value.trim(),
+          [`lines.${lineId}.model`]:    modelEl.value.trim(),
+          ...(existing.alert ? {} : { [`lines.${lineId}.alert`]: null }),
+        });
+        hide("modal-line");
+      } catch (err) {
+        try {
+          const lineId = document.getElementById("edit-line-id").value
+            || nameEl.value.trim().replace(/\s+/g, "-") + "-" + Date.now();
+          await setDoc(configRef, {
+            lines: {
+              ...(configData?.lines ?? {}),
+              [lineId]: {
+                name: nameEl.value.trim(),
+                category: catEl.value.trim(),
+                model: modelEl.value.trim(),
+                alert: null,
+              }
+            }
+          });
+          hide("modal-line");
+        } catch (err2) {
+          alert("儲存失敗：" + err2.message);
+        }
+      } finally {
+        btn.disabled = false; btn.textContent = "儲存";
+      }
+    };
+
+    /* ── Delete Line Modal ─────────────────────── */
+    let deleteTargetId = null;
+
+    function openDeleteModal(lineId, lineName) {
+      deleteTargetId = lineId;
+      document.getElementById("del-line-name").textContent = lineName;
+      show("modal-delete");
+    }
+
+    document.getElementById("modal-delete-cancel").onclick = () => hide("modal-delete");
+    document.getElementById("modal-delete").addEventListener("click", e => {
+      if (e.target === e.currentTarget) hide("modal-delete");
+    });
+
+    document.getElementById("modal-delete-confirm").onclick = async () => {
+      if (!deleteTargetId) return;
+      const btn = document.getElementById("modal-delete-confirm");
+      btn.disabled = true; btn.textContent = "刪除中…";
+      try {
+        await updateDoc(configRef, { [`lines.${deleteTargetId}`]: deleteField() });
+        hide("modal-delete");
+      } catch (err) {
+        alert("刪除失敗：" + err.message);
+      } finally {
+        btn.disabled = false; btn.textContent = "確認刪除";
+        deleteTargetId = null;
+      }
+    };
+
+    /* ══ BUILDINGS TAB ══════════════════════════ */
+    function renderBuildings() {
+      hide("spinner-buildings");
+      const keys = Object.keys(buildingsData);
+      const listEl = document.getElementById("buildings-list");
+
+      if (keys.length === 0) {
+        listEl.style.display = "none";
+        show("buildings-empty");
+        return;
+      }
+
+      hide("buildings-empty");
+      listEl.style.display = "flex";
+      listEl.classList.remove("hidden");
+
+      listEl.innerHTML = keys.map(building => {
+        const cats = buildingsData[building] ?? [];
+        return `
+          <div style="background:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 1px 4px rgba(0,0,0,.08)">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+              <div style="font-size:1.05rem;font-weight:700;color:#1e293b">${esc(building)}</div>
+              <div style="display:flex;gap:8px">
+                <button class="btn-icon" data-edit-building="${esc(building)}" title="編輯">✏️</button>
+                <button class="btn-icon btn-icon--danger" data-delete-building="${esc(building)}" title="刪除">🗑</button>
+              </div>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+              ${cats.map(c => `<span style="background:#f1f5f9;border-radius:6px;padding:4px 10px;font-size:.82rem;color:#475569">${esc(c)}</span>`).join("")}
+            </div>
+          </div>`;
+      }).join("");
+
+      listEl.querySelectorAll("[data-edit-building]").forEach(btn => {
+        btn.onclick = () => openBuildingModal(btn.dataset.editBuilding);
+      });
+      listEl.querySelectorAll("[data-delete-building]").forEach(btn => {
+        btn.onclick = () => openDeleteBuildingModal(btn.dataset.deleteBuilding);
+      });
+    }
+
+    document.getElementById("btn-add-building").onclick = () => openBuildingModal(null);
+
+    function openBuildingModal(buildingKey) {
+      const isEdit = !!buildingKey;
+      document.getElementById("modal-building-title").textContent = isEdit ? "編輯棟別" : "新增棟別";
+      document.getElementById("edit-building-key").value = buildingKey ?? "";
+      document.getElementById("mb-name").value = buildingKey ?? "";
+      document.getElementById("mb-name").disabled = isEdit; // 不允許改名稱（避免產線資料錯亂）
+      document.getElementById("mb-categories").value = isEdit
+        ? (buildingsData[buildingKey] ?? []).join("\n")
+        : "";
+      show("modal-building");
+      if (!isEdit) document.getElementById("mb-name").focus();
+      else document.getElementById("mb-categories").focus();
+    }
+
+    document.getElementById("modal-building-cancel").onclick = () => {
+      hide("modal-building");
+      document.getElementById("mb-name").disabled = false;
+    };
+    document.getElementById("modal-building").addEventListener("click", e => {
+      if (e.target === e.currentTarget) {
+        hide("modal-building");
+        document.getElementById("mb-name").disabled = false;
+      }
+    });
+
+    document.getElementById("modal-building-confirm").onclick = async () => {
+      const nameEl = document.getElementById("mb-name");
+      const catsEl = document.getElementById("mb-categories");
+      const key    = document.getElementById("edit-building-key").value || nameEl.value.trim();
+
+      if (!key) { nameEl.style.borderColor="red"; nameEl.focus(); return; }
+      nameEl.style.borderColor = "";
+
+      const cats = catsEl.value.split("\n").map(s => s.trim()).filter(Boolean);
+      if (cats.length === 0) { catsEl.style.borderColor="red"; catsEl.focus(); return; }
+      catsEl.style.borderColor = "";
+
+      const btn = document.getElementById("modal-building-confirm");
+      btn.disabled = true; btn.textContent = "儲存中…";
+
+      try {
+        buildingsData[key] = cats;
+        await setDoc(buildingsRef, { buildings: buildingsData });
+        hide("modal-building");
+        document.getElementById("mb-name").disabled = false;
+        renderBuildings();
+      } catch (err) {
+        alert("儲存失敗：" + err.message);
+      } finally {
+        btn.disabled = false; btn.textContent = "儲存";
+      }
+    };
+
+    /* ── Delete Building Modal ─────────────────── */
+    let deleteBuildingKey = null;
+
+    function openDeleteBuildingModal(key) {
+      deleteBuildingKey = key;
+      document.getElementById("del-building-name").textContent = key;
+      show("modal-delete-building");
+    }
+
+    document.getElementById("modal-delete-building-cancel").onclick = () => hide("modal-delete-building");
+    document.getElementById("modal-delete-building").addEventListener("click", e => {
+      if (e.target === e.currentTarget) hide("modal-delete-building");
+    });
+
+    document.getElementById("modal-delete-building-confirm").onclick = async () => {
+      if (!deleteBuildingKey) return;
+      const btn = document.getElementById("modal-delete-building-confirm");
+      btn.disabled = true; btn.textContent = "刪除中…";
+      try {
+        delete buildingsData[deleteBuildingKey];
+        await setDoc(buildingsRef, { buildings: buildingsData });
+        hide("modal-delete-building");
+        renderBuildings();
+      } catch (err) {
+        alert("刪除失敗：" + err.message);
+      } finally {
+        btn.disabled = false; btn.textContent = "確認刪除";
+        deleteBuildingKey = null;
+      }
+    };
+
+    /* ══ LOGS TAB ═══════════════════════════════ */
+    let allLogs = [];
+    let logsLoaded = false;
+
+    async function loadLogs() {
+      if (logsLoaded) { renderLogs(); return; }
+      show("spinner-logs"); hide("logs-wrap");
+      try {
+        const snap = await getDocs(query(logsCol, orderBy("triggeredAt", "desc")));
+        allLogs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        logsLoaded = true;
+
+        const lineNames = [...new Set(allLogs.map(l => l.lineName).filter(Boolean))].sort();
+        const sel = document.getElementById("filter-line");
+        lineNames.forEach(n => {
+          const opt = document.createElement("option");
+          opt.value = n; opt.textContent = n;
+          sel.appendChild(opt);
+        });
+      } catch (err) {
+        alert("載入紀錄失敗：" + err.message);
+      } finally {
+        hide("spinner-logs"); show("logs-wrap");
+        renderLogs();
+      }
+    }
+
+    ["filter-line","filter-type","filter-status"].forEach(id => {
+      document.getElementById(id).addEventListener("change", renderLogs);
+    });
+
+    function renderLogs() {
+      const fLine   = document.getElementById("filter-line").value;
+      const fType   = document.getElementById("filter-type").value;
+      const fStatus = document.getElementById("filter-status").value;
+
+      let rows = allLogs.filter(l => {
+        if (fLine   && l.lineName  !== fLine)  return false;
+        if (fType   && l.alertType !== fType)   return false;
+        if (fStatus === "resolved" && !l.resolvedAt) return false;
+        if (fStatus === "ongoing"  &&  l.resolvedAt) return false;
+        return true;
+      });
+
+      if (rows.length === 0) { document.getElementById("log-tbody").innerHTML = ""; show("logs-empty-row"); return; }
+      hide("logs-empty-row");
+
+      const at = ALERT_TYPES;
+      document.getElementById("log-tbody").innerHTML = rows.map(l => {
+        const aType = at[l.alertType] ?? at.other;
+        const dur = l.durationMinutes != null
+          ? `<span class="log-duration">${l.durationMinutes} 分鐘</span>`
+          : (l.resolvedAt ? "—" : `<span class="log-ongoing">處理中</span>`);
+        return `
+          <tr>
+            <td style="white-space:nowrap">${fmtTime(l.triggeredAt)}</td>
+            <td>${esc(l.lineName)}</td>
+            <td><span style="font-size:.75rem;color:#64748b">${esc(l.category)}</span></td>
+            <td>${esc(l.model)}</td>
+            <td><span class="log-badge ${aType.cls}">${aType.label}</span></td>
+            <td style="max-width:180px">${esc(l.description)}</td>
+            <td>${esc(l.requestUnits?.length ? l.requestUnits.join("、") : (l.requestUnit || ""))}</td>
+            <td>${esc(l.triggeredBy)}</td>
+            <td style="white-space:nowrap">${fmtTime(l.resolvedAt)}</td>
+            <td>${dur}</td>
+            <td>${esc(l.resolvedBy)}</td>
+            <td style="max-width:200px">${esc(l.countermeasure)}</td>
+          </tr>`;
+      }).join("");
+    }
+
+    /* ══ 初始化 ══════════════════════════════════ */
+    initLang();
+    await loadBuildings();
+  </script>
+</body>
+</html>

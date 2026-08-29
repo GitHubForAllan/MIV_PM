@@ -1,0 +1,1165 @@
+[
+{
+"key": "量具類 (0)",
+"label": "量具類 (0)",
+"labelVi": "Dụng cụ đo lường（Measuring gauges）",
+"items": [
+{
+"code": "40A0",
+"zh": "刻度游標卡尺",
+"vi": "Thước cặp vạch chia"
+},
+{
+"code": "40A1",
+"zh": "附錶游標卡尺",
+"vi": "Thước cặp đồng hồ"
+},
+{
+"code": "40A2",
+"zh": "數字型游標卡尺",
+"vi": "Thước cặp điện tử"
+},
+{
+"code": "40A3",
+"zh": "附錶限界游標尺",
+"vi": "Thước cặp giới hạn có đồng hồ"
+},
+{
+"code": "40A4",
+"zh": "深度基座",
+"vi": "Đế đo chiều sâu"
+},
+{
+"code": "40A5",
+"zh": "治具游標卡尺",
+"vi": "Thước cặp đồ gá"
+},
+{
+"code": "42Y0",
+"zh": "數位卡尺USB線",
+"vi": "Cáp USB thước cặp kỹ thuật số"
+},
+{
+"code": "40B0",
+"zh": "刻度高度規",
+"vi": "Thước đo chiều cao vạch chia"
+},
+{
+"code": "40B1",
+"zh": "附錶高度規",
+"vi": "Thước đo chiều cao đồng hồ"
+},
+{
+"code": "40B2",
+"zh": "液晶高度規 300mm",
+"vi": "Thước đo chiều cao LCD 300mm"
+},
+{
+"code": "40B3",
+"zh": "微電腦高度規",
+"vi": "Thước đo chiều cao vi tính"
+},
+{
+"code": "40CA",
+"zh": "外徑分厘卡",
+"vi": "Panme đo ngoài"
+},
+{
+"code": "40CB",
+"zh": "內徑分厘卡",
+"vi": "Panme đo trong"
+},
+{
+"code": "40CC",
+"zh": "三點式分厘卡",
+"vi": "Panme ba điểm"
+},
+{
+"code": "40CD",
+"zh": "深度分厘卡",
+"vi": "Panme đo chiều sâu"
+},
+{
+"code": "40CE",
+"zh": "溝槽分厘卡",
+"vi": "Panme đo rãnh"
+},
+{
+"code": "40CF",
+"zh": "管用分厘卡",
+"vi": "Panme đo ống"
+},
+{
+"code": "40CG",
+"zh": "盤式外徑分厘卡",
+"vi": "Panme đĩa đo ngoài"
+},
+{
+"code": "40CH",
+"zh": "測頭式齒輪分厘卡",
+"vi": "Panme đo bánh răng đầu dò"
+},
+{
+"code": "40CI",
+"zh": "Ｕ型鋼板分厘卡",
+"vi": "Panme tấm thép chữ U"
+},
+{
+"code": "40CJ",
+"zh": "限界指示分厘卡",
+"vi": "Panme giới hạn chỉ thị"
+},
+{
+"code": "40CK",
+"zh": "電子式分厘錶",
+"vi": "Panme điện tử"
+},
+{
+"code": "40CL",
+"zh": "針盤外卡規",
+"vi": "Thước ngoài đồng hồ kim"
+},
+{
+"code": "40E0",
+"zh": "缸徑規",
+"vi": "Đồng hồ đo đường kính lỗ"
+},
+{
+"code": "40E1",
+"zh": "針盤缸徑規",
+"vi": "Đồng hồ đo lỗ kim đồng hồ"
+},
+{
+"code": "40E2",
+"zh": "電子式缸徑規",
+"vi": "Đồng hồ đo lỗ điện tử"
+},
+{
+"code": "40E3",
+"zh": "機械塞規",
+"vi": "Calíp nút cơ khí"
+},
+{
+"code": "40F0",
+"zh": "百分量錶",
+"vi": "Đồng hồ so (0.01mm)"
+},
+{
+"code": "40F8",
+"zh": "液晶百分量錶",
+"vi": "Đồng hồ so LCD"
+},
+{
+"code": "40F1",
+"zh": "千分量錶",
+"vi": "Đồng hồ so (0.001mm)"
+},
+{
+"code": "40F2",
+"zh": "槓桿式量錶",
+"vi": "Đồng hồ so đòn bẩy"
+},
+{
+"code": "40F3",
+"zh": "英制量錶",
+"vi": "Đồng hồ so đơn vị inch"
+},
+{
+"code": "40F4",
+"zh": "節徑量錶",
+"vi": "Đồng hồ so đường kính vòng"
+},
+{
+"code": "40F5",
+"zh": "溝槽內徑量錶",
+"vi": "Đồng hồ so đường kính rãnh trong"
+},
+{
+"code": "40F6",
+"zh": "英制千分量錶",
+"vi": "Đồng hồ so 0.001 inch"
+},
+{
+"code": "40F7",
+"zh": "中心尋找量錶",
+"vi": "Đồng hồ so tìm tâm"
+},
+{
+"code": "40G0",
+"zh": "正弦桿",
+"vi": "Thước sin"
+},
+{
+"code": "40I1",
+"zh": "卡鉗",
+"vi": "Compa"
+}
+]
+},
+{
+"key": "標準規類 (1)",
+"label": "標準規類 (1)",
+"labelVi": "Dưỡng chuẩn（Gauge standards）",
+"items": [
+{
+"code": "41A0",
+"zh": "栓牙規--公制右牙",
+"vi": "Calíp ren trụ - ren phải hệ mét"
+},
+{
+"code": "41A1",
+"zh": "栓牙規--公制左牙",
+"vi": "Calíp ren trụ - ren trái hệ mét"
+},
+{
+"code": "41A2",
+"zh": "栓牙規--英制右牙",
+"vi": "Calíp ren trụ - ren phải hệ inch"
+},
+{
+"code": "41A3",
+"zh": "栓牙規--英制左牙",
+"vi": "Calíp ren trụ - ren trái hệ inch"
+},
+{
+"code": "41A4",
+"zh": "栓牙規--公英制右牙",
+"vi": "Calíp ren trụ - ren phải hệ mét-inch"
+},
+{
+"code": "41A5",
+"zh": "栓牙規--公英制左牙",
+"vi": "Calíp ren trụ - ren trái hệ mét-inch"
+},
+{
+"code": "41A6",
+"zh": "栓牙規--其他牙規",
+"vi": "Calíp ren trụ - ren khác"
+},
+{
+"code": "41B0",
+"zh": "螺紋環規--公制右牙",
+"vi": "Calíp ren vòng - ren phải hệ mét"
+},
+{
+"code": "41B1",
+"zh": "螺紋環規--公制左牙",
+"vi": "Calíp ren vòng - ren trái hệ mét"
+},
+{
+"code": "41B2",
+"zh": "螺紋環規--英制右牙",
+"vi": "Calíp ren vòng - ren phải hệ inch"
+},
+{
+"code": "41B3",
+"zh": "螺紋環規--英制左牙",
+"vi": "Calíp ren vòng - ren trái hệ inch"
+},
+{
+"code": "41B4",
+"zh": "螺紋環規",
+"vi": "Calíp ren vòng"
+},
+{
+"code": "41B6",
+"zh": "其他螺紋環規",
+"vi": "Calíp ren vòng khác"
+},
+{
+"code": "41C0",
+"zh": "斜度規",
+"vi": "Dưỡng côn"
+},
+{
+"code": "41D0",
+"zh": "斜度環規",
+"vi": "Vòng kiểm côn"
+},
+{
+"code": "41E0",
+"zh": "環規",
+"vi": "Vòng kiểm"
+},
+{
+"code": "41F0",
+"zh": "單端式塞規",
+"vi": "Calíp nút một đầu"
+},
+{
+"code": "41G0",
+"zh": "雙端式塞規",
+"vi": "Calíp nút hai đầu"
+},
+{
+"code": "41H0",
+"zh": "級進式塞規",
+"vi": "Calíp nút bậc thang"
+},
+{
+"code": "41I0",
+"zh": "同心度塞規",
+"vi": "Calíp nút đồng tâm"
+},
+{
+"code": "41J0",
+"zh": "柱型垂直規",
+"vi": "Cột kiểm vuông góc"
+},
+{
+"code": "41K0",
+"zh": "齒輪內徑檢驗桿",
+"vi": "Trục kiểm đường kính trong bánh răng"
+},
+{
+"code": "41L0",
+"zh": "平行直角規（L型）",
+"vi": "Thước vuông L"
+},
+{
+"code": "41L1",
+"zh": "角尺（三角）",
+"vi": "Thước đo góc (tam giác)"
+},
+{
+"code": "41L2",
+"zh": "複合角尺 (一)",
+"vi": "Thước đo góc tổ hợp (loại 1)"
+},
+{
+"code": "41L3",
+"zh": "複合角尺 (二)",
+"vi": "Thước đo góc tổ hợp (loại 2)"
+},
+{
+"code": "41L4",
+"zh": "萬能量角規",
+"vi": "Thước đo góc vạn năng"
+},
+{
+"code": "41M0",
+"zh": "Ｒ規",
+"vi": "Dưỡng đo bán kính (R gauge)"
+},
+{
+"code": "41N0",
+"zh": "厚薄規",
+"vi": "Lá thăm (Feeler gauge)"
+},
+{
+"code": "41O0",
+"zh": "螺紋節距規",
+"vi": "Dưỡng bước ren"
+},
+{
+"code": "41P0",
+"zh": "三線規",
+"vi": "Dây đo ren ba dây"
+},
+{
+"code": "41Q0",
+"zh": "塊規",
+"vi": "Căn mẫu (Gauge block)"
+},
+{
+"code": "41Q3",
+"zh": "多功能長度校正儀",
+"vi": "Thiết bị hiệu chỉnh chiều dài đa năng"
+},
+{
+"code": "41R0",
+"zh": "表面粗度標準片",
+"vi": "Mẫu chuẩn độ nhám bề mặt"
+},
+{
+"code": "41S0",
+"zh": "級進式卡規",
+"vi": "Calíp kẹp bậc thang"
+},
+{
+"code": "41U0",
+"zh": "齒輪模數規",
+"vi": "Dưỡng mô-đun bánh răng"
+},
+{
+"code": "41V6",
+"zh": "平面度壓尺",
+"vi": "Thước kiểm độ phẳng"
+},
+{
+"code": "41W0",
+"zh": "砝碼",
+"vi": "Quả cân"
+}
+]
+},
+{
+"key": "儀器類 (2)",
+"label": "儀器類 (2)",
+"labelVi": "Thiết bị đo（Instruments）",
+"items": [
+{
+"code": "42A0",
+"zh": "三次元量床",
+"vi": "Máy đo tọa độ 3D (CMM)"
+},
+{
+"code": "42A1",
+"zh": "齒輪測試機",
+"vi": "Máy kiểm tra bánh răng"
+},
+{
+"code": "42B0",
+"zh": "電動洛氏硬度機",
+"vi": "Máy đo độ cứng Rockwell điện"
+},
+{
+"code": "42B1",
+"zh": "橡膠硬度計",
+"vi": "Máy đo độ cứng cao su (Shore)"
+},
+{
+"code": "42B2",
+"zh": "微克氏硬度計",
+"vi": "Máy đo độ cứng Vickers micro"
+},
+{
+"code": "42C0",
+"zh": "投影機",
+"vi": "Máy chiếu hình (Profile projector)"
+},
+{
+"code": "42D0",
+"zh": "膜厚計",
+"vi": "Máy đo độ dày màng"
+},
+{
+"code": "42E0",
+"zh": "色彩色差計",
+"vi": "Máy đo màu / sai lệch màu"
+},
+{
+"code": "42F0",
+"zh": "光澤計／照度計",
+"vi": "Máy đo độ bóng / chiếu sáng"
+},
+{
+"code": "42G0",
+"zh": "表面粗度儀",
+"vi": "Máy đo độ nhám bề mặt"
+},
+{
+"code": "42H0",
+"zh": "破裂試驗機",
+"vi": "Máy thử độ bục"
+},
+{
+"code": "42I0",
+"zh": "同心度齒輪檢驗儀",
+"vi": "Thiết bị kiểm tra độ đồng tâm bánh răng"
+},
+{
+"code": "42J0",
+"zh": "微電腦粘度計",
+"vi": "Máy đo độ nhớt vi tính"
+},
+{
+"code": "42K0",
+"zh": "扭力計",
+"vi": "Đồng hồ đo mô-men xoắn"
+},
+{
+"code": "42L0",
+"zh": "放大鏡／數位顯微器",
+"vi": "Kính lúp / Kính hiển vi kỹ thuật số"
+},
+{
+"code": "42M0",
+"zh": "推拉力計",
+"vi": "Máy đo lực kéo-đẩy"
+},
+{
+"code": "42M1",
+"zh": "荷重元",
+"vi": "Cảm biến tải (Load cell)"
+},
+{
+"code": "42N0",
+"zh": "扭力起子",
+"vi": "Tô-vít lực (Torque screwdriver)"
+},
+{
+"code": "42N2",
+"zh": "扭力扳手",
+"vi": "Cờ-lê lực (Torque wrench)"
+},
+{
+"code": "42N1",
+"zh": "扭力測試機",
+"vi": "Máy kiểm tra mô-men xoắn"
+},
+{
+"code": "42O0",
+"zh": "恆溫恆濕機",
+"vi": "Tủ nhiệt độ-độ ẩm không đổi"
+},
+{
+"code": "42O1",
+"zh": "溫度自動記錄器",
+"vi": "Máy ghi nhiệt độ tự động"
+},
+{
+"code": "42O3",
+"zh": "溫度計",
+"vi": "Nhiệt kế"
+},
+{
+"code": "42O5",
+"zh": "紅外線溫度計",
+"vi": "Nhiệt kế hồng ngoại"
+},
+{
+"code": "42P0",
+"zh": "利邊測試器",
+"vi": "Máy kiểm tra cạnh sắc"
+},
+{
+"code": "42Q0",
+"zh": "整流子偏擺儀",
+"vi": "Thiết bị đo độ lệch cổ góp"
+},
+{
+"code": "42R0",
+"zh": "壓入機",
+"vi": "Máy ép"
+},
+{
+"code": "42S0",
+"zh": "灼熱絲測試儀",
+"vi": "Thiết bị thử dây nung nóng (Glow wire)"
+},
+{
+"code": "42U0",
+"zh": "鹽霧試驗機",
+"vi": "Máy thử phun muối (Salt spray)"
+},
+{
+"code": "42V0",
+"zh": "溫濕度計",
+"vi": "Nhiệt ẩm kế"
+},
+{
+"code": "42W0",
+"zh": "工業用內視鏡",
+"vi": "Nội soi công nghiệp"
+},
+{
+"code": "42X0",
+"zh": "老化測試機",
+"vi": "Máy thử lão hóa"
+},
+{
+"code": "42Y0",
+"zh": "卡尺USB傳輸線／SPC線",
+"vi": "Cáp USB thước cặp / Cáp SPC"
+},
+{
+"code": "42Y2",
+"zh": "電子榜秤",
+"vi": "Cân điện tử"
+},
+{
+"code": "42Y3",
+"zh": "振動試驗機",
+"vi": "Máy thử rung"
+},
+{
+"code": "42Z0",
+"zh": "木材水分計",
+"vi": "Máy đo độ ẩm gỗ"
+},
+{
+"code": "42A2",
+"zh": "可攜式關節手臂量測儀",
+"vi": "Máy đo tọa độ cánh tay di động",
+"isNew": true
+},
+{
+"code": "42A3",
+"zh": "手持式3D雷射掃描儀",
+"vi": "Máy quét laser 3D cầm tay",
+"isNew": true
+},
+{
+"code": "42O2",
+"zh": "熱衝擊試驗機(雙區)",
+"vi": "Hộp thử nghiệm sốc nhiệt hai buồng",
+"isNew": true
+},
+{
+"code": "42T0",
+"zh": "模擬夾抱試驗機",
+"vi": "Máy thử nghiệm kẹp thùng carton",
+"isNew": true
+},
+{
+"code": "42T1",
+"zh": "零跌落試驗機",
+"vi": "Máy thử nghiệm rơi tự do",
+"isNew": true
+},
+{
+"code": "42T2",
+"zh": "紙箱抗壓試驗機",
+"vi": "Máy thử nén thùng carton",
+"isNew": true
+},
+{
+"code": "42T3",
+"zh": "砂輪切割機",
+"vi": "Máy cắt đá mài",
+"isNew": true
+},
+{
+"code": "42T4",
+"zh": "金相切割機",
+"vi": "Máy cắt mẫu kim tương",
+"isNew": true
+}
+]
+},
+{
+"key": "模具類 (3)",
+"label": "模具類 (3)",
+"labelVi": "Đồ gá kiểm tra（Inspection fixtures/jigs）",
+"items": [
+{
+"code": "430L",
+"zh": "檢驗治具 (SB17PR)",
+"vi": "Đồ gá kiểm tra (SB17PR)"
+},
+{
+"code": "430K",
+"zh": "檢驗治具 (CM14LF)",
+"vi": "Đồ gá kiểm tra (CM14LF)"
+},
+{
+"code": "431K",
+"zh": "檢驗治具 (E16LF3)",
+"vi": "Đồ gá kiểm tra (E16LF3)"
+},
+{
+"code": "430F",
+"zh": "檢驗治具 (E08KF5)",
+"vi": "Đồ gá kiểm tra (E08KF5)"
+},
+{
+"code": "430H",
+"zh": "檢驗治具 (BU12LF)",
+"vi": "Đồ gá kiểm tra (BU12LF)"
+},
+{
+"code": "431H",
+"zh": "檢驗治具 (BR12LF)",
+"vi": "Đồ gá kiểm tra (BR12LF)"
+},
+{
+"code": "430C",
+"zh": "檢驗治具 (SC1801RD)",
+"vi": "Đồ gá kiểm tra (SC1801RD)"
+},
+{
+"code": "430M",
+"zh": "檢驗治具 (JT2100MW)",
+"vi": "Đồ gá kiểm tra (JT2100MW)"
+},
+{
+"code": "430R",
+"zh": "檢驗治具 (SM3030RD)",
+"vi": "Đồ gá kiểm tra (SM3030RD)"
+},
+{
+"code": "430S",
+"zh": "檢驗治具 (JT2506HT)",
+"vi": "Đồ gá kiểm tra (JT2506HT)"
+}
+]
+},
+{
+"key": "輔助件類 (4)",
+"label": "輔助件類 (4)",
+"labelVi": "Phụ kiện hỗ trợ（Auxiliary accessories）",
+"items": [
+{
+"code": "44A0",
+"zh": "分厘卡座",
+"vi": "Giá đỡ panme"
+},
+{
+"code": "44B0",
+"zh": "磁性座",
+"vi": "Đế từ"
+},
+{
+"code": "44B2",
+"zh": "方型磁性座",
+"vi": "Đế từ vuông"
+},
+{
+"code": "44B3",
+"zh": "油壓式磁性座",
+"vi": "Đế từ thủy lực"
+},
+{
+"code": "44C0",
+"zh": "方型水平儀",
+"vi": "Ni-vô vuông"
+},
+{
+"code": "44C1",
+"zh": "直線／電子水平儀",
+"vi": "Ni-vô thẳng / điện tử"
+},
+{
+"code": "44D0",
+"zh": "精密平台",
+"vi": "Bàn máp chính xác"
+},
+{
+"code": "44D1",
+"zh": "花崗岩平台",
+"vi": "Bàn máp đá granite"
+},
+{
+"code": "44E0",
+"zh": "顯微鏡",
+"vi": "Kính hiển vi"
+},
+{
+"code": "44F0",
+"zh": "電器筆",
+"vi": "Bút thử điện"
+},
+{
+"code": "44F1",
+"zh": "精密虎鉗",
+"vi": "Êtô chính xác"
+},
+{
+"code": "44G0",
+"zh": "偏心檢查儀",
+"vi": "Thiết bị kiểm tra độ lệch tâm"
+},
+{
+"code": "44H0",
+"zh": "百格測試刀",
+"vi": "Dao cắt ô vuông (Cross-cut tester)"
+},
+{
+"code": "44I0",
+"zh": "皮帶張力計",
+"vi": "Máy đo sức căng đai"
+},
+{
+"code": "44J0",
+"zh": "微電腦觸控粘度計",
+"vi": "Máy đo độ nhớt cảm ứng vi tính"
+},
+{
+"code": "44T0",
+"zh": "穩定板",
+"vi": "Tấm ổn định"
+},
+{
+"code": "44T1",
+"zh": "拉力錘",
+"vi": "Búa kéo"
+},
+{
+"code": "44T2",
+"zh": "衝擊管",
+"vi": "Ống va đập"
+},
+{
+"code": "44T3",
+"zh": "衝擊球",
+"vi": "Bóng va đập"
+},
+{
+"code": "44T4",
+"zh": "球壓計",
+"vi": "Thiết bị thử ép bi (Ball pressure tester)"
+},
+{
+"code": "44T5",
+"zh": "測試手指",
+"vi": "Ngón tay thử nghiệm (Test finger)"
+},
+{
+"code": "44T6",
+"zh": "測試棒",
+"vi": "Que thử (Test rod)"
+},
+{
+"code": "44U0",
+"zh": "風速計",
+"vi": "Máy đo tốc độ gió"
+},
+{
+"code": "44V0",
+"zh": "圓盤",
+"vi": "Đĩa tròn"
+},
+{
+"code": "44B1",
+"zh": "V型枕(非磁性)",
+"vi": "Khối V (không từ tính)",
+"isNew": true
+},
+{
+"code": "44B4",
+"zh": "磁性V型枕",
+"vi": "Khối V từ tính",
+"isNew": true
+},
+{
+"code": "44K0",
+"zh": "平行墊塊",
+"vi": "Thanh song song",
+"isNew": true
+},
+{
+"code": "44W0",
+"zh": "扭力測試針",
+"vi": "Kim thử lực vặn",
+"isNew": true
+}
+]
+},
+{
+"key": "電子機件類 (5)",
+"label": "電子機件類 (5)",
+"labelVi": "Thiết bị điện tử（Electronic equipment）",
+"items": [
+{
+"code": "45C0",
+"zh": "開關壽命測試機",
+"vi": "Máy thử tuổi thọ công tắc"
+},
+{
+"code": "45D0",
+"zh": "發電機",
+"vi": "Máy phát điện"
+},
+{
+"code": "45E0",
+"zh": "電動機測試機",
+"vi": "Máy kiểm tra động cơ điện"
+},
+{
+"code": "45F0",
+"zh": "動力計",
+"vi": "Máy đo công suất (Dynamometer)"
+},
+{
+"code": "45F1",
+"zh": "扭矩錶",
+"vi": "Đồng hồ đo mô-men xoắn"
+},
+{
+"code": "45F2",
+"zh": "馬達扭力試驗機",
+"vi": "Máy thử lực xoắn motor"
+},
+{
+"code": "45G0",
+"zh": "電容、電感、電阻測試器",
+"vi": "Máy đo điện dung, điện cảm, điện trở"
+},
+{
+"code": "45H0",
+"zh": "漏電流測試器",
+"vi": "Máy đo dòng rò"
+},
+{
+"code": "45H1",
+"zh": "漏電流插座",
+"vi": "Ổ cắm kiểm tra dòng rò"
+},
+{
+"code": "45I0",
+"zh": "耐壓絕緣測試機",
+"vi": "Máy thử chịu điện áp và cách điện"
+},
+{
+"code": "45J0",
+"zh": "電力綜合測試機",
+"vi": "Máy kiểm tra điện tổng hợp"
+},
+{
+"code": "45K0",
+"zh": "示波器／X光有毒物資分析儀",
+"vi": "Máy hiện sóng / Thiết bị phân tích tia X"
+},
+{
+"code": "45L0",
+"zh": "信號產生器",
+"vi": "Máy tạo tín hiệu"
+},
+{
+"code": "45M0",
+"zh": "計頻器",
+"vi": "Máy đếm tần số"
+},
+{
+"code": "45N0",
+"zh": "惠斯登電橋",
+"vi": "Cầu Wheatstone"
+},
+{
+"code": "45O0",
+"zh": "電源供應器",
+"vi": "Bộ nguồn điện"
+},
+{
+"code": "45P0",
+"zh": "噪音計",
+"vi": "Máy đo tiếng ồn"
+},
+{
+"code": "45P1",
+"zh": "振動儀",
+"vi": "Máy đo rung động"
+},
+{
+"code": "45P2",
+"zh": "噪音振動儀",
+"vi": "Máy đo tiếng ồn và rung động"
+},
+{
+"code": "45Q0",
+"zh": "轉速計",
+"vi": "Máy đo tốc độ vòng quay"
+},
+{
+"code": "45Q1",
+"zh": "同步儀",
+"vi": "Máy kiểm tra đồng bộ"
+},
+{
+"code": "45R0",
+"zh": "絕緣電阻器",
+"vi": "Máy đo điện trở cách điện"
+},
+{
+"code": "45R1",
+"zh": "微阻計",
+"vi": "Máy đo điện trở micro"
+},
+{
+"code": "45S0",
+"zh": "耐壓、電力綜合測試機",
+"vi": "Máy thử chịu điện áp và đo điện tổng hợp"
+},
+{
+"code": "45T0",
+"zh": "指針型三用電錶",
+"vi": "Đồng hồ vạn năng kim"
+},
+{
+"code": "45T1",
+"zh": "數字型三用電錶",
+"vi": "Đồng hồ vạn năng kỹ thuật số"
+},
+{
+"code": "45T2",
+"zh": "三用鉤錶",
+"vi": "Đồng hồ vạn năng kẹp dây"
+},
+{
+"code": "45T3",
+"zh": "電流錶",
+"vi": "Ampe kế"
+},
+{
+"code": "45T4",
+"zh": "電壓錶",
+"vi": "Vôn kế"
+},
+{
+"code": "45T5",
+"zh": "瓦特錶",
+"vi": "Oát kế"
+},
+{
+"code": "45T6",
+"zh": "靜電高壓錶",
+"vi": "Kế điện áp cao tĩnh điện"
+},
+{
+"code": "45T7",
+"zh": "電流、電壓轉換器",
+"vi": "Bộ chuyển đổi dòng điện, điện áp"
+},
+{
+"code": "45T8",
+"zh": "頻率錶",
+"vi": "Tần số kế"
+},
+{
+"code": "45U0",
+"zh": "馬錶",
+"vi": "Đồng hồ bấm giờ"
+},
+{
+"code": "45V0",
+"zh": "電流記錄器",
+"vi": "Máy ghi dòng điện"
+},
+{
+"code": "45X0",
+"zh": "三相自動穩壓變壓器",
+"vi": "Máy biến áp ổn áp tự động ba pha"
+},
+{
+"code": "45Y0",
+"zh": "直流電源供給器",
+"vi": "Bộ nguồn DC"
+},
+{
+"code": "45Z0",
+"zh": "單相自動穩壓變壓器",
+"vi": "Máy biến áp ổn áp tự động một pha"
+}
+]
+},
+{
+"key": "電子機件類 (6)",
+"label": "電子機件類 (6)",
+"labelVi": "Thiết bị điện tử（Electronic equipment）",
+"items": [
+{
+"code": "46A0",
+"zh": "密度比重計",
+"vi": "Tỷ trọng kế"
+},
+{
+"code": "46A1",
+"zh": "測試器／揚塵箱",
+"vi": "Máy thử / Hộp bụi"
+},
+{
+"code": "46A2",
+"zh": "立式均衡試驗機",
+"vi": "Máy thử cân bằng đứng"
+},
+{
+"code": "46A3",
+"zh": "分光儀",
+"vi": "Máy phân tích quang phổ"
+},
+{
+"code": "46A4",
+"zh": "包裝容器壓縮試驗機",
+"vi": "Máy thử nén hộp đựng"
+},
+{
+"code": "46A5",
+"zh": "維克氏硬度計",
+"vi": "Máy đo độ cứng Vickers"
+},
+{
+"code": "46B0",
+"zh": "多功能比色燈",
+"vi": "Đèn so màu đa năng"
+},
+{
+"code": "46C0",
+"zh": "切削自動記錄綜合測試機",
+"vi": "Máy thử tổng hợp ghi tự động cắt gọt"
+},
+{
+"code": "46D0",
+"zh": "變頻發電機",
+"vi": "Máy phát điện biến tần"
+},
+{
+"code": "46E0",
+"zh": "接地導通測試機",
+"vi": "Máy kiểm tra nối đất"
+},
+{
+"code": "46F0",
+"zh": "動平衡校正",
+"vi": "Máy cân bằng động"
+}
+]
+},
+{
+"key": "儀器類 (7.8)",
+"label": "儀器類 (7.8)",
+"labelVi": "Thiết bị đo（Instruments 7 & 8）",
+"items": [
+{
+"code": "47A0",
+"zh": "高斯計",
+"vi": "Đồng hồ đo từ trường (Gaussmeter)"
+},
+{
+"code": "47A1",
+"zh": "氣密測漏機",
+"vi": "Máy kiểm tra khí kín"
+},
+{
+"code": "47A2",
+"zh": "防盜黏標檢測器",
+"vi": "Máy kiểm tra nhãn chống trộm"
+},
+{
+"code": "47A3",
+"zh": "雷射測距儀",
+"vi": "Máy đo khoảng cách laser"
+},
+{
+"code": "47A4",
+"zh": "研磨拋光機",
+"vi": "Máy mài và đánh bóng"
+},
+{
+"code": "48A0",
+"zh": "手腳環測試器",
+"vi": "Máy kiểm tra vòng tay/chân (ESD)"
+},
+{
+"code": "48A1",
+"zh": "條碼檢測器",
+"vi": "Máy đọc mã vạch"
+},
+{
+"code": "48A2",
+"zh": "溫度測試器(焊錫專用)",
+"vi": "Máy kiểm tra nhiệt độ (chuyên dùng hàn)"
+},
+{
+"code": "48A3",
+"zh": "磨擦測試機",
+"vi": "Máy thử ma sát"
+},
+{
+"code": "48A4",
+"zh": "多通道氣電測微儀",
+"vi": "Máy đo khí nén đa kênh"
+},
+{
+"code": "48A5",
+"zh": "聲學影像儀",
+"vi": "Máy chụp ảnh âm học"
+},
+{
+"code": "⚠️ in Ghi chú = 已知編碼問題 / Vấn đề mã số đã biết",
+"zh": "更新版含中越文對照 / Bản cập nhật có đối chiếu Hán-Việt",
+"vi": "編制：王金鳳 2021/11/23"
+}
+]
+}
+]

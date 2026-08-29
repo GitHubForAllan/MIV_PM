@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>料號全面修正 v3 / Sửa mã hàng toàn diện v3</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f6fa;color:#1a1d23;min-height:100vh}
+.topbar{background:#1e293b;padding:0 24px;height:64px;display:flex;align-items:center;gap:16px}
+.topbar h1{color:#fff;font-size:1.1rem}.topbar .sub{color:#94a3b8;font-size:.85rem}
+.wrap{max-width:980px;margin:32px auto;padding:0 16px}
+.card{background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:24px;margin-bottom:24px}
+.card h2{font-size:1rem;font-weight:700;margin-bottom:14px;color:#1e293b}
+.info{background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:12px 16px;font-size:.88rem;color:#1d4ed8;margin-bottom:16px;line-height:1.7}
+.warn{background:#fffbeb;border:1px solid #fcd34d;border-radius:6px;padding:12px 16px;font-size:.88rem;color:#92400e;margin-bottom:16px;line-height:1.7}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;border:none;border-radius:6px;font-size:.95rem;font-weight:600;cursor:pointer}
+.btn-primary{background:#2563eb;color:#fff}.btn-primary:hover{background:#1d4ed8}
+.btn-primary:disabled{background:#93c5fd;cursor:not-allowed}
+.log{margin-top:14px;max-height:320px;overflow-y:auto;font-size:.82rem;background:#f8fafc;border:1px solid #e2e5ed;border-radius:6px;padding:10px 12px;line-height:1.9}
+.ok{color:#16a34a;font-weight:600}.err{color:#dc2626;font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:.83rem}
+th{background:#f1f5f9;padding:7px 10px;text-align:left;border-bottom:2px solid #e2e5ed;white-space:nowrap}
+td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+code{font-family:ui-monospace,monospace;background:#f1f5f9;padding:1px 5px;border-radius:3px;font-size:.8rem;font-weight:600}
+code.after{color:#16a34a}
+.arrow{color:#94a3b8;padding:0 4px}
+.badge{display:inline-block;font-size:.7rem;font-weight:700;padding:2px 6px;border-radius:99px;white-space:nowrap}
+.badge-red{background:#fef2f2;color:#dc2626;border:1px solid #fca5a5}
+.badge-amber{background:#fffbeb;color:#b45309;border:1px solid #fcd34d}
+.badge-blue{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
+.badge-warn{background:#fef3c7;color:#92400e;border:1px solid #fcd34d}
+.section-head{background:#f8fafc;font-weight:700;color:#475569;font-size:.78rem;letter-spacing:.04em}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1>🔧 料號全面修正 v3</h1>
+  <span class="sub">/ Sửa mã hàng toàn diện — 37 mục</span>
+</div>
+<div class="wrap">
+  <div class="card">
+    <h2>修正清單（37 筆）/ Danh sách sửa (37 mục)</h2>
+    <div class="info">
+      包含原始 4 筆未執行修正 + 本次稽核新增 33 筆。確認後點「執行修正」，系統將批次更新 Firestore。<br>
+      Bao gồm 4 mục chưa thực hiện trước đó + 33 mục mới phát hiện từ kiểm tra.
+    </div>
+    <div class="warn">
+      ⚠️ <b>注意</b>：<code>4NX-01</code>（刀桿 NT40-APU13-110）與 <code>4HAA-01</code> 規格相同，
+      <code>4NX-02</code>（刀桿 NT40-FMB40-60）與 <code>4HBA-01</code> 規格相同，疑似重複品項。
+      執行後請至工具室庫存確認是否需要手動刪除重複筆。
+    </div>
+    <table>
+      <thead>
+        <tr><th>現有料號</th><th>品名</th><th></th><th>修正後料號</th><th>原因</th></tr>
+      </thead>
+      <tbody>
+        <!-- 原始 4 筆 (未執行) -->
+        <tr class="section-head"><td colspan="5">▌ 原始修正（toolroom_recode.html 從未執行）</td></tr>
+        <tr><td><code>4LHB-01</code></td><td>手提式方塊砂光機</td><td class="arrow">→</td><td><code class="after">4LFB-01</code></td><td><span class="badge badge-red">子類型錯誤</span> H→F</td></tr>
+        <tr><td><code>4MHB -02</code></td><td>氣動砂光機</td><td class="arrow">→</td><td><code class="after">4MHB-02</code></td><td><span class="badge badge-amber">空格</span> 移除空格</td></tr>
+        <tr><td><code>4MHB -03</code></td><td>氣動刻磨機（小蜜蜂）</td><td class="arrow">→</td><td><code class="after">4MHB-03</code></td><td><span class="badge badge-amber">空格</span> 移除空格</td></tr>
+        <tr><td><code>801</code></td><td>熱溶膠槍（40W）</td><td class="arrow">→</td><td><code class="after">4LJA-01</code></td><td><span class="badge badge-red">格式錯誤</span> 電動工具→4L·J</td></tr>
+        <!-- 分類錯誤 -->
+        <tr class="section-head"><td colspan="5">▌ 分類錯誤（品項放在錯誤系列）</td></tr>
+        <tr><td><code>800</code></td><td>熱風槍 1600W</td><td class="arrow">→</td><td><code class="after">4LJA-02</code></td><td><span class="badge badge-red">格式錯誤</span> 電動工具→4L·J</td></tr>
+        <tr><td><code>4VET-03</code></td><td>先端絲攻 3/8-16 UNC-2B</td><td class="arrow">→</td><td><code class="after">4EVA-08</code></td><td><span class="badge badge-red">分類錯誤</span> 4V→4E·V（英制絲攻）</td></tr>
+        <tr><td><code>4NH-03-1</code></td><td>氣動冷卻噴霧器</td><td class="arrow">→</td><td><code class="after">4MIA-01</code></td><td><span class="badge badge-red">分類錯誤</span> 4N·H→4M·I（氣動噴槍）</td></tr>
+        <!-- 4I 系列（類別不存在）-->
+        <tr class="section-head"><td colspan="5">▌ 4I 系列（類別不存在於原則中）</td></tr>
+        <tr><td><code>4IXD011</code></td><td>筒夾 ER32-5</td><td class="arrow">→</td><td><code class="after">4HCA-01</code></td><td><span class="badge badge-red">類別不存在</span> 4I→4H·C（筒夾類）</td></tr>
+        <tr><td><code>4IXD012</code></td><td>筒夾 ER32-6</td><td class="arrow">→</td><td><code class="after">4HCA-02</code></td><td><span class="badge badge-red">類別不存在</span> 4I→4H·C</td></tr>
+        <tr><td><code>4IXD013</code></td><td>G字夾 4寸</td><td class="arrow">→</td><td><code class="after">4NIG-01</code></td><td><span class="badge badge-red">類別不存在</span> 4I→4N·I（一般鉗類）</td></tr>
+        <!-- 4L 子類型未定義 -->
+        <tr class="section-head"><td colspan="5">▌ 4L 子類型未定義</td></tr>
+        <tr><td><code>4LH-01-01</code></td><td>延長線</td><td class="arrow">→</td><td><code class="after">4LJB-01</code></td><td><span class="badge badge-red">子類型錯誤</span> H→J（特殊電動工具）</td></tr>
+        <tr><td><code>4LRA000</code></td><td>3D尋邊器</td><td class="arrow">→</td><td><code class="after">4NLA-01</code></td><td><span class="badge badge-red">分類錯誤</span> 4L·R→4N·L（量尺/測量）</td></tr>
+        <!-- 4M 子類型/分類錯誤 -->
+        <tr class="section-head"><td colspan="5">▌ 4M 子類型未定義或分類錯誤</td></tr>
+        <tr><td><code>4MHC-01</code></td><td>氣動封箱機</td><td class="arrow">→</td><td><code class="after">4MKA-01</code></td><td><span class="badge badge-red">分類錯誤</span> H（砂磨）→K（打釘/封箱機）</td></tr>
+        <tr><td><code>4MHD-01</code></td><td>封箱釘（耗材）</td><td class="arrow">→</td><td><code class="after">4MKB-01</code></td><td><span class="badge badge-red">分類錯誤</span> H→K，封箱機耗材</td></tr>
+        <tr><td><code>4MKE</code></td><td>釘書機（文書大）</td><td class="arrow">→</td><td><code class="after">4MKC-01</code></td><td><span class="badge badge-amber">缺流水號</span> K=打釘類，C=辦公型</td></tr>
+        <tr><td><code>4MS-01</code></td><td>氣動套筒組-內六角(20件)</td><td class="arrow">→</td><td><code class="after">4MCA-01</code></td><td><span class="badge badge-red">子類型錯誤</span> S→C（氣動套筒板手）</td></tr>
+        <tr><td><code>4MS-02</code></td><td>套筒轉換頭 1/2,1/4,3/8</td><td class="arrow">→</td><td><code class="after">4MCA-02</code></td><td><span class="badge badge-red">子類型錯誤</span> S→C</td></tr>
+        <tr><td><code>4MS-A-01</code></td><td>氣動衝擊扳手 1/2"</td><td class="arrow">→</td><td><code class="after">4MBA-01</code></td><td><span class="badge badge-red">子類型錯誤</span> S→B（氣動板手）</td></tr>
+        <tr><td><code>4MW-06100</code></td><td>氣動六角頭批頭</td><td class="arrow">→</td><td><code class="after">4MAA-03</code></td><td><span class="badge badge-red">子類型錯誤</span> W→A（六角批頭，統一至 4MAA 系列）</td></tr>
+        <tr><td><code>4MZ--01</code></td><td>金剛石磨頭</td><td class="arrow">→</td><td><code class="after">4MDA-01</code></td><td><span class="badge badge-red">分類+格式錯誤</span> Z（端子機）→D（砂輪機），雙橫線</td></tr>
+        <tr><td><code>4MZ-02</code></td><td>金剛石磨頭</td><td class="arrow">→</td><td><code class="after">4MDA-02</code></td><td><span class="badge badge-red">分類錯誤</span> Z→D</td></tr>
+        <!-- 4N 子類型未定義 -->
+        <tr class="section-head"><td colspan="5">▌ 4N 子類型未定義</td></tr>
+        <tr><td><code>4N5-02-01</code></td><td>內六角扳手（公制）</td><td class="arrow">→</td><td><code class="after">4NYA-01</code></td><td><span class="badge badge-red">子類型錯誤</span> 5→Y（六角板手類）</td></tr>
+        <tr><td><code>4N5-03-01</code></td><td>內六角扳手</td><td class="arrow">→</td><td><code class="after">4NYA-02</code></td><td><span class="badge badge-red">子類型錯誤</span> 5→Y</td></tr>
+        <tr><td><code>4NE-02-01</code></td><td>內六角扳手</td><td class="arrow">→</td><td><code class="after">4NYA-03</code></td><td><span class="badge badge-red">分類錯誤</span> E（英制梅花）→Y（六角板手）</td></tr>
+        <tr><td><code>4NM--B206</code></td><td>鐵油桶吊勾-50加侖，鏈條</td><td class="arrow">→</td><td><code class="after">4NME-01</code></td><td><span class="badge badge-amber">格式錯誤</span> 雙橫線，M=雜項</td></tr>
+        <!-- 4NX/4NO → 4H -->
+        <tr class="section-head"><td colspan="5">▌ 4N 刀桿/刀座類 → 移至 4H（刀具夾持配件）</td></tr>
+        <tr><td><code>4NO-01</code></td><td>鎖刀座 BT40</td><td class="arrow">→</td><td><code class="after">4HDA-01</code></td><td><span class="badge badge-red">子類型錯誤</span> O→4H·D（刀座類）</td></tr>
+        <tr><td><code>4NX-01</code></td><td>刀桿 NT40-APU13-110</td><td class="arrow">→</td><td><code class="after">4HAA-02</code></td><td><span class="badge badge-warn">⚠️ 疑似與 4HAA-01 重複</span> X→4H·A</td></tr>
+        <tr><td><code>4NX-02</code></td><td>刀桿 NT40-FMB40-60</td><td class="arrow">→</td><td><code class="after">4HBA-02</code></td><td><span class="badge badge-warn">⚠️ 疑似與 4HBA-01 重複</span> X→4H·B</td></tr>
+        <tr><td><code>4NX-03</code></td><td>刀桿 NT40 5/8×Ø32×8mmKEY</td><td class="arrow">→</td><td><code class="after">4HBA-03</code></td><td><span class="badge badge-red">子類型錯誤</span> X→4H·B</td></tr>
+        <tr><td><code>4NX-04</code></td><td>刀桿 NT40-5/8-SLA16</td><td class="arrow">→</td><td><code class="after">4HBA-04</code></td><td><span class="badge badge-red">子類型錯誤</span> X→4H·B</td></tr>
+        <tr><td><code>4NX-05</code></td><td>刀桿 NT40 5/8-SLA20</td><td class="arrow">→</td><td><code class="after">4HBA-05</code></td><td><span class="badge badge-red">子類型錯誤</span> X→4H·B</td></tr>
+        <tr><td><code>4NX-06</code></td><td>刀桿 NT40 5/8-SLA25</td><td class="arrow">→</td><td><code class="after">4HBA-06</code></td><td><span class="badge badge-red">子類型錯誤</span> X→4H·B</td></tr>
+        <tr><td><code>4NX-07</code></td><td>刀桿（錐柄）NT40 5/8-MT2</td><td class="arrow">→</td><td><code class="after">4HBA-07</code></td><td><span class="badge badge-red">子類型錯誤</span> X→4H·B</td></tr>
+        <tr><td><code>4NX-08</code></td><td>刀桿（錐柄）NT40 5/8-MT3</td><td class="arrow">→</td><td><code class="after">4HBA-08</code></td><td><span class="badge badge-red">子類型錯誤</span> X→4H·B</td></tr>
+        <tr><td><code>4NX-09</code></td><td>刀桿（錐柄）NT40 5/8-MT4</td><td class="arrow">→</td><td><code class="after">4HBA-09</code></td><td><span class="badge badge-red">子類型錯誤</span> X→4H·B</td></tr>
+        <!-- W 格式 -->
+        <tr class="section-head"><td colspan="5">▌ W 系列格式修正</td></tr>
+        <tr><td><code>WLB-1</code></td><td>手電筒</td><td class="arrow">→</td><td><code class="after">WLB-01</code></td><td><span class="badge badge-amber">格式</span> 補零統一流水號</td></tr>
+        <tr><td><code>WLB-2</code></td><td>LED光控投光燈</td><td class="arrow">→</td><td><code class="after">WLB-02</code></td><td><span class="badge badge-amber">格式</span> 補零統一流水號</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:20px">
+      <button class="btn btn-primary" id="run-btn" onclick="runFix()">▶ 執行修正（37 筆）/ Thực hiện sửa mã (37 mục)</button>
+    </div>
+    <div class="log" id="log" style="display:none"></div>
+  </div>
+</div>
+
+<script type="module">
+import { mivAuthReady } from "./auth-guard.js?v=3";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const cfg = {apiKey:"AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs",authDomain:"miv-1426c.firebaseapp.com",projectId:"miv-1426c",storageBucket:"miv-1426c.firebasestorage.app",messagingSenderId:"398934341623",appId:"1:398934341623:web:4af46c057d2e202855a0f2"};
+const db = getFirestore(initializeApp(cfg));
+
+const CODE_CHANGES = {
+  // 原始 4 筆（toolroom_recode.html 未執行）
+  '4LHB-01':    '4LFB-01',
+  '4MHB -02':   '4MHB-02',
+  '4MHB -03':   '4MHB-03',
+  '801':        '4LJA-01',
+  // 分類錯誤
+  '800':        '4LJA-02',
+  '4VET-03':    '4EVA-08',
+  '4NH-03-1':   '4MIA-01',
+  // 4I（類別不存在）
+  '4IXD011':    '4HCA-01',
+  '4IXD012':    '4HCA-02',
+  '4IXD013':    '4NIG-01',
+  // 4L 子類型未定義
+  '4LH-01-01':  '4LJB-01',
+  '4LRA000':    '4NLA-01',
+  // 4M 問題
+  '4MHC-01':    '4MKA-01',
+  '4MHD-01':    '4MKB-01',
+  '4MKE':       '4MKC-01',
+  '4MS-01':     '4MCA-01',
+  '4MS-02':     '4MCA-02',
+  '4MS-A-01':   '4MBA-01',
+  '4MW-06100':  '4MAA-03',
+  '4MZ--01':    '4MDA-01',
+  '4MZ-02':     '4MDA-02',
+  // 4N 問題
+  '4N5-02-01':  '4NYA-01',
+  '4N5-03-01':  '4NYA-02',
+  '4NE-02-01':  '4NYA-03',
+  '4NM--B206':  '4NME-01',
+  // 4NX/4NO → 4H
+  '4NO-01':     '4HDA-01',
+  '4NX-01':     '4HAA-02',
+  '4NX-02':     '4HBA-02',
+  '4NX-03':     '4HBA-03',
+  '4NX-04':     '4HBA-04',
+  '4NX-05':     '4HBA-05',
+  '4NX-06':     '4HBA-06',
+  '4NX-07':     '4HBA-07',
+  '4NX-08':     '4HBA-08',
+  '4NX-09':     '4HBA-09',
+  // W 格式
+  'WLB-1':      'WLB-01',
+  'WLB-2':      'WLB-02',
+};
+
+const log = (msg, cls='') => {
+  const el = document.getElementById('log');
+  el.style.display = '';
+  el.innerHTML += `<div class="${cls}">${msg}</div>`;
+  el.scrollTop = el.scrollHeight;
+};
+
+window.runFix = async function() {
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = '驗證登入中…';
+  await mivAuthReady;
+  btn.textContent = '執行中… / Đang xử lý…';
+  log('📡 讀取 Firestore 品項清單…');
+  try {
+    const snap = await getDocs(collection(db, 'toolroom_items'));
+    const batch = writeBatch(db);
+    let count = 0;
+    const notFound = new Set(Object.keys(CODE_CHANGES));
+    snap.docs.forEach(d => {
+      const code = d.data().code;
+      if (CODE_CHANGES[code] !== undefined) {
+        batch.update(d.ref, { code: CODE_CHANGES[code] });
+        log(`  <span class="ok">✔</span> <b>${code}</b> → <b>${CODE_CHANGES[code]}</b>`);
+        notFound.delete(code);
+        count++;
+      }
+    });
+    if (notFound.size > 0) {
+      log(`⚠ 以下料號在 Firestore 中未找到（可能已修正或不存在）：${[...notFound].join('、')}`, 'err');
+    }
+    if (count === 0) {
+      log('⚠ 未找到任何需修正的料號（所有項目可能已修正過）', 'err');
+    } else {
+      await batch.commit();
+      log(`<span class="ok">✅ 完成！共修正 ${count} 筆料號。</span>`);
+    }
+  } catch(e) {
+    log('❌ 錯誤：' + e.message, 'err');
+  }
+  btn.textContent = '✅ 執行完畢';
+};
+</script>
+</body>
+</html>

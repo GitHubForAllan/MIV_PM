@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="zh-Hant" data-page-key="login">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>力山工業 — 系統登入</title>
+  <link rel="stylesheet" href="styles.css?v=21">
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+    .login-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 380px;
+    }
+    .login-logo {
+      display: block;
+      height: 56px;
+      object-fit: contain;
+      margin: 0 auto 16px;
+      border-radius: 10px;
+    }
+    .login-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--text);
+      text-align: center;
+      margin: 0 0 4px;
+    }
+    .login-sub {
+      font-size: .85rem;
+      color: var(--muted);
+      text-align: center;
+      margin: 0 0 26px;
+    }
+    .login-field { margin-bottom: 16px; }
+    .login-field label {
+      display: block;
+      font-size: .82rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .login-field input {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      font-size: .95rem;
+      color: var(--text);
+      background: #fff;
+    }
+    .login-field input:focus { outline: none; border-color: var(--blue); }
+    .id-suffix { display: flex; align-items: stretch; }
+    .id-suffix input { border-radius: 8px 0 0 8px; min-width: 0; flex: 1; }
+    .id-suffix span {
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      border: 1px solid var(--line-strong);
+      border-left: none;
+      border-radius: 0 8px 8px 0;
+      background: #f1f5f9;
+      color: var(--muted);
+      font-size: .85rem;
+      white-space: nowrap;
+    }
+    .login-btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--blue);
+      color: #fff;
+      border: 0;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .login-btn:hover { background: var(--blue-dark); }
+    .login-btn:disabled { opacity: .55; cursor: not-allowed; }
+    .login-error {
+      color: #ad2727;
+      font-size: .83rem;
+      margin: 14px 0 0;
+      min-height: 1.2em;
+      text-align: center;
+    }
+  </style>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
+</head>
+<body>
+  <form class="login-card" id="login-form" autocomplete="on">
+    <img src="Rexon%20logo.png" alt="REXON" class="login-logo">
+    <p class="login-title">力山工業 廠務系統</p>
+    <p class="login-sub">請輸入工號與密碼登入</p>
+
+    <div class="login-field">
+      <label for="f-empid">工號</label>
+      <div class="id-suffix">
+        <input id="f-empid" name="employeeId" autocomplete="username" placeholder="例：A1234" required autofocus>
+        <span>@miv.local</span>
+      </div>
+    </div>
+
+    <div class="login-field">
+      <label for="f-pwd">密碼</label>
+      <input id="f-pwd" name="password" type="password" autocomplete="current-password" required>
+    </div>
+
+    <button type="submit" class="login-btn" id="login-btn">登入</button>
+    <p class="login-error" id="login-error"></p>
+  </form>
+
+  <script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getAuth, onAuthStateChanged, signInWithEmailAndPassword,
+      setPersistence, browserLocalPersistence
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs",
+      authDomain: "miv-1426c.firebaseapp.com",
+      projectId: "miv-1426c",
+      storageBucket: "miv-1426c.firebasestorage.app",
+      messagingSenderId: "398934341623",
+      appId: "1:398934341623:web:4af46c057d2e202855a0f2"
+    };
+    const fbApp = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+    const auth = getAuth(fbApp);
+
+    const params = new URLSearchParams(location.search);
+    const redirectTo = params.get("redirect") || params.get("return") || "index.html";
+
+    const ERROR_MSG = {
+      "auth/invalid-credential": "工號或密碼錯誤",
+      "auth/wrong-password": "工號或密碼錯誤",
+      "auth/user-not-found": "工號或密碼錯誤",
+      "auth/invalid-email": "工號格式錯誤",
+      "auth/too-many-requests": "嘗試次數過多，請稍後再試",
+      "auth/network-request-failed": "網路連線失敗，請檢查網路連線",
+      "auth/user-disabled": "此帳號已被停用，請聯絡管理員",
+    };
+
+    let redirecting = false;
+    onAuthStateChanged(auth, user => {
+      if (user && !redirecting) {
+        redirecting = true;
+        location.replace(redirectTo);
+      }
+    });
+
+    setPersistence(auth, browserLocalPersistence).catch(() => {});
+
+    const form = document.getElementById("login-form");
+    const btn = document.getElementById("login-btn");
+    const errEl = document.getElementById("login-error");
+
+    form.addEventListener("submit", async e => {
+      e.preventDefault();
+      errEl.textContent = "";
+
+      const empId = document.getElementById("f-empid").value.trim();
+      const pwd = document.getElementById("f-pwd").value;
+      if (!empId || !pwd) { errEl.textContent = "請輸入工號與密碼"; return; }
+      if (empId.includes("@")) { errEl.textContent = "工號不需輸入 @miv.local，系統會自動補上"; return; }
+
+      btn.disabled = true; btn.textContent = "登入中…";
+      try {
+        await signInWithEmailAndPassword(auth, `${empId}@miv.local`, pwd);
+        redirecting = true;
+        location.replace(redirectTo);
+      } catch (err) {
+        errEl.textContent = ERROR_MSG[err.code] || ("登入失敗：" + err.message);
+        btn.disabled = false; btn.textContent = "登入";
+      }
+    });
+  </script>
+</body>
+</html>

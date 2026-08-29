@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="zh-Hant" data-page-key="vietnam">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>越南廠戰情看板</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0f172a; color: #e2e8f0;
+      font-family: "Segoe UI", "Microsoft JhengHei", system-ui, sans-serif;
+      height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+    }
+    @keyframes pulse-red {
+      0%,100% { background:#dc2626; box-shadow:0 0 0 0 rgba(220,38,38,0); }
+      50%      { background:#ef4444; box-shadow:0 0 0 6px rgba(220,38,38,.3); }
+    }
+    @keyframes fade-in-down {
+      from { opacity:0; transform:translateY(-20px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    header {
+      background: #1e293b; border-bottom: 1px solid #334155;
+      padding: 10px 24px; display: flex; align-items: center;
+      justify-content: space-between; flex-shrink: 0; gap: 16px;
+    }
+    #andon-indicator {
+      display: flex; align-items: center; gap: 8px; padding: 6px 16px;
+      border-radius: 20px; border: 2px solid #334155; cursor: pointer;
+      text-decoration: none; transition: border-color .2s; white-space: nowrap;
+    }
+    #andon-indicator:hover { border-color: #6366f1; }
+    #andon-indicator.ok       { border-color: #16a34a; }
+    #andon-indicator.alert-on { border-color: #dc2626; }
+    #andon-dot { width:12px; height:12px; border-radius:50%; background:#22c55e; flex-shrink:0; }
+    #andon-dot.alert-on { animation: pulse-red 1s ease-in-out infinite; }
+    #andon-text { font-size:.85rem; font-weight:700; color:#e2e8f0; }
+    #alert-popup {
+      position:fixed; top:70px; left:50%; transform:translateX(-50%);
+      background:#1e1e2e; border:2px solid #dc2626; border-radius:14px;
+      padding:20px 24px; min-width:320px; max-width:480px;
+      box-shadow:0 8px 32px rgba(220,38,38,.35); z-index:999;
+      animation:fade-in-down .35s ease; display:none;
+    }
+    #alert-popup.show { display:block; }
+    .popup-title { font-size:.78rem; color:#f87171; font-weight:700; text-transform:uppercase; letter-spacing:.08em; margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+    .popup-lines { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+    .popup-line-row { background:rgba(220,38,38,.1); border-radius:8px; padding:10px 14px; }
+    .popup-line-name { font-size:1rem; font-weight:800; color:#fff; }
+    .popup-line-meta { font-size:.78rem; color:#94a3b8; margin-top:2px; }
+    .popup-line-type { font-size:.82rem; color:#fca5a5; font-weight:600; margin-top:3px; }
+    .popup-close { width:100%; padding:9px; background:#dc2626; color:#fff; border:none; border-radius:8px; font-size:.88rem; font-weight:700; cursor:pointer; }
+    .popup-close:hover { background:#b91c1c; }
+    .header-left h1 { font-size:1.05rem; font-weight:700; }
+    .header-left .sub { font-size:.72rem; color:#94a3b8; margin-top:2px; }
+    .header-right { display:flex; align-items:center; gap:12px; flex-shrink:0; }
+    .clock { font-size:1.5rem; font-weight:700; font-variant-numeric:tabular-nums; }
+    .date-str { font-size:.72rem; color:#94a3b8; text-align:right; }
+    .nav-btn {
+      padding:7px 14px; background:transparent; border:1px solid #334155;
+      border-radius:8px; color:#94a3b8; font-size:.8rem; text-decoration:none;
+      transition:.15s; white-space:nowrap;
+    }
+    .nav-btn:hover { border-color:#6366f1; color:#6366f1; }
+    /* lang-btn on dark bg */
+    .lang-btn {
+      padding:5px 12px; background:transparent; border:1px solid #334155;
+      border-radius:8px; color:#94a3b8; font-size:.78rem; font-weight:700;
+      letter-spacing:.06em; cursor:pointer; transition:border-color .15s, color .15s; flex-shrink:0;
+    }
+    .lang-btn:hover { border-color:#6366f1; color:#6366f1; }
+    .grid-4 {
+      flex:1; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr;
+      gap:8px; padding:8px 8px 14px 8px; overflow:hidden;
+    }
+    .chart-card { background:#fff; border-radius:10px; overflow:hidden; position:relative; }
+    .chart-card iframe { position:absolute; top:0; left:50%; border:none; transform-origin:top center; }
+  </style>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
+</head>
+<body>
+  <script type="module" src="auth-guard.js?v=3"></script>
+
+  <header>
+    <div class="header-left" style="display:flex;align-items:center;gap:12px">
+      <img src="Rexon%20logo.png" alt="REXON VN" style="height:48px;object-fit:contain;flex-shrink:0;border-radius:10px">
+      <div>
+        <h1 data-i18n="vietnamTitle">越南廠戰情看板</h1>
+        <div class="sub" data-i18n="vietnamSub">BẢNG CHỈ SỐ – NHÀ MÁY VIỆT NAM　資料來源：Google Sheets（即時同步）</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <a href="andon.html" id="andon-indicator" class="ok" title="前往安燈看板">
+        <span id="andon-dot"></span>
+        <span id="andon-text" data-i18n="andonOk">正常</span>
+      </a>
+      <div>
+        <div class="clock" id="clock">--:--:--</div>
+        <div class="date-str" id="date-str"></div>
+      </div>
+      <button class="lang-btn" title="Chuyển sang Tiếng Việt">VI</button>
+      <a href="andon.html" class="nav-btn" data-i18n="btnAndon">🚨 安燈看板</a>
+    </div>
+  </header>
+
+  <!-- 安燈彈出視窗 -->
+  <div id="alert-popup">
+    <div class="popup-title" id="popup-title" data-i18n="popupTitle">⚡ 安燈警示</div>
+    <div class="popup-lines" id="popup-lines"></div>
+    <button class="popup-close" id="popup-close-btn" data-i18n="popupClose"
+      onclick="document.getElementById('alert-popup').classList.remove('show')">知道了，關閉</button>
+  </div>
+
+  <div class="grid-4" id="grid">
+    <div class="chart-card" id="c0">
+      <iframe id="f0" seamless frameborder="0" scrolling="no"
+        src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1gjYD6Ttpkre-fEBCDBIaNUrf-Ksfco7r2QPdxu225_lBZJC3izq1kYml18OWd1GSSepzZ6uGKTX-/pubchart?oid=1317749452&format=interactive"
+        width="1091" height="523"></iframe>
+    </div>
+    <div class="chart-card" id="c1">
+      <iframe id="f1" seamless frameborder="0" scrolling="no"
+        src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1gjYD6Ttpkre-fEBCDBIaNUrf-Ksfco7r2QPdxu225_lBZJC3izq1kYml18OWd1GSSepzZ6uGKTX-/pubchart?oid=746362944&format=interactive"
+        width="1519" height="523"></iframe>
+    </div>
+    <div class="chart-card" id="c2">
+      <iframe id="f2" seamless frameborder="0" scrolling="no"
+        src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1gjYD6Ttpkre-fEBCDBIaNUrf-Ksfco7r2QPdxu225_lBZJC3izq1kYml18OWd1GSSepzZ6uGKTX-/pubchart?oid=1379016047&format=interactive"
+        width="1519" height="653"></iframe>
+    </div>
+    <div class="chart-card" id="c3">
+      <iframe id="f3" seamless frameborder="0" scrolling="no"
+        src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1gjYD6Ttpkre-fEBCDBIaNUrf-Ksfco7r2QPdxu225_lBZJC3izq1kYml18OWd1GSSepzZ6uGKTX-/pubchart?oid=793472961&format=interactive"
+        width="1091" height="653"></iframe>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { initLang, t } from "./lang.js";
+
+    const db = getFirestore(initializeApp({
+      apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs",
+      authDomain: "miv-1426c.firebaseapp.com",
+      projectId: "miv-1426c",
+      storageBucket: "miv-1426c.firebasestorage.app",
+      messagingSenderId: "398934341623",
+      appId: "1:398934341623:web:4af46c057d2e202855a0f2"
+    }));
+
+    function esc(s) {
+      return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    }
+
+    // 語言初始化（切換時不需要重 render，onSnapshot 靜態 data-i18n 已處理）
+    initLang();
+
+    let prevAlertIds = new Set();
+    let isFirstLoad = true;
+    let lastAlertLines = [];
+
+    function getAlertTypes() {
+      return {
+        quality:   "⚠️ " + t("typeQualityS"),
+        material:  "📦 " + t("typeMaterialS"),
+        equipment: "🔧 " + t("typeEquipmentS"),
+        other:     "❗ " + t("typeOtherS"),
+      };
+    }
+
+    onSnapshot(doc(db, "andon", "config"), snap => {
+      const lines = snap.data()?.lines ?? {};
+      const alertLines = Object.entries(lines).filter(([,l]) => !!l.alert);
+      const alertCount = alertLines.length;
+      lastAlertLines = alertLines;
+
+      const dot  = document.getElementById("andon-dot");
+      const text = document.getElementById("andon-text");
+      const ind  = document.getElementById("andon-indicator");
+
+      if (alertCount > 0) {
+        dot.className = "alert-on";
+        text.textContent = `${alertCount} ${t("andonAbnormal")}`;
+        ind.className = "alert-on";
+      } else {
+        dot.className = "";
+        dot.style.background = "#22c55e";
+        text.textContent = t("andonOk");
+        ind.className = "ok";
+      }
+
+      if (!isFirstLoad) {
+        const newAlerts = alertLines.filter(([id]) => !prevAlertIds.has(id));
+        if (newAlerts.length > 0) showPopup(newAlerts);
+      }
+
+      prevAlertIds = new Set(alertLines.map(([id]) => id));
+      isFirstLoad = false;
+    });
+
+    function showPopup(newAlerts) {
+      const ALERT_TYPES = getAlertTypes();
+      document.getElementById("popup-title").textContent  = t("popupTitle");
+      document.getElementById("popup-close-btn").textContent = t("popupClose");
+      const linesEl = document.getElementById("popup-lines");
+      linesEl.innerHTML = newAlerts.map(([, line]) => {
+        const a = line.alert;
+        const units = a.requestUnits?.length ? a.requestUnits : (a.requestUnit ? [a.requestUnit] : []);
+        return `
+          <div class="popup-line-row">
+            <div class="popup-line-name">${esc(line.name)}　<span style="font-size:.85rem;font-weight:500;color:#cbd5e1">${esc(line.category||"")}</span></div>
+            <div class="popup-line-meta">
+              ${t("popupModel")}${esc(line.model||t("popupUnknown"))}
+              ${a.triggeredBy ? "　" + t("popupTriggered") + esc(a.triggeredBy) : ""}
+              ${units.length ? "　📋 " + esc(units.join("、")) : ""}
+            </div>
+            <div class="popup-line-type">${ALERT_TYPES[a.type] ?? "❗ " + t("typeOtherS")}</div>
+            ${a.description ? `<div class="popup-line-meta" style="margin-top:3px">${esc(a.description)}</div>` : ""}
+          </div>`;
+      }).join("");
+      document.getElementById("alert-popup").classList.add("show");
+    }
+
+    /* ── 時鐘 */
+    function tick() {
+      const now = new Date();
+      document.getElementById("clock").textContent    = now.toLocaleTimeString("zh-TW", { hour12:false });
+      document.getElementById("date-str").textContent = now.toLocaleDateString("zh-TW", { year:"numeric", month:"long", day:"numeric", weekday:"long" });
+    }
+    setInterval(tick, 1000); tick();
+
+    /* ── 圖表縮放 */
+    const charts = [
+      { card:"c0", frame:"f0", w:1091, h:560, zoom:0.9, hAlign:"left"   },
+      { card:"c1", frame:"f1", w:1519, h:560, zoom:1.1, hAlign:"right"  },
+      { card:"c2", frame:"f2", w:1519, h:700, zoom:1.0, hAlign:"center" },
+      { card:"c3", frame:"f3", w:1091, h:700, zoom:1.0, hAlign:"center" },
+    ];
+
+    function scaleCharts() {
+      charts.forEach(({ card, frame, w, h, zoom, hAlign }) => {
+        const cardEl  = document.getElementById(card);
+        const frameEl = document.getElementById(frame);
+        const cw = cardEl.clientWidth, ch = cardEl.clientHeight;
+        const scale = Math.min(cw/w, ch/h) * zoom;
+        frameEl.style.width  = w + "px";
+        frameEl.style.height = h + "px";
+        frameEl.setAttribute("width",  w);
+        frameEl.setAttribute("height", h);
+
+        if (hAlign === "right" || hAlign === "left") {
+          frameEl.style.left = "0"; frameEl.style.right = "auto";
+          frameEl.style.transformOrigin = "top left";
+          frameEl.style.transform = `scale(${scale})`;
+        } else {
+          frameEl.style.left = "50%"; frameEl.style.right = "auto";
+          frameEl.style.transformOrigin = "top center";
+          frameEl.style.transform = `translate(${-w/2}px, 0) scale(${scale})`;
+        }
+      });
+    }
+    scaleCharts();
+    window.addEventListener("resize", scaleCharts);
+  </script>
+</body>
+</html>

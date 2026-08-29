@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>料號全面重編工具 / Công cụ mã hóa lại toàn bộ</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f1f5f9;color:#1e293b;min-height:100vh}
+.topbar{background:#1e293b;padding:0 24px;height:60px;display:flex;align-items:center;gap:14px}
+.topbar h1{color:#fff;font-size:1rem;font-weight:700}
+.topbar .sub{color:#94a3b8;font-size:.8rem}
+.wrap{max-width:960px;margin:28px auto;padding:0 16px 60px}
+.card{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:22px 24px;margin-bottom:20px}
+.card h2{font-size:.95rem;font-weight:700;margin-bottom:12px;color:#1e293b}
+.info{background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:11px 15px;font-size:.85rem;color:#1d4ed8;margin-bottom:14px;line-height:1.7}
+.warn{background:#fffbeb;border:1px solid #fcd34d;border-radius:6px;padding:11px 15px;font-size:.85rem;color:#92400e;margin-bottom:14px;line-height:1.7}
+.stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.stat{flex:1;min-width:100px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 16px;text-align:center}
+.stat-n{font-size:1.6rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+.stat-l{font-size:.72rem;color:#64748b;margin-top:4px}
+.stat.g .stat-n{color:#16a34a}.stat.b .stat-n{color:#2563eb}
+.stat.a .stat-n{color:#d97706}.stat.r .stat-n{color:#dc2626}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 26px;border:none;border-radius:7px;font-size:.95rem;font-weight:700;cursor:pointer;transition:background .15s}
+.btn-primary{background:#2563eb;color:#fff}.btn-primary:hover{background:#1d4ed8}
+.btn-primary:disabled{background:#93c5fd;cursor:not-allowed;color:#fff}
+.log{margin-top:16px;max-height:340px;overflow-y:auto;font-size:.78rem;background:#0f172a;color:#e2e8f0;border-radius:8px;padding:12px 14px;line-height:2;font-family:ui-monospace,monospace}
+.ok{color:#4ade80;font-weight:700}.err{color:#f87171;font-weight:700}.dim{color:#64748b}
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+thead th{background:#f1f5f9;padding:7px 10px;text-align:left;border-bottom:2px solid #e2e8f0;font-size:.72rem;letter-spacing:.04em;text-transform:uppercase;color:#64748b;white-space:nowrap}
+td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+code{font-family:ui-monospace,monospace;font-size:.78rem;font-weight:600;background:#f1f5f9;padding:1px 5px;border-radius:3px}
+code.new{color:#16a34a;background:#f0fdf4}
+code.mv{color:#d97706;background:#fffbeb}
+.arr{color:#cbd5e1;padding:0 4px}
+.grp{background:#f8fafc;font-size:.7rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#64748b;padding:6px 10px}
+.badge{display:inline-block;font-size:.68rem;font-weight:700;padding:1px 6px;border-radius:99px}
+.b-g{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
+.b-a{background:#fffbeb;color:#d97706;border:1px solid #fde68a}
+.b-b{background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe}
+.b-r{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+.wrap-t{overflow-x:auto}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1>🔧 料號全面重編工具 v2</h1>
+  <span class="sub">4E 消耗刀具類 · 方案B · 73 筆 / Công cụ mã hóa lại toàn bộ dao cụ tiêu hao</span>
+</div>
+<div class="wrap">
+
+  <div class="card">
+    <h2>執行前確認 / Xác nhận trước khi thực hiện</h2>
+    <div class="info">
+      此工具將批次更新 Firestore 中所有 4E 系列（及相關）品項的料號，共 <strong>73 筆</strong>。<br>
+      Công cụ này sẽ cập nhật hàng loạt 73 mã hàng thuộc dòng 4E trong Firestore.
+    </div>
+    <div class="warn">⚠ 操作不可逆，請確認下方明細後再執行。建議先至庫存頁面截圖備份現有料號。</div>
+    <div class="stats">
+      <div class="stat g"><div class="stat-n">53</div><div class="stat-l">格式重編（4E 內）</div></div>
+      <div class="stat b"><div class="stat-n">14</div><div class="stat-l">新子類型（I/W/X）</div></div>
+      <div class="stat a"><div class="stat-n">4</div><div class="stat-l">移至其他類別</div></div>
+      <div class="stat r"><div class="stat-n">2</div><div class="stat-l">子類型重新定義</div></div>
+    </div>
+    <button class="btn btn-primary" id="run-btn" onclick="runFix()">▶ 執行全部重編 / Thực hiện toàn bộ</button>
+    <div class="log" id="log" style="display:none"></div>
+  </div>
+
+  <div class="card">
+    <h2>完整修正明細 / Danh sách sửa mã đầy đủ</h2>
+    <div class="wrap-t"><table>
+      <thead><tr><th>現有料號</th><th>品名</th><th></th><th>新料號</th><th>說明</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">G — 絞孔刀（格式重編）</td></tr>
+        <tr><td><code>4EG-052550</code></td><td>Ø5 機械絞刀</td><td class="arr">→</td><td><code class="new">4EGA-01</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EG-063060</code></td><td>Ø6 機械絞刀</td><td class="arr">→</td><td><code class="new">4EGA-02</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EG-083570</code></td><td>Ø8 機械絞刀</td><td class="arr">→</td><td><code class="new">4EGA-03</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EG-104075</code></td><td>Ø10 機械絞刀</td><td class="arr">→</td><td><code class="new">4EGA-04</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EG-124075</code></td><td>Ø12 機械絞刀</td><td class="arr">→</td><td><code class="new">4EGA-05</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr class="grp"><td colspan="5">E — 倒角刀類（子類型重新定義）</td></tr>
+        <tr><td><code>4EE-D9.5</code></td><td>刀片式彈性內孔倒角刀</td><td class="arr">→</td><td><code class="new">4EEA-01</code></td><td><span class="badge b-r">E 重定義</span></td></tr>
+        <tr><td><code>4EF-01490</code></td><td>90° 二刃倒角刀</td><td class="arr">→</td><td><code class="new">4EEA-02</code></td><td><span class="badge b-r">F→E 重定義</span></td></tr>
+        <tr class="grp"><td colspan="5">M — 鋼鐵用車刀（格式重編）</td></tr>
+        <tr><td><code>4EM-CBNTNGA160404</code></td><td>外徑車刀片（鑽石）</td><td class="arr">→</td><td><code class="new">4EMA-01</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EM-HS5225-16ERA60</code></td><td>外徑牙刀片</td><td class="arr">→</td><td><code class="new">4EMA-02</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EM-SCMT09T3</code></td><td>倒角刀刀片（車床）</td><td class="arr">→</td><td><code class="new">4EMA-03</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EM-SSDCN1212H09</code></td><td>車床倒角刀架</td><td class="arr">→</td><td><code class="new">4EMA-04</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr class="grp"><td colspan="5">P — 銑刀片 / 立銑刀（格式重編）</td></tr>
+        <tr><td><code>4EP-CCMT09T304-TP</code></td><td>捨棄式刀片</td><td class="arr">→</td><td><code class="new">4EPA-01</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EP-01</code></td><td>面銑刀刀片（鐵）</td><td class="arr">→</td><td><code class="new">4EPA-02</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EP-02</code></td><td>面銑刀刀片（鋁）</td><td class="arr">→</td><td><code class="new">4EPA-03</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EP-0095</code></td><td>內孔倒角刀刀片</td><td class="arr">→</td><td><code class="new">4EPA-04</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EP-0650</code></td><td>Ø6 立銑刀 4刃</td><td class="arr">→</td><td><code class="new">4EPB-01</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EP-0860</code></td><td>Ø8 立銑刀 4刃</td><td class="arr">→</td><td><code class="new">4EPB-02</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EP-1075</code></td><td>Ø10 立銑刀 4刃</td><td class="arr">→</td><td><code class="new">4EPB-03</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EP-1275</code></td><td>Ø12 立銑刀 4刃</td><td class="arr">→</td><td><code class="new">4EPB-04</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EP-16100</code></td><td>Ø16 立銑刀 4刃</td><td class="arr">→</td><td><code class="new">4EPB-05</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr class="grp"><td colspan="5">S — 公制鑽頭（格式重編）</td></tr>
+        <tr><td><code>4ES-D2.0-CENTER</code></td><td>中心鑽 Ø2.0</td><td class="arr">→</td><td><code class="new">4ESA-01</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4ES-9.5-1</code></td><td>鎢鋼階梯鑽 Ø9.5</td><td class="arr">→</td><td><code class="new">4ESA-02</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4ESY045-01</code></td><td>流動鑽頭（熱熔鑽）短款</td><td class="arr">→</td><td><code class="new">4ESA-03</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4ESY045-01-1</code></td><td>流動鑽頭（熱熔鑽）長款</td><td class="arr">→</td><td><code class="new">4ESA-04</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr class="grp"><td colspan="5">U — 公制螺絲攻（A直槽 / B螺旋 / C先端 / D無屑 / E自攻）</td></tr>
+        <tr><td><code>4EU-04-1</code></td><td>直槽絲攻 M4×0.7</td><td class="arr">→</td><td><code class="new">4EUA-01</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EU-05-1</code></td><td>直槽絲攻 M5×0.8</td><td class="arr">→</td><td><code class="new">4EUA-02</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EU-06-01</code></td><td>直槽絲攻 M6×1.0</td><td class="arr">→</td><td><code class="new">4EUA-03</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EU-08-1</code></td><td>直槽絲攻 M8×1.25</td><td class="arr">→</td><td><code class="new">4EUA-04</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EU-M3-0.5</code></td><td>螺旋絲攻 M3×0.5</td><td class="arr">→</td><td><code class="new">4EUB-01</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EU-M4-0.7</code></td><td>螺旋絲攻 M4×0.7</td><td class="arr">→</td><td><code class="new">4EUB-02</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EU-M5-0.8</code></td><td>螺旋絲攻 M5×0.8</td><td class="arr">→</td><td><code class="new">4EUB-03</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EU-M6-1.0</code></td><td>螺旋絲攻 M6×1.0</td><td class="arr">→</td><td><code class="new">4EUB-04</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EU-M8-1.25</code></td><td>螺旋絲攻 M8×1.25</td><td class="arr">→</td><td><code class="new">4EUB-05</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EU-M10-1.5</code></td><td>螺旋絲攻 M10×1.5</td><td class="arr">→</td><td><code class="new">4EUB-06</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EU-M12-1.75</code></td><td>螺旋絲攻 M12×1.75</td><td class="arr">→</td><td><code class="new">4EUB-07</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EU-M16-2.0</code></td><td>螺旋絲攻 M16×2.0</td><td class="arr">→</td><td><code class="new">4EUB-08</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EUB-42</code></td><td>先端絲攻 M3.5×0.6</td><td class="arr">→</td><td><code class="new">4EUC-01</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EUE-01</code></td><td>先端絲攻 WLDB M4×0.7</td><td class="arr">→</td><td><code class="new">4EUC-02</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EUE-02-1</code></td><td>先端絲攻 WLDB M5×0.8</td><td class="arr">→</td><td><code class="new">4EUC-03</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EUE-04-1</code></td><td>先端絲攻 WLDB M6×1.0</td><td class="arr">→</td><td><code class="new">4EUC-04</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EUE-06-1</code></td><td>先端絲攻 WLDB M8×1.25</td><td class="arr">→</td><td><code class="new">4EUC-05</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EUE-08</code></td><td>先端絲攻 WLDB M10×1.5</td><td class="arr">→</td><td><code class="new">4EUC-06</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EU-M5*0.8</code></td><td>無屑絲攻 CXF M5×0.8</td><td class="arr">→</td><td><code class="new">4EUD-01</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EUO</code></td><td>無屑絲攻 AOSG M5×0.8</td><td class="arr">→</td><td><code class="new">4EUD-02</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EUO-01-1</code></td><td>無屑絲攻 AOSG M5 RH7-P</td><td class="arr">→</td><td><code class="new">4EUD-03</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EUO-03</code></td><td>無屑絲攻 AOSG M10×1.5</td><td class="arr">→</td><td><code class="new">4EUD-04</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EUO-04</code></td><td>無屑絲攻 AOSG M8×1.25</td><td class="arr">→</td><td><code class="new">4EUD-05</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EU-A05</code></td><td>自攻螺絲鑽頭套組</td><td class="arr">→</td><td><code class="new">4EUE-01</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr class="grp"><td colspan="5">V — 英制螺絲攻（格式重編）</td></tr>
+        <tr><td><code>4EV-1/2W12</code></td><td>螺旋絲攻 1/2W12</td><td class="arr">→</td><td><code class="new">4EVA-01</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EV-1/8PT</code></td><td>螺旋絲攻 1/8PT</td><td class="arr">→</td><td><code class="new">4EVA-02</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EV-1/8W40</code></td><td>螺旋絲攻 1/8W40</td><td class="arr">→</td><td><code class="new">4EVA-03</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EV-3/4W10</code></td><td>螺旋絲攻 3/4W10</td><td class="arr">→</td><td><code class="new">4EVA-04</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EV-3/8PT</code></td><td>螺旋絲攻 3/8PT</td><td class="arr">→</td><td><code class="new">4EVA-05</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EV-3/8W16</code></td><td>螺旋絲攻 3/8W16</td><td class="arr">→</td><td><code class="new">4EVA-06</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr><td><code>4EV-5/16W18</code></td><td>螺旋絲攻 5/16W18</td><td class="arr">→</td><td><code class="new">4EVA-07</code></td><td><span class="badge b-g">格式重編</span></td></tr>
+        <tr class="grp"><td colspan="5">I — 鋸刃類（新子類型）</td></tr>
+        <tr><td><code>4EI-01</code></td><td>鋸帶 8T</td><td class="arr">→</td><td><code class="new">4EIA-01</code></td><td><span class="badge b-b">新子類型 I</span></td></tr>
+        <tr><td><code>4EI-02</code></td><td>鋸帶 18T</td><td class="arr">→</td><td><code class="new">4EIA-02</code></td><td><span class="badge b-b">新子類型 I</span></td></tr>
+        <tr><td><code>4EL-03</code></td><td>切管機鋸片</td><td class="arr">→</td><td><code class="new">4EIA-03</code></td><td><span class="badge b-b">L誤用→新 I</span></td></tr>
+        <tr class="grp"><td colspan="5">W — 修邊/研磨類（新子類型）</td></tr>
+        <tr><td><code>4E01-02-01</code></td><td>修邊刀</td><td class="arr">→</td><td><code class="new">4EWA-01</code></td><td><span class="badge b-b">格式錯誤→新 W</span></td></tr>
+        <tr><td><code>4EW-01</code></td><td>修邊刀刀片 BS1010</td><td class="arr">→</td><td><code class="new">4EWA-02</code></td><td><span class="badge b-b">新子類型 W</span></td></tr>
+        <tr><td><code>4EW-03-01</code></td><td>鎢鋼打磨頭（火炬形）</td><td class="arr">→</td><td><code class="new">4EWB-01</code></td><td><span class="badge b-b">新子類型 W</span></td></tr>
+        <tr><td><code>4EW-03-02</code></td><td>鎢鋼打磨頭（倒錐形）</td><td class="arr">→</td><td><code class="new">4EWB-02</code></td><td><span class="badge b-b">新子類型 W</span></td></tr>
+        <tr><td><code>4EW-03-03</code></td><td>鎢鋼打磨頭（圓柱形）</td><td class="arr">→</td><td><code class="new">4EWB-03</code></td><td><span class="badge b-b">新子類型 W</span></td></tr>
+        <tr class="grp"><td colspan="5">X — 特殊銑刀類（新子類型）</td></tr>
+        <tr><td><code>4EA-0510</code></td><td>Ø5 沉頭銑刀</td><td class="arr">→</td><td><code class="new">4EXA-01</code></td><td><span class="badge b-b">A誤用→新 X</span></td></tr>
+        <tr><td><code>4EA-0611</code></td><td>Ø6 沉頭銑刀</td><td class="arr">→</td><td><code class="new">4EXA-02</code></td><td><span class="badge b-b">A誤用→新 X</span></td></tr>
+        <tr><td><code>4EA-0814</code></td><td>Ø8 沉頭銑刀</td><td class="arr">→</td><td><code class="new">4EXA-03</code></td><td><span class="badge b-b">A誤用→新 X</span></td></tr>
+        <tr><td><code>4EA-1017</code></td><td>Ø10 沉頭銑刀</td><td class="arr">→</td><td><code class="new">4EXA-04</code></td><td><span class="badge b-b">A誤用→新 X</span></td></tr>
+        <tr><td><code>4EA-1220</code></td><td>Ø12 沉頭銑刀</td><td class="arr">→</td><td><code class="new">4EXA-05</code></td><td><span class="badge b-b">A誤用→新 X</span></td></tr>
+        <tr><td><code>4EX-020-1-75</code></td><td>鈷鋼長刃粗銑刀 Ø20</td><td class="arr">→</td><td><code class="new">4EXB-01</code></td><td><span class="badge b-b">新子類型 X</span></td></tr>
+        <tr class="grp"><td colspan="5">移至其他類別</td></tr>
+        <tr><td><code>4ES-02-02</code></td><td>自動鑽夾頭</td><td class="arr">→</td><td><code class="mv">4HAA-01</code></td><td><span class="badge b-a">移至 4H 夾持配件</span></td></tr>
+        <tr><td><code>4ES-02-03</code></td><td>面銑刀刀柄</td><td class="arr">→</td><td><code class="mv">4HBA-01</code></td><td><span class="badge b-a">移至 4H 夾持配件</span></td></tr>
+        <tr><td><code>4EA-01-03</code></td><td>切斷砂輪片 4"×1.0mm</td><td class="arr">→</td><td><code class="mv">5DA-01</code></td><td><span class="badge b-a">移至 5D 研磨耗材</span></td></tr>
+        <tr><td><code>4EJ-018-150</code></td><td>圓棒 Ø18×150mm</td><td class="arr">→</td><td><code class="mv">6MA-01</code></td><td><span class="badge b-a">移至 6M 原材料</span></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+</div>
+
+<script type="module">
+import { mivAuthReady } from "./auth-guard.js?v=3";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const cfg = {
+  apiKey:"AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs",
+  authDomain:"miv-1426c.firebaseapp.com",
+  projectId:"miv-1426c",
+  storageBucket:"miv-1426c.firebasestorage.app",
+  messagingSenderId:"398934341623",
+  appId:"1:398934341623:web:4af46c057d2e202855a0f2"
+};
+const db = getFirestore(initializeApp(cfg));
+
+const CODE_CHANGES = {
+  // G — 絞孔刀
+  '4EG-052550':'4EGA-01','4EG-063060':'4EGA-02','4EG-083570':'4EGA-03',
+  '4EG-104075':'4EGA-04','4EG-124075':'4EGA-05',
+  // E — 倒角刀（子類型重定義）
+  '4EE-D9.5':'4EEA-01','4EF-01490':'4EEA-02',
+  // M — 車刀
+  '4EM-CBNTNGA160404':'4EMA-01','4EM-HS5225-16ERA60':'4EMA-02',
+  '4EM-SCMT09T3':'4EMA-03','4EM-SSDCN1212H09':'4EMA-04',
+  // P — 銑刀片 / 立銑刀
+  '4EP-CCMT09T304-TP':'4EPA-01','4EP-01':'4EPA-02','4EP-02':'4EPA-03',
+  '4EP-0095':'4EPA-04','4EP-0650':'4EPB-01','4EP-0860':'4EPB-02',
+  '4EP-1075':'4EPB-03','4EP-1275':'4EPB-04','4EP-16100':'4EPB-05',
+  // S — 公制鑽頭
+  '4ES-D2.0-CENTER':'4ESA-01','4ES-9.5-1':'4ESA-02',
+  '4ESY045-01':'4ESA-03','4ESY045-01-1':'4ESA-04',
+  // U — 公制螺絲攻
+  '4EU-04-1':'4EUA-01','4EU-05-1':'4EUA-02','4EU-06-01':'4EUA-03','4EU-08-1':'4EUA-04',
+  '4EU-M3-0.5':'4EUB-01','4EU-M4-0.7':'4EUB-02','4EU-M5-0.8':'4EUB-03',
+  '4EU-M6-1.0':'4EUB-04','4EU-M8-1.25':'4EUB-05','4EU-M10-1.5':'4EUB-06',
+  '4EU-M12-1.75':'4EUB-07','4EU-M16-2.0':'4EUB-08',
+  '4EUB-42':'4EUC-01','4EUE-01':'4EUC-02','4EUE-02-1':'4EUC-03',
+  '4EUE-04-1':'4EUC-04','4EUE-06-1':'4EUC-05','4EUE-08':'4EUC-06',
+  '4EU-M5*0.8':'4EUD-01','4EUO':'4EUD-02','4EUO-01-1':'4EUD-03',
+  '4EUO-03':'4EUD-04','4EUO-04':'4EUD-05','4EU-A05':'4EUE-01',
+  // V — 英制螺絲攻
+  '4EV-1/2W12':'4EVA-01','4EV-1/8PT':'4EVA-02','4EV-1/8W40':'4EVA-03',
+  '4EV-3/4W10':'4EVA-04','4EV-3/8PT':'4EVA-05','4EV-3/8W16':'4EVA-06',
+  '4EV-5/16W18':'4EVA-07',
+  // I — 鋸刃類（新子類型）
+  '4EI-01':'4EIA-01','4EI-02':'4EIA-02','4EL-03':'4EIA-03',
+  // W — 修邊/研磨類（新子類型）
+  '4E01-02-01':'4EWA-01','4EW-01':'4EWA-02',
+  '4EW-03-01':'4EWB-01','4EW-03-02':'4EWB-02','4EW-03-03':'4EWB-03',
+  // X — 特殊銑刀類（新子類型）
+  '4EA-0510':'4EXA-01','4EA-0611':'4EXA-02','4EA-0814':'4EXA-03',
+  '4EA-1017':'4EXA-04','4EA-1220':'4EXA-05','4EX-020-1-75':'4EXB-01',
+  // 移至其他類別
+  '4ES-02-02':'4HAA-01','4ES-02-03':'4HBA-01',
+  '4EA-01-03':'5DA-01','4EJ-018-150':'6MA-01',
+};
+
+const log = (msg, cls='') => {
+  const el = document.getElementById('log');
+  el.style.display = '';
+  el.innerHTML += `<div class="${cls}">${msg}</div>`;
+  el.scrollTop = el.scrollHeight;
+};
+
+window.runFix = async function() {
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = '驗證登入中…';
+  await mivAuthReady;
+  btn.textContent = '執行中… / Đang xử lý…';
+  log('📡 讀取 Firestore 品項清單…');
+  try {
+    const snap = await getDocs(collection(db, 'toolroom_items'));
+    const batch = writeBatch(db);
+    let matched = 0, skipped = 0;
+    const notFound = new Set(Object.keys(CODE_CHANGES));
+    snap.docs.forEach(d => {
+      const code = d.data().code;
+      if (CODE_CHANGES[code] !== undefined) {
+        batch.update(d.ref, { code: CODE_CHANGES[code] });
+        log(`  <span class="ok">✔</span> <b>${code}</b> → <b>${CODE_CHANGES[code]}</b>`);
+        notFound.delete(code);
+        matched++;
+      }
+    });
+    if (notFound.size > 0) {
+      log(`<span class="dim">── 以下料號在 Firestore 中未找到（可能已修改或拼寫不符）──</span>`);
+      for (const c of notFound) log(`  <span class="err">✘ 未找到：${c}</span>`);
+    }
+    if (matched === 0) {
+      log('<span class="err">⚠ 未找到任何需更新的料號，請確認 Firestore 資料。</span>');
+      btn.textContent = '⚠ 無資料更新';
+      return;
+    }
+    log(`<span class="dim">── 正在寫入 ${matched} 筆… ──</span>`);
+    await batch.commit();
+    log(`<span class="ok">✅ 完成！共更新 ${matched} 筆料號。${skipped ? ` (${skipped} 筆已是最新)` : ''}</span>`);
+    btn.textContent = `✅ 完成 ${matched} 筆`;
+  } catch(e) {
+    log('❌ 錯誤：' + e.message, 'err');
+    btn.textContent = '❌ 執行失敗';
+    btn.disabled = false;
+  }
+};
+</script>
+</body>
+</html>

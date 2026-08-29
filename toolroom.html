@@ -1,0 +1,1988 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>工具室庫存管理 / Quản Lý Kho Dụng Cụ</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f5f6fa;
+      --surface: #ffffff;
+      --border: #e2e5ed;
+      --text: #1a1d23;
+      --text-soft: #6b7280;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --danger: #dc2626;
+      --warn: #d97706;
+      --ok: #16a34a;
+      --warn-bg: #fffbeb;
+      --danger-bg: #fef2f2;
+      --ok-bg: #f0fdf4;
+      --radius: 8px;
+      --shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+           background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    .bi { display: flex; flex-direction: column; gap: 1px; }
+    .bi .zh { font-size: inherit; line-height: 1.3; }
+    .bi .vi { font-size: .72em; color: var(--text-soft); line-height: 1.2; font-style: italic; }
+
+    /* ── 頂欄 ── */
+    .topbar {
+      background: #1e293b;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      padding: 0 24px; height: 72px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,.25);
+      gap: 16px;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 16px; }
+    .topbar-logo { height: 48px; object-fit: contain; border-radius: 10px; flex-shrink: 0; }
+    .topbar-divider { width: 1px; height: 36px; background: rgba(255,255,255,.15); }
+    .topbar-title h1 { font-size: 1rem; font-weight: 700; line-height: 1.3; color: #fff; }
+    .topbar-title h1 .vi { font-size: .72rem; color: rgba(255,255,255,.5); font-weight: 400; font-style: italic; }
+    .topbar-title .eyebrow { font-size: .66rem; color: rgba(255,255,255,.4); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 2px; }
+    .topbar-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    /* 頂欄按鈕改為符合深色背景的樣式 */
+    .topbar-actions .btn-outline {
+      border-color: rgba(255,255,255,.25); color: rgba(255,255,255,.85);
+    }
+    .topbar-actions .btn-outline:hover {
+      background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.4);
+    }
+
+    /* ── 主體 ── */
+    .main { max-width: 1440px; margin: 0 auto; padding: 24px; }
+
+    /* ── 統計卡 ── */
+    .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; }
+    .stat-card .stat-label { font-size: .7rem; color: var(--text-soft); margin-bottom: 2px; line-height: 1.5; }
+    .stat-card .stat-label .vi { font-size: .88em; font-style: italic; }
+    .stat-card .stat-value { font-size: 1.6rem; font-weight: 700; margin-top: 4px; }
+    .stat-card.warn   { border-left: 4px solid var(--warn);   background: var(--warn-bg); }
+    .stat-card.danger { border-left: 4px solid var(--danger); background: var(--danger-bg); }
+    .stat-card.ok     { border-left: 4px solid var(--ok);     background: var(--ok-bg); }
+
+    /* ── 工具列 ── */
+    .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
+    .search-box {
+      flex: 1; min-width: 200px; padding: 8px 12px;
+      border: 1px solid var(--border); border-radius: var(--radius); font-size: .9rem; outline: none;
+    }
+    .search-box:focus { border-color: var(--accent); }
+    .filter-select { padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius); font-size: .82rem; background: var(--surface); cursor: pointer; }
+
+    /* ── 按鈕 ── */
+    .btn {
+      padding: 8px 16px; border-radius: var(--radius); font-size: .82rem; font-weight: 600;
+      cursor: pointer; border: none; transition: background .15s;
+      display: flex; flex-direction: column; align-items: center; gap: 1px; line-height: 1.3;
+    }
+    .btn .vi { font-size: .68em; font-weight: 400; font-style: italic; opacity: .85; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-outline:hover { background: var(--bg); }
+    .btn-sm { padding: 5px 12px; font-size: .78rem; }
+    .btn-icon { padding: 4px 8px; font-size: .9rem; background: transparent; border: none; cursor: pointer; color: var(--text-soft); }
+    .btn-icon:hover { color: var(--accent); }
+
+    /* ── 表格 ── */
+    .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: .83rem; }
+    thead th { padding: 10px 12px; text-align: left; font-weight: 600; background: #f8f9fc; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    thead th .zh { font-size: .78rem; color: var(--text-soft); text-transform: uppercase; }
+    thead th .vi { font-size: .66rem; color: #9ca3af; font-style: italic; }
+    tbody tr { border-bottom: 1px solid var(--border); }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f8f9fc; }
+    td { padding: 10px 12px; vertical-align: middle; }
+
+    /* ── 徽章 ── */
+    .badge {
+      display: inline-flex; flex-direction: column; align-items: center;
+      padding: 2px 8px; border-radius: 99px; font-size: .68rem; font-weight: 600; white-space: nowrap; line-height: 1.4;
+    }
+    .badge .vi { font-size: .88em; font-weight: 400; font-style: italic; opacity: .85; }
+    .badge-ok     { background: #dcfce7; color: #15803d; }
+    .badge-warn   { background: #fef9c3; color: #a16207; }
+    .badge-danger { background: #fee2e2; color: #b91c1c; }
+    .badge-high   { background: #dbeafe; color: #1d4ed8; }
+    .badge-exchange { background: #fef3c7; color: #92400e; font-size: .68rem; padding: 1px 6px; border-radius: 4px; font-weight: 700; }
+
+    /* ── 水位條 ── */
+    .level-bar { width: 90px; height: 10px; background: #e5e7eb; border-radius: 4px; display:inline-block; vertical-align:middle; position:relative; overflow:visible; }
+    .level-fill { height: 100%; border-radius: 4px; transition: width .3s; position:relative; z-index:1; overflow:hidden; }
+    .fill-ok { background: var(--ok); } .fill-warn { background: var(--warn); }
+    .fill-danger { background: var(--danger); } .fill-high { background: var(--accent); }
+    /* 警戒線（最低水位標記） */
+    .level-threshold {
+      position: absolute; top: -3px; bottom: -3px; width: 2px;
+      background: var(--danger); border-radius: 1px; z-index: 2;
+      box-shadow: 0 0 0 1px #fff;
+    }
+    .level-threshold::after {
+      content: ''; position: absolute; top: -3px; left: 50%; transform: translateX(-50%);
+      border-left: 4px solid transparent; border-right: 4px solid transparent;
+      border-top: 4px solid var(--danger);
+    }
+
+    /* ── Modal ── */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 16px; }
+    .modal-overlay.hidden { display: none; }
+    .modal { background: var(--surface); border-radius: 12px; padding: 28px; width: 100%; max-width: 600px; max-height: 92vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.2); }
+    .modal.wide { max-width: 780px; }
+    .modal h2 { font-size: 1rem; font-weight: 700; margin-bottom: 20px; line-height: 1.5; }
+    .modal h2 .vi { display: block; font-size: .78rem; font-weight: 400; color: var(--text-soft); font-style: italic; }
+    .modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+    .modal-header h2 { margin-bottom: 0; }
+    .epe-badge-toggle {
+      display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex-shrink: 0;
+    }
+    .epe-badge-toggle .epe-label {
+      font-size: .68rem; font-weight: 600; color: var(--text-soft); white-space: nowrap;
+    }
+    .epe-badge-toggle .epe-label .vi { font-style: italic; color: #9ca3af; }
+    .epe-checkbox-wrap {
+      display: flex; align-items: center; gap: 6px;
+      background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px;
+      padding: 6px 12px; cursor: pointer; transition: background .15s;
+    }
+    .epe-checkbox-wrap:hover { background: #dcfce7; }
+    .epe-checkbox-wrap input[type=checkbox] { width: 15px; height: 15px; accent-color: #16a34a; cursor: pointer; }
+    .epe-checkbox-wrap .epe-text { font-size: .78rem; font-weight: 600; color: #15803d; white-space: nowrap; }
+    .epe-checkbox-wrap .epe-text .vi { display: block; font-size: .76em; font-weight: 400; font-style: italic; color: #4ade80; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-grid .full { grid-column: 1 / -1; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-group label { font-size: .76rem; font-weight: 600; color: var(--text-soft); line-height: 1.5; }
+    .form-group label .vi { display: block; font-size: .9em; font-weight: 400; font-style: italic; color: #9ca3af; }
+    .form-group input, .form-group select { padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius); font-size: .88rem; font-family: inherit; outline: none; }
+    .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+
+    /* ── 切換入/出庫 ── */
+    .tx-type-row { display: flex; gap: 8px; margin-bottom: 18px; }
+    .tx-type-btn {
+      flex: 1; padding: 10px; border-radius: var(--radius); border: 2px solid var(--border);
+      font-weight: 700; cursor: pointer; background: transparent; font-size: .85rem;
+      display: flex; flex-direction: column; align-items: center; gap: 2px; line-height: 1.3;
+    }
+    .tx-type-btn .vi { font-size: .72em; font-weight: 400; font-style: italic; opacity: .8; }
+    .tx-type-btn.active-in  { border-color: var(--ok);   background: var(--ok-bg);     color: var(--ok); }
+    .tx-type-btn.active-out { border-color: var(--danger); background: var(--danger-bg); color: var(--danger); }
+
+    /* ── 多品項列表 ── */
+    .item-rows { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+    .item-row {
+      display: grid; grid-template-columns: 1fr 100px 90px auto;
+      gap: 8px; align-items: center;
+      background: #f8f9fc; border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px;
+      position: relative;
+    }
+    .item-row.exchange-flag { border-color: var(--warn); background: var(--warn-bg); }
+    .item-row select, .item-row input { padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: .84rem; font-family: inherit; outline: none; background: #fff; }
+    .item-row select:focus, .item-row input:focus { border-color: var(--accent); }
+    .item-row .remove-row { background: none; border: none; cursor: pointer; color: #9ca3af; font-size: 1.1rem; padding: 2px 4px; }
+    .item-row .remove-row:hover { color: var(--danger); }
+    .exchange-warning {
+      margin-top: 6px; padding: 8px 12px; background: #fef3c7; border: 1px solid #fcd34d;
+      border-radius: 6px; font-size: .78rem; color: #92400e; display: flex; gap: 8px; align-items: flex-start;
+    }
+    .exchange-warning .icon { font-size: 1.1rem; flex-shrink: 0; }
+
+    /* ── 新增列按鈕 ── */
+    .add-row-btn {
+      width: 100%; padding: 8px; border: 2px dashed var(--border); border-radius: var(--radius);
+      background: transparent; cursor: pointer; color: var(--text-soft); font-size: .84rem;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      transition: border-color .15s, color .15s;
+    }
+    .add-row-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── 共用欄位區 ── */
+    .tx-shared { border-top: 1px solid var(--border); padding-top: 14px; margin-top: 4px; }
+    .tx-shared .form-grid { grid-template-columns: 1fr 1fr; }
+
+    /* ── 歷史記錄 ── */
+    .tx-list { list-style: none; max-height: 300px; overflow-y: auto; }
+    .tx-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: .82rem; }
+    .tx-item:last-child { border-bottom: none; }
+    .tx-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .tx-dot.in { background: var(--ok); } .tx-dot.out { background: var(--danger); }
+    .tx-qty { font-weight: 700; min-width: 40px; }
+    .tx-qty.in { color: var(--ok); } .tx-qty.out { color: var(--danger); }
+    .tx-meta { color: var(--text-soft); flex: 1; min-width: 0; }
+
+    /* ── 旋轉動畫 ── */
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── 空狀態 ── */
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--text-soft); }
+    .empty-state .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+    .empty-state .vi { font-style: italic; font-size: .9em; }
+    .loading { text-align: center; padding: 40px; color: var(--text-soft); font-size: .9rem; }
+    .topbar-actions .btn.hidden { display: none !important; }
+
+    /* ── 圖片上傳 ── */
+    .img-upload-area {
+      border: 2px dashed var(--border); border-radius: var(--radius);
+      padding: 16px; text-align: center; cursor: pointer;
+      transition: border-color .15s, background .15s; position: relative;
+      min-height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+    }
+    .img-upload-area:hover, .img-upload-area.drag-over { border-color: var(--accent); background: #eff6ff; }
+    .img-upload-area input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .img-upload-area .upload-icon { font-size: 1.8rem; }
+    .img-upload-area .upload-hint { font-size: .76rem; color: var(--text-soft); }
+    .img-upload-area .upload-hint .vi { font-style: italic; }
+    .img-preview-wrap { position: relative; display: inline-block; }
+    .img-preview { width: 100%; max-height: 160px; object-fit: contain; border-radius: 6px; display: block; }
+    .img-remove-btn {
+      position: absolute; top: -6px; right: -6px;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--danger); color: #fff; border: none; cursor: pointer;
+      font-size: .8rem; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,.2);
+    }
+    /* 表格縮圖 */
+    .tbl-thumb { width: 36px; height: 36px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border); cursor: pointer; }
+    .tbl-thumb:hover { transform: scale(1.05); }
+    /* 圖片燈箱 */
+    .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.75); display: flex; align-items: center; justify-content: center; z-index: 2000; cursor: zoom-out; }
+    .lightbox.hidden { display: none; }
+    .lightbox img { max-width: 90vw; max-height: 85vh; border-radius: 10px; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+
+    /* ── checkbox 樣式 ── */
+    .checkbox-row { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    .checkbox-row input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--warn); }
+    .checkbox-row .label-text { font-size: .82rem; line-height: 1.4; }
+    .checkbox-row .label-text .vi { display: block; font-size: .88em; font-style: italic; color: #9ca3af; }
+
+    @media (max-width: 640px) {
+      /* 頂列 */
+      .topbar { padding: 0 10px; height: auto; min-height: 56px; flex-wrap: wrap; gap: 6px; padding-top: 8px; padding-bottom: 8px; }
+      .topbar-logo { height: 30px; }
+      .topbar-divider { display: none; }
+      .topbar-title h1 { font-size: .88rem; }
+      .topbar-title h1 .vi { font-size: .78rem; }
+      .topbar-title .eyebrow { display: none; }
+      .topbar-actions { gap: 5px; flex-wrap: wrap; }
+      .topbar-actions .btn { padding: 5px 8px; font-size: .74rem; }
+      .topbar-actions .btn .vi { display: none; }   /* 頂列按鈕只顯示中文 */
+
+      /* 主體 */
+      .main { padding: 12px; }
+
+      /* 統計卡 */
+      .stats-row { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+      .stat-card { padding: 12px 14px; }
+      .stat-card .stat-value { font-size: 1.3rem; }
+
+      /* 工具列：搜尋滿版、篩選下一行 */
+      .toolbar { flex-direction: column; align-items: stretch; gap: 8px; }
+      .search-box { min-width: unset; width: 100%; }
+      .filter-select { width: 100%; }
+
+      /* 表格：已有 overflow:auto，補充字型縮小 */
+      table { font-size: .76rem; }
+      thead th, td { padding: 7px 8px; }
+
+      /* Modal：從底部滑入全寬 */
+      .modal-overlay { padding: 0; align-items: flex-end; }
+      .modal { border-radius: 16px 16px 0 0; max-width: 100%; max-height: 95vh; padding: 18px 16px; }
+      .modal.wide { max-width: 100%; }
+
+      /* Modal 表單 */
+      .form-grid { grid-template-columns: 1fr; }
+      .form-group.full { grid-column: span 1; }
+      .tx-shared .form-grid { grid-template-columns: 1fr; }
+
+      /* 出入庫品項列 */
+      .item-row { grid-template-columns: 1fr 70px 70px auto; }
+
+      /* 操作按鈕組 */
+      .stats-row { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
+</head>
+<body>
+<script type="module" src="auth-guard.js?v=3"></script>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <img src="Rexon%20logo.png" alt="REXON" class="topbar-logo">
+    <div class="topbar-divider"></div>
+    <div class="topbar-title">
+      <p class="eyebrow">力山工業 / Rexon Industrial</p>
+      <h1>工具室庫存管理<br><span class="vi">Quản Lý Kho Dụng Cụ</span></h1>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <a href="toolroom_report.html" class="btn btn-outline" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.25);color:#fff">📊 領用查詢</a>
+    <a href="toolroom_req.html" class="btn btn-outline" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.25);color:#fff;position:relative">
+      <span>📋 工具室領用管理</span>
+      <span id="req-notify-badge" style="display:none;position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border-radius:99px;font-size:.68rem;font-weight:700;padding:1px 6px;min-width:18px;text-align:center">0</span>
+    </a>
+    <button class="btn btn-outline hidden" id="btn-tx" onclick="openTxModal(null,'out')">
+      <span>入 / 出庫</span><span class="vi">Nhập / Xuất kho</span>
+    </button>
+    <button class="btn btn-primary hidden" id="btn-add-item" onclick="openItemModal(null)">
+      <span>＋ 新增品項</span><span class="vi">Thêm hàng mới</span>
+    </button>
+  </div>
+</header>
+
+<div class="main">
+  <!-- 統計卡 -->
+  <div class="stats-row">
+    <div class="stat-card ok">
+      <div class="stat-label">品項總數<br><span class="vi">Tổng số mặt hàng</span></div>
+      <div class="stat-value" id="stat-total">—</div>
+    </div>
+    <div class="stat-card warn">
+      <div class="stat-label">低水位警示<br><span class="vi">Cảnh báo tồn kho thấp</span></div>
+      <div class="stat-value" id="stat-low">—</div>
+    </div>
+    <div class="stat-card danger">
+      <div class="stat-label">庫存耗盡<br><span class="vi">Hết hàng</span></div>
+      <div class="stat-value" id="stat-empty">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">超量警示<br><span class="vi">Cảnh báo tồn kho cao</span></div>
+      <div class="stat-value" id="stat-high">—</div>
+    </div>
+  </div>
+
+  <!-- 工具列 -->
+  <div class="toolbar">
+    <input class="search-box" type="search"
+      placeholder="搜尋品名 / 料號 / 儲位… | Tìm tên / mã / vị trí…"
+      id="search-input" oninput="renderTable()">
+    <select class="filter-select" id="filter-status" onchange="renderTable()">
+      <option value="">所有狀態 / Tất cả trạng thái</option>
+      <option value="empty">庫存耗盡 / Hết hàng</option>
+      <option value="low">低水位 / Tồn kho thấp</option>
+      <option value="ok">正常 / Bình thường</option>
+      <option value="high">超量 / Tồn kho cao</option>
+    </select>
+    <button class="btn btn-outline btn-sm" onclick="exportCsv()" style="flex-direction:row;gap:4px">
+      匯出 CSV / Xuất CSV
+    </button>
+  </div>
+
+  <!-- 表格 -->
+  <div class="table-wrap">
+    <div id="table-loading" class="loading">載入中… / Đang tải…</div>
+    <table id="inv-table" style="display:none">
+      <thead>
+        <tr>
+          <th></th>
+          <th><div class="bi"><span class="zh">料號</span><span class="vi">Mã hàng</span></div></th>
+          <th><div class="bi"><span class="zh">品名</span><span class="vi">Tên hàng</span></div></th>
+          <th><div class="bi"><span class="zh">規格</span><span class="vi">Quy cách</span></div></th>
+          <th><div class="bi"><span class="zh">分類</span><span class="vi">Phân loại</span></div></th>
+          <th><div class="bi"><span class="zh">儲位</span><span class="vi">Vị trí</span></div></th>
+          <th><div class="bi"><span class="zh">現量</span><span class="vi">Số lượng</span></div></th>
+          <th><div class="bi"><span class="zh">單位</span><span class="vi">Đơn vị</span></div></th>
+          <th><div class="bi"><span class="zh">水位狀態</span><span class="vi">Trạng thái</span></div></th>
+          <th><div class="bi"><span class="zh">水位</span><span class="vi">Mức tồn</span></div></th>
+          <th><div class="bi"><span class="zh">供應商</span><span class="vi">Nhà CC</span></div></th>
+          <th><div class="bi"><span class="zh">單價(VND)</span><span class="vi">Đơn giá</span></div></th>
+          <th><div class="bi"><span class="zh">備註</span><span class="vi">Ghi chú</span></div></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="inv-tbody"></tbody>
+    </table>
+    <div id="inv-empty" class="empty-state" style="display:none">
+      <div class="empty-icon">📦</div>
+      <p>尚無品項，點擊右上角「新增品項」開始建立庫存。</p>
+      <p class="vi">Chưa có mặt hàng. Nhấn "Thêm hàng mới" để bắt đầu.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     新增 / 編輯品項 Modal
+════════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="item-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="item-modal-title">新增品項<span class="vi">Thêm mặt hàng mới</span></h2>
+      <div class="epe-badge-toggle">
+        <span class="epe-label">EPE 免稅品<span class="vi"> / Hàng miễn thuế EPE</span></span>
+        <label class="epe-checkbox-wrap">
+          <input type="checkbox" id="f-epe">
+          <span class="epe-text">✅ EPE 保稅倉<span class="vi">Kho ngoại quan EPE</span></span>
+        </label>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label style="display:flex;align-items:center;justify-content:space-between">
+          <span>料號 *<span class="vi">Mã hàng *</span></span>
+          <button type="button" onclick="openCodeHelper()" style="font-size:.72rem;padding:2px 8px;border:1px solid var(--primary);border-radius:4px;background:#eff6ff;color:var(--primary);cursor:pointer;font-weight:600">🔧 料號產生器</button>
+        </label>
+        <input id="f-code" placeholder="例：4LDD-07" oninput="checkCodeDuplicate(this)">
+        <span id="f-code-hint" style="font-size:.72rem;min-height:1em;"></span>
+      </div>
+      <!-- 列1：品名 -->
+      <div class="form-group">
+        <label>品名 *<span class="vi">Tên hàng *</span></label>
+        <input id="f-name" placeholder="例：六角扳手組">
+      </div>
+      <!-- 列2：分類 / 規格 -->
+      <div class="form-group">
+        <label>分類<span class="vi">Phân loại</span></label>
+        <input id="f-category" placeholder="例：手工具">
+      </div>
+      <div class="form-group">
+        <label>規格<span class="vi">Quy cách / Thông số</span></label>
+        <input id="f-spec" placeholder="例：M6×25mm、1/2吋、φ10">
+      </div>
+      <!-- 列3：儲位 / 單位 -->
+      <div class="form-group">
+        <label>儲位代號 *<span class="vi">Vị trí lưu kho *</span></label>
+        <input id="f-location" placeholder="例：A-01-03">
+      </div>
+      <div class="form-group">
+        <label>單位<span class="vi">Đơn vị tính</span></label>
+        <input id="f-unit" placeholder="例：套、個、支">
+      </div>
+      <!-- 列4：現量 / 供應商 -->
+      <div class="form-group">
+        <label>現量<span class="vi">Số lượng hiện tại</span></label>
+        <input id="f-qty" type="number" min="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label>供應商<span class="vi">Nhà cung cấp</span></label>
+        <input id="f-supplier" placeholder="例：台灣工具股份有限公司">
+      </div>
+      <!-- 列5：最低水位 / 最高水位 -->
+      <div class="form-group">
+        <label>最低水位（補貨點）<span class="vi">Mức tồn tối thiểu</span></label>
+        <input id="f-min" type="number" min="0" placeholder="5">
+      </div>
+      <div class="form-group">
+        <label>最高水位（超量點）<span class="vi">Mức tồn tối đa</span></label>
+        <input id="f-max" type="number" min="0" placeholder="50">
+      </div>
+      <div class="form-group">
+        <label>單價（VND）<span class="vi">Đơn giá (VND)</span></label>
+        <input id="f-price" type="number" min="0" placeholder="0">
+      </div>
+      <div class="form-group full">
+        <label>備註<span class="vi">Ghi chú</span></label>
+        <input id="f-note" placeholder="選填 / Tuỳ chọn">
+      </div>
+      <!-- 品項圖片 -->
+      <div class="form-group full">
+        <label>品項圖片（選填）<span class="vi">Hình ảnh mặt hàng (tuỳ chọn)</span></label>
+        <!-- 手機拍照 / 電腦選檔 兩個隱藏 input -->
+        <input type="file" id="f-img"        accept="image/*"                  style="display:none" onchange="handleImgSelect(event)">
+        <input type="file" id="f-img-camera" accept="image/*" capture="environment" style="display:none" onchange="handleImgSelect(event)">
+        <div class="img-upload-area" id="img-upload-area"
+             ondragover="event.preventDefault();this.classList.add('drag-over')"
+             ondragleave="this.classList.remove('drag-over')"
+             ondrop="handleImgDrop(event)"
+             onclick="event.stopPropagation()">
+          <div id="img-placeholder">
+            <div class="upload-icon">🖼️</div>
+            <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:8px">
+              <button type="button" onclick="document.getElementById('f-img-camera').click()"
+                style="padding:8px 18px;border-radius:6px;border:1px solid #d1d5db;background:#fff;cursor:pointer;font-size:.85rem;font-weight:600;display:flex;align-items:center;gap:6px">
+                📷 拍照
+              </button>
+              <button type="button" onclick="document.getElementById('f-img').click()"
+                style="padding:8px 18px;border-radius:6px;border:1px solid #d1d5db;background:#fff;cursor:pointer;font-size:.85rem;font-weight:600;display:flex;align-items:center;gap:6px">
+                🖼️ 從相簿選取
+              </button>
+            </div>
+            <div class="upload-hint" style="margin-top:8px">
+              電腦可直接拖曳圖片至此區域<br>
+              <span class="vi">Máy tính có thể kéo thả ảnh vào đây</span>
+            </div>
+          </div>
+          <div id="img-preview-container" style="display:none;width:100%">
+            <div class="img-preview-wrap">
+              <img id="img-preview" class="img-preview" src="" alt="preview">
+              <button class="img-remove-btn" onclick="removeImg(event)" title="移除圖片">✕</button>
+            </div>
+          </div>
+        </div>
+        <div id="img-upload-status" style="font-size:.72rem;min-height:1em;margin-top:4px;"></div>
+      </div>
+      <!-- 以舊換新選項 -->
+      <div class="form-group full" style="background:#fffbeb;border:1px solid #fcd34d;border-radius:var(--radius);padding:12px 14px;">
+        <label style="margin-bottom:8px;">
+          領用模式（選填）<span class="vi">Chế độ lĩnh dụng cụ (tuỳ chọn)</span>
+        </label>
+        <label class="checkbox-row">
+          <input type="checkbox" id="f-exchange">
+          <span class="label-text">
+            🔄 以舊換新（高單價品項）— 出庫時系統會提示操作者須繳回舊品
+            <span class="vi">Đổi cũ lấy mới (hàng giá trị cao) — Khi xuất kho sẽ hiện cảnh báo phải trả lại hàng cũ</span>
+          </span>
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeItemModal()"><span>取消</span><span class="vi">Hủy</span></button>
+      <button class="btn btn-primary" onclick="saveItem()"><span>儲存</span><span class="vi">Lưu</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     多品項 入庫 / 出庫 Modal
+════════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="tx-modal">
+  <div class="modal wide">
+    <h2>入庫 / 出庫<span class="vi">Nhập kho / Xuất kho</span></h2>
+
+    <!-- 入/出庫切換 -->
+    <div class="tx-type-row">
+      <button class="tx-type-btn active-in" id="tx-in-btn" onclick="setTxType('in')">
+        <span>▼ 入庫</span><span class="vi">Nhập kho</span>
+      </button>
+      <button class="tx-type-btn" id="tx-out-btn" onclick="setTxType('out')">
+        <span>▲ 出庫</span><span class="vi">Xuất kho</span>
+      </button>
+    </div>
+
+    <!-- 快速篩選品項 -->
+    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center;">
+      <input id="tx-item-search" type="search"
+        style="flex:1;min-width:160px;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:.83rem;outline:none;"
+        placeholder="🔍 搜尋品名 / 料號 / 規格… | Tìm kiếm…"
+        oninput="rebuildItemSelects()">
+      <select id="tx-cat-filter"
+        style="padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:.82rem;background:#fff;"
+        onchange="rebuildItemSelects()">
+        <option value="">所有分類 / Tất cả</option>
+      </select>
+    </div>
+
+    <!-- 品項列表表頭 -->
+    <div style="display:grid;grid-template-columns:1fr 100px 90px 28px;gap:8px;padding:0 12px 6px;font-size:.72rem;font-weight:600;color:var(--text-soft);">
+      <span>品名 / Tên hàng</span>
+      <span>數量 / SL</span>
+      <span>現量 / Tồn</span>
+      <span></span>
+    </div>
+
+    <!-- 動態品項列 -->
+    <div class="item-rows" id="item-rows"></div>
+
+    <!-- 以舊換新警告 -->
+    <div id="exchange-summary" style="display:none" class="exchange-warning">
+      <span class="icon">⚠️</span>
+      <div>
+        <strong>注意 / Chú ý：</strong>以下品項為「以舊換新」高單價工具，<strong>出庫時請確認操作者已了解須繳回舊品後才能領用新品。</strong><br>
+        <em style="font-size:.9em;">Các mặt hàng dưới đây thuộc chế độ "Đổi cũ lấy mới". <strong>Vui lòng xác nhận người nhận đã hiểu phải trả lại hàng cũ trước khi lấy hàng mới.</strong></em>
+        <ul id="exchange-list" style="margin-top:6px;padding-left:16px;font-size:.82rem;"></ul>
+      </div>
+    </div>
+
+    <!-- 新增品項按鈕 -->
+    <button class="add-row-btn" onclick="addItemRow()">
+      ＋ 新增品項 / <em>Thêm mặt hàng</em>
+    </button>
+
+    <!-- 欄位：依入/出庫切換顯示 -->
+    <div class="tx-shared" style="margin-top:14px;">
+      <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+
+        <!-- 入庫原因（入庫時顯示） -->
+        <div class="form-group full" id="tx-field-in-reason" style="display:none">
+          <label>入庫原因<span class="vi">Lý do nhập kho</span></label>
+          <input id="tx-in-reason" placeholder="例：採購補貨 / Ví dụ: Mua hàng bổ sung">
+        </div>
+
+        <!-- 領用原因（出庫時顯示） -->
+        <div class="form-group" id="tx-field-out-reason" style="display:none">
+          <label>領用原因<span class="vi">Lý do lĩnh dụng cụ</span></label>
+          <input id="tx-out-reason" placeholder="例：機台維修 / Sửa máy">
+        </div>
+
+        <!-- 領用人（出庫時顯示） -->
+        <div class="form-group" id="tx-field-recipient" style="display:none">
+          <label>領用人<span class="vi">Người lĩnh</span></label>
+          <input id="tx-recipient" placeholder="姓名 / Họ tên">
+        </div>
+
+        <!-- 經手人（入庫 + 出庫都顯示） -->
+        <div class="form-group full" id="tx-field-operator">
+          <label>經手人<span class="vi">Người thực hiện</span></label>
+          <input id="tx-operator" placeholder="姓名 / Họ tên">
+        </div>
+
+        <div class="form-group full">
+          <label>備註<span class="vi">Ghi chú</span></label>
+          <input id="tx-note" placeholder="選填 / Tuỳ chọn">
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeTxModal()"><span>取消</span><span class="vi">Hủy</span></button>
+      <button class="btn btn-primary" id="tx-confirm-btn" onclick="saveTx()"><span>確認送出</span><span class="vi">Xác nhận</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 料號產生器 ══ -->
+<div id="code-helper-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1100;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:12px;width:100%;max-width:600px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <!-- Header -->
+    <div style="padding:16px 20px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;gap:8px">
+      <div>
+        <div style="font-size:1rem;font-weight:700;color:#1e293b">🔧 料號產生器 <span style="font-size:.82rem;font-weight:400;color:#64748b">/ Trình tạo mã hàng</span></div>
+        <div id="ch-header-sub" style="font-size:.72rem;color:#64748b;margin-top:2px">逐步選擇，自動組合料號</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
+        <button id="ch-manage-btn" onclick="chOpenManage()" title="管理分類" style="padding:5px 10px;border-radius:6px;border:1px solid #e2e5ed;background:#f8fafc;color:#475569;font-size:.8rem;cursor:pointer;font-weight:600">⚙ 管理分類</button>
+        <button onclick="closeCodeHelper()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:#9ca3af;padding:2px 6px">✕</button>
+      </div>
+    </div>
+
+    <!-- ── 主面板（選料號） ── -->
+    <div id="ch-main-panel" style="overflow-y:auto;padding:18px 20px;flex:1">
+      <div style="margin-bottom:14px">
+        <div style="font-size:.78rem;font-weight:700;color:#475569;margin-bottom:8px">① 大分類 / Danh mục chính</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:7px" id="ch-cat-btns"></div>
+      </div>
+      <div id="ch-sub-area" style="display:none;margin-bottom:14px">
+        <div style="font-size:.78rem;font-weight:700;color:#475569;margin-bottom:8px">② 種類 / Loại</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:7px" id="ch-sub-btns"></div>
+      </div>
+      <div id="ch-serial-area" style="display:none;margin-bottom:14px">
+        <div style="font-size:.78rem;font-weight:700;color:#475569;margin-bottom:6px">③ 流水號（選填）<span style="font-weight:400;color:#94a3b8"> / Số thứ tự (tuỳ chọn)</span></div>
+        <input id="ch-serial" type="text" placeholder="例：01、02、03…" style="width:100%;border:1px solid #e2e5ed;border-radius:6px;padding:8px 10px;font-size:.88rem;outline:none;box-sizing:border-box">
+      </div>
+      <div id="ch-preview-area" style="display:none;background:#f8fafc;border:1px solid #e2e5ed;border-radius:8px;padding:14px 16px">
+        <div style="font-size:.72rem;color:#64748b;margin-bottom:6px">料號預覽 / Xem trước mã</div>
+        <div id="ch-preview" style="font-size:1.4rem;font-weight:700;color:#1e293b;font-family:monospace;letter-spacing:.05em"></div>
+        <div id="ch-rule-hint" style="font-size:.72rem;color:#64748b;margin-top:6px"></div>
+      </div>
+    </div>
+
+    <!-- ── 管理面板 ── -->
+    <div id="ch-manage-panel" style="display:none;overflow-y:auto;flex:1;padding:0">
+      <!-- 子面板A：分類列表 -->
+      <div id="ch-mg-cats" style="padding:18px 20px">
+        <div style="font-size:.78rem;font-weight:700;color:#475569;margin-bottom:10px">所有大分類 / Tất cả danh mục</div>
+        <div id="ch-mg-cat-list" style="display:flex;flex-direction:column;gap:6px"></div>
+        <div style="margin-top:14px;border-top:1px solid #f1f5f9;padding-top:14px">
+          <div style="font-size:.78rem;font-weight:700;color:#475569;margin-bottom:8px">新增大分類 / Thêm danh mục mới</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+            <input id="mg-new-key"    placeholder="鍵值 (e.g. 4X)"  style="border:1px solid #e2e5ed;border-radius:6px;padding:7px 9px;font-size:.82rem;outline:none">
+            <input id="mg-new-prefix" placeholder="前綴 (e.g. 4X)"  style="border:1px solid #e2e5ed;border-radius:6px;padding:7px 9px;font-size:.82rem;outline:none">
+            <input id="mg-new-label"  placeholder="中文名稱"         style="border:1px solid #e2e5ed;border-radius:6px;padding:7px 9px;font-size:.82rem;outline:none">
+            <input id="mg-new-labelvi" placeholder="Tên tiếng Việt" style="border:1px solid #e2e5ed;border-radius:6px;padding:7px 9px;font-size:.82rem;outline:none">
+            <input id="mg-new-hint"   placeholder="格式提示（選填）" style="border:1px solid #e2e5ed;border-radius:6px;padding:7px 9px;font-size:.82rem;outline:none;grid-column:1/-1">
+          </div>
+          <button onclick="chAddCat()" style="padding:7px 16px;border-radius:6px;border:none;background:#2563eb;color:#fff;font-size:.82rem;font-weight:600;cursor:pointer">＋ 新增</button>
+        </div>
+      </div>
+      <!-- 子面板B：子類型列表 -->
+      <div id="ch-mg-subs" style="display:none;padding:18px 20px">
+        <button onclick="chBackToCats()" style="background:none;border:none;color:#2563eb;font-size:.82rem;cursor:pointer;padding:0;margin-bottom:12px;font-weight:600">← 返回分類列表</button>
+        <div id="ch-mg-subs-title" style="font-size:.78rem;font-weight:700;color:#475569;margin-bottom:10px"></div>
+        <div id="ch-mg-sub-list" style="display:flex;flex-direction:column;gap:5px;margin-bottom:12px"></div>
+        <div style="border-top:1px solid #f1f5f9;padding-top:12px">
+          <div style="font-size:.78rem;font-weight:700;color:#475569;margin-bottom:8px">新增子類型 / Thêm loại mới</div>
+          <div style="display:grid;grid-template-columns:80px 1fr 1fr;gap:6px">
+            <input id="mg-sub-code"   placeholder="代碼(e.g. Z)"  style="border:1px solid #e2e5ed;border-radius:6px;padding:7px 9px;font-size:.82rem;outline:none">
+            <input id="mg-sub-name"   placeholder="中文名稱"       style="border:1px solid #e2e5ed;border-radius:6px;padding:7px 9px;font-size:.82rem;outline:none">
+            <input id="mg-sub-namevi" placeholder="Tên tiếng Việt" style="border:1px solid #e2e5ed;border-radius:6px;padding:7px 9px;font-size:.82rem;outline:none">
+          </div>
+          <button onclick="chAddSub()" style="margin-top:8px;padding:7px 16px;border-radius:6px;border:none;background:#2563eb;color:#fff;font-size:.82rem;font-weight:600;cursor:pointer">＋ 新增子類型</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="padding:12px 20px;border-top:1px solid #f1f5f9;display:flex;gap:8px;justify-content:flex-end">
+      <button id="ch-back-btn" onclick="chCloseManage()" style="display:none;padding:7px 16px;border-radius:6px;border:1px solid #e2e5ed;background:#f3f4f6;color:#374151;font-size:.85rem;font-weight:600;cursor:pointer">← 返回</button>
+      <button onclick="closeCodeHelper()" style="padding:7px 16px;border-radius:6px;border:1px solid #e2e5ed;background:#f3f4f6;color:#374151;font-size:.85rem;font-weight:600;cursor:pointer">取消</button>
+      <button id="ch-apply-btn" onclick="applyCode()" disabled style="padding:7px 16px;border-radius:6px;border:none;background:#2563eb;color:#fff;font-size:.85rem;font-weight:600;cursor:pointer;opacity:.5">套用此料號</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 圖片燈箱 ══ -->
+<div class="lightbox hidden" id="lightbox" onclick="document.getElementById('lightbox').classList.add('hidden')">
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<!-- ══ 歷史記錄 Modal ══ -->
+<div class="modal-overlay hidden" id="hist-modal">
+  <div class="modal wide">
+    <h2 id="hist-modal-title">異動記錄<span class="vi">Lịch sử giao dịch</span></h2>
+    <ul class="tx-list" id="hist-list"></ul>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeHistModal()"><span>關閉</span><span class="vi">Đóng</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 以舊換新確認 Modal ══ -->
+<div class="modal-overlay hidden" id="confirm-modal">
+  <div class="modal" style="max-width:480px">
+    <h2 style="color:var(--warn)">⚠️ 以舊換新確認<span class="vi">Xác nhận đổi cũ lấy mới</span></h2>
+    <p style="font-size:.88rem;line-height:1.6;margin-bottom:12px;">
+      本次出庫包含以下<strong>高單價「以舊換新」品項</strong>，請確認操作者已知悉並同意<strong>攜回舊品</strong>後方可領用新品：<br>
+      <em style="color:var(--text-soft);font-size:.88em;">Lần xuất kho này có mặt hàng "đổi cũ lấy mới". Vui lòng xác nhận người nhận đã đồng ý trả lại hàng cũ.</em>
+    </p>
+    <ul id="confirm-exchange-list" style="padding-left:20px;font-size:.85rem;margin-bottom:16px;line-height:1.8;"></ul>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeConfirmModal()"><span>取消</span><span class="vi">Hủy</span></button>
+      <button class="btn btn-primary" style="background:var(--warn)" id="confirm-ok-btn">
+        <span>✅ 已確認，執行出庫</span><span class="vi">Đã xác nhận, tiến hành xuất kho</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     領用申請 Modal
+════════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="req-modal">
+  <div class="modal wide" style="max-width:660px">
+    <h2>📝 領用申請單<span class="vi">Phiếu yêu cầu lĩnh vật tư</span></h2>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <!-- 申請日期 -->
+      <div>
+        <label style="font-size:.82rem;color:var(--text-soft);display:block;margin-bottom:4px">申請日期 <span class="vi">Ngày yêu cầu</span></label>
+        <input type="date" id="req-date" class="form-input" style="width:100%">
+      </div>
+      <!-- 申請人 -->
+      <div>
+        <label style="font-size:.82rem;color:var(--text-soft);display:block;margin-bottom:4px">申請人 <span class="vi">Người yêu cầu</span></label>
+        <input type="text" id="req-person" class="form-input" placeholder="姓名 / Họ tên" style="width:100%">
+      </div>
+      <!-- 大分類部門 -->
+      <div>
+        <label style="font-size:.82rem;color:var(--text-soft);display:block;margin-bottom:4px">申請部門（大分類）<span class="vi">Phòng ban</span></label>
+        <select id="req-dept1" class="form-input" style="width:100%" onchange="onDept1Change()">
+          <option value="">-- 請選擇 / Chọn phòng ban --</option>
+        </select>
+      </div>
+      <!-- 細分類 -->
+      <div>
+        <label style="font-size:.82rem;color:var(--text-soft);display:block;margin-bottom:4px">細分類 <span class="vi">Bộ phận</span></label>
+        <select id="req-dept2" class="form-input" style="width:100%" disabled>
+          <option value="">-- 請先選大分類 --</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 品項列表 -->
+    <div style="margin-bottom:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <label style="font-size:.82rem;color:var(--text-soft)">申請品項 <span class="vi">Danh mục yêu cầu</span></label>
+        <button class="btn btn-outline" style="padding:4px 12px;font-size:.8rem" onclick="addReqRow()">＋ 新增品項</button>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:6px;overflow:hidden">
+        <table style="width:100%;border-collapse:collapse;font-size:.82rem">
+          <thead><tr style="background:#f1f5f9">
+            <th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border)">品項</th>
+            <th style="padding:7px 10px;text-align:center;border-bottom:1px solid var(--border);width:80px">數量</th>
+            <th style="padding:7px 10px;border-bottom:1px solid var(--border);width:36px"></th>
+          </tr></thead>
+          <tbody id="req-items-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 用途 -->
+    <div style="margin-bottom:16px">
+      <label style="font-size:.82rem;color:var(--text-soft);display:block;margin-bottom:4px">用途 / 備註 <span class="vi">Mục đích / Ghi chú</span></label>
+      <textarea id="req-note" class="form-input" rows="2" placeholder="請說明領用用途… / Nêu mục đích sử dụng…" style="width:100%;resize:vertical"></textarea>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeReqModal()">取消 <span class="vi">Hủy</span></button>
+      <button class="btn btn-primary" onclick="submitReq()">📨 送出申請 <span class="vi">Gửi yêu cầu</span></button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { mivRequireApp } from "./auth-guard.js?v=3";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore, collection, doc,
+  onSnapshot, setDoc, updateDoc, deleteDoc, getDoc,
+  arrayUnion, serverTimestamp, Timestamp, writeBatch
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs",
+  authDomain: "miv-1426c.firebaseapp.com",
+  projectId: "miv-1426c",
+  storageBucket: "miv-1426c.firebasestorage.app",
+  messagingSenderId: "398934341623",
+  appId: "1:398934341623:web:4af46c057d2e202855a0f2"
+};
+const fbApp = initializeApp(firebaseConfig);
+const db      = getFirestore(fbApp);
+const itemsCol = collection(db, "toolroom_items");
+
+// 進入本頁需「工具室系統 → 使用」；
+// 庫存異動（新增/編輯/刪除品項、入出庫）另需「工具室系統 → 管理」，其餘僅能查詢。
+// 權限在 admin-users.html 勾選。
+let canManage = false;
+mivRequireApp("toolroom").then(user => {
+  canManage = user.canManage("toolroom");
+  document.getElementById("btn-add-item").classList.toggle("hidden", !canManage);
+  document.getElementById("btn-tx").classList.toggle("hidden", !canManage);
+  renderTable();
+}).catch(() => {});   // 權限不足時 mivRequireApp 已顯示提示畫面
+
+let items = {};
+
+onSnapshot(itemsCol, snap => {
+  snap.docChanges().forEach(c => {
+    if (c.type === "removed") delete items[c.doc.id];
+    else items[c.doc.id] = { id: c.doc.id, ...c.doc.data() };
+  });
+  renderTable();
+  updateStats();
+  populateFilters();
+  document.getElementById("table-loading").style.display = "none";
+  document.getElementById("inv-table").style.display = "";
+  // 更新所有已開啟行的現量顯示
+  if (document.getElementById("tx-modal") && !document.getElementById("tx-modal").classList.contains("hidden")) {
+    refreshRowQty();
+  }
+});
+
+// ── 狀態計算 ────────────────────────────────
+function getStatus(it) {
+  const qty = it.qty ?? 0, min = it.minLevel ?? 0, max = it.maxLevel;
+  if (qty === 0) return "empty";
+  if (qty < min) return "low";
+  if (max && qty > max) return "high";
+  return "ok";
+}
+function statusBadge(s) {
+  const m = { empty:['badge-danger','庫存耗盡','Hết hàng'], low:['badge-warn','低水位','Tồn thấp'], ok:['badge-ok','正常','Bình thường'], high:['badge-high','超量','Tồn cao'] };
+  const [cls, zh, vi] = m[s]||m.ok;
+  return `<span class="badge ${cls}"><span>${zh}</span><span class="vi">${vi}</span></span>`;
+}
+function levelBar(it) {
+  const qty = it.qty ?? 0, max = it.maxLevel, min = it.minLevel ?? 0;
+  if (!max) return '—';
+  const pct    = Math.min(100, Math.round(qty / max * 100));
+  const minPct = Math.min(100, Math.round(min / max * 100));
+  const cls    = {empty:'fill-danger',low:'fill-warn',ok:'fill-ok',high:'fill-high'}[getStatus(it)];
+  const tip    = `現量 ${qty} / 最低 ${min} / 最高 ${max}`;
+  // 警戒線：只在 max>0 且 min>0 時顯示
+  const thresholdLine = (min > 0 && max > 0)
+    ? `<span class="level-threshold" style="left:${minPct}%" title="最低水位 ${min}"></span>`
+    : '';
+  return `<div class="level-bar" title="${tip}">
+    <div class="level-fill ${cls}" style="width:${pct}%;border-radius:4px"></div>
+    ${thresholdLine}
+  </div>`;
+}
+
+// ── 渲染表格 ────────────────────────────────
+window.renderTable = function() {
+  const q  = document.getElementById("search-input").value.toLowerCase();
+  const sf = document.getElementById("filter-status").value;
+  const rows = Object.values(items).filter(it =>
+    (!q || (it.name||'').toLowerCase().includes(q)||(it.code||'').toLowerCase().includes(q)||(it.location||'').toLowerCase().includes(q)||(it.category||'').toLowerCase().includes(q)||(it.spec||'').toLowerCase().includes(q)||(it.supplier||'').toLowerCase().includes(q)) &&
+    (!sf || getStatus(it)===sf)
+  ).sort((a,b) => (a.code||'').localeCompare(b.code||''));
+
+  const tbody = document.getElementById("inv-tbody");
+  const empty = document.getElementById("inv-empty");
+  if (!rows.length) { tbody.innerHTML=""; empty.style.display=""; return; }
+  empty.style.display = "none";
+  tbody.innerHTML = rows.map(it => `<tr>
+    <td style="width:44px;text-align:center;padding:6px 8px">
+      ${it.imageUrl
+        ? `<img class="tbl-thumb" src="${esc(it.imageUrl)}" alt="" onclick="openLightbox('${esc(it.imageUrl)}')">`
+        : `<span style="font-size:1.1rem;color:#d1d5db">📷</span>`}
+    </td>
+    <td style="font-family:monospace;font-size:.8rem">${esc(it.code||'—')}</td>
+    <td style="font-weight:600">
+      ${esc(it.name||'')}
+      ${it.exchangeRequired ? ' <span class="badge-exchange">🔄 以舊換新</span>' : ''}
+      ${it.epe ? ' <span class="badge-exchange" style="background:#dcfce7;color:#15803d;">✅ EPE</span>' : ''}
+    </td>
+    <td style="font-size:.78rem;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(it.spec||'')}">${esc(it.spec||'—')}</td>
+    <td>${esc(it.category||'—')}</td>
+    <td><code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:.78rem">${esc(it.location||'—')}</code></td>
+    <td style="font-weight:700;font-size:1rem">${it.qty??0}</td>
+    <td>${esc(it.unit||'—')}</td>
+    <td>${statusBadge(getStatus(it))}</td>
+    <td>${levelBar(it)} <span style="font-size:.7rem;color:var(--text-soft)">${it.minLevel||0}–${it.maxLevel||'∞'}</span></td>
+    <td style="font-size:.78rem;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(it.supplier||'')}">${esc(it.supplier||'—')}</td>
+    <td style="font-size:.78rem;text-align:right;white-space:nowrap">${it.unitPrice!=null?Number(it.unitPrice).toLocaleString('vi-VN')+'đ':'—'}</td>
+    <td style="color:var(--text-soft);font-size:.78rem;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(it.note||'')}">${esc(it.note||'—')}</td>
+    <td style="white-space:nowrap">
+      <button class="btn-icon" title="歷史記錄" onclick="openHistModal('${it.id}')">📋</button>
+      ${canManage ? `<button class="btn-icon" title="入/出庫" onclick="openTxModal('${it.id}','out')">⇅</button>
+      <button class="btn-icon" title="編輯" onclick="openItemModal('${it.id}')">✏️</button>
+      <button class="btn-icon" title="刪除" onclick="deleteItem('${it.id}')">🗑️</button>` : ''}
+    </td>
+  </tr>`).join('');
+};
+
+function updateStats() {
+  const all = Object.values(items);
+  const c = s => all.filter(it => getStatus(it)===s).length;
+  document.getElementById("stat-total").textContent = all.length;
+  document.getElementById("stat-low").textContent   = c("low");
+  document.getElementById("stat-empty").textContent = c("empty");
+  document.getElementById("stat-high").textContent  = c("high");
+}
+function populateFilters() {
+}
+function fillSelect(id, opts) {
+  const sel = document.getElementById(id); const cur = sel.value;
+  while (sel.options.length > 1) sel.remove(1);
+  opts.sort().forEach(o => { const el = document.createElement("option"); el.value=o; el.textContent=o; sel.appendChild(el); });
+  if (opts.includes(cur)) sel.value = cur;
+}
+
+// ══════════════════════════════════════════════
+//  新增 / 編輯品項
+// ══════════════════════════════════════════════
+let editingId = null;
+window.openItemModal = function(id) {
+  if (!canManage) { alert("權限不足，僅工具室／管理員可新增或編輯品項 / Không đủ quyền hạn"); return; }
+  editingId = id;
+  const title = document.getElementById("item-modal-title");
+  title.innerHTML = id ? '編輯品項<span class="vi">Chỉnh sửa mặt hàng</span>' : '新增品項<span class="vi">Thêm mặt hàng mới</span>';
+  const it = id ? (items[id]||{}) : {};
+  document.getElementById("f-code").value      = it.code      || "";
+  document.getElementById("f-name").value      = it.name      || "";
+  document.getElementById("f-category").value  = it.category  || "";
+  document.getElementById("f-location").value  = it.location  || "";
+  document.getElementById("f-qty").value       = it.qty       ?? "";
+  document.getElementById("f-unit").value      = it.unit      || "";
+  document.getElementById("f-min").value       = it.minLevel  ?? "";
+  document.getElementById("f-max").value       = it.maxLevel  ?? "";
+  document.getElementById("f-note").value      = it.note      || "";
+  document.getElementById("f-exchange").checked  = !!it.exchangeRequired;
+  document.getElementById("f-epe").checked       = !!it.epe;
+  document.getElementById("f-supplier").value    = it.supplier || "";
+  document.getElementById("f-spec").value        = it.spec     || "";
+  document.getElementById("f-price").value       = it.unitPrice != null ? it.unitPrice : "";
+  // 圖片
+  _pendingImgFile = null;
+  _removeExistingImg = false;
+  if (it.imageUrl) {
+    showImgPreview(it.imageUrl);
+  } else {
+    clearImgPreview();
+  }
+  document.getElementById("item-modal").classList.remove("hidden");
+};
+window.closeItemModal = () => {
+  document.getElementById("item-modal").classList.add("hidden");
+  document.getElementById("f-code-hint").textContent = "";
+  document.getElementById("f-code").style.borderColor = "";
+  _pendingImgFile = null;
+  _removeExistingImg = false;
+  clearImgPreview();
+};
+
+// 即時料號重複提示
+window.checkCodeDuplicate = function(input) {
+  const code = input.value.trim();
+  const hint = document.getElementById("f-code-hint");
+  if (!code) { hint.textContent = ""; input.style.borderColor = ""; return; }
+  const dup = Object.values(items).find(it =>
+    it.code.trim().toLowerCase() === code.toLowerCase() && it.id !== editingId
+  );
+  if (dup) {
+    hint.textContent = `⚠️ 已被「${dup.name}」使用 / Đã dùng bởi "${dup.name}"`;
+    hint.style.color = "var(--danger)";
+    input.style.borderColor = "var(--danger)";
+  } else {
+    hint.textContent = "✓ 料號可用 / Mã hàng hợp lệ";
+    hint.style.color = "var(--ok)";
+    input.style.borderColor = "var(--ok)";
+  }
+};
+window.saveItem = async function() {
+  if (!canManage) { alert("權限不足，僅工具室／管理員可新增或編輯品項 / Không đủ quyền hạn"); return; }
+  const code = document.getElementById("f-code").value.trim();
+  const name = document.getElementById("f-name").value.trim();
+  const loc  = document.getElementById("f-location").value.trim();
+  if (!code||!name||!loc) { alert("料號、品名、儲位為必填\nMã hàng, tên hàng, vị trí là bắt buộc"); return; }
+  // 料號唯一性驗證（編輯時排除自身）
+  const duplicate = Object.values(items).find(it =>
+    it.code.trim().toLowerCase() === code.toLowerCase() && it.id !== editingId
+  );
+  if (duplicate) {
+    alert(`⚠️ 料號「${code}」已被「${duplicate.name}」使用，請使用不重複的料號。\n\nMã hàng "${code}" đã được dùng bởi "${duplicate.name}". Vui lòng dùng mã khác.`);
+    document.getElementById("f-code").focus();
+    return;
+  }
+  const data = {
+    code, name,
+    category:  document.getElementById("f-category").value.trim(),
+    location:  loc,
+    qty:       Number(document.getElementById("f-qty").value)||0,
+    unit:      document.getElementById("f-unit").value.trim(),
+    minLevel:  Number(document.getElementById("f-min").value)||0,
+    maxLevel:  Number(document.getElementById("f-max").value)||0,
+    note:      document.getElementById("f-note").value.trim(),
+    supplier:        document.getElementById("f-supplier").value.trim(),
+    spec:            document.getElementById("f-spec").value.trim(),
+    exchangeRequired: document.getElementById("f-exchange").checked,
+    epe:             document.getElementById("f-epe").checked,
+    unitPrice:       document.getElementById("f-price").value !== "" ? Number(document.getElementById("f-price").value) : null,
+    updatedAt:       serverTimestamp(),
+  };
+
+  // 圖片處理（Canvas 壓縮 → Base64，直存 Firestore，不需 Storage）
+  const statusEl = document.getElementById("img-upload-status");
+  const saveBtn  = document.querySelector("#item-modal .btn-primary");
+  if (_pendingImgFile) {
+    statusEl.style.color = "var(--text-soft)";
+    statusEl.textContent = "⏳ 圖片處理中… / Đang xử lý ảnh…";
+    saveBtn.disabled = true;
+    try {
+      data.imageUrl = await compressToBase64(_pendingImgFile, 400, 0.75);
+    } finally {
+      saveBtn.disabled = false;
+      statusEl.textContent = "";
+    }
+  } else if (_removeExistingImg) {
+    data.imageUrl = "";
+  }
+  if (editingId) {
+    await updateDoc(doc(db,"toolroom_items",editingId), data);
+  } else {
+    const id = editingId || `item-${Date.now()}-${Math.random().toString(36).slice(2,6)}`;
+    data.createdAt = serverTimestamp(); data.txLog = [];
+    await setDoc(doc(db,"toolroom_items",id), data);
+  }
+  closeItemModal();
+};
+
+// ── 圖片輔助函式 ─────────────────────────────
+let _pendingImgFile = null;
+let _removeExistingImg = false;
+
+// Canvas 壓縮：長邊縮到 maxPx，輸出 JPEG base64
+function compressToBase64(file, maxPx, quality) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let w = img.width, h = img.height;
+      if (w > maxPx || h > maxPx) {
+        if (w >= h) { h = Math.round(h * maxPx / w); w = maxPx; }
+        else        { w = Math.round(w * maxPx / h); h = maxPx; }
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL("image/jpeg", quality));
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
+function showImgPreview(src) {
+  document.getElementById("img-placeholder").style.display = "none";
+  document.getElementById("img-preview-container").style.display = "";
+  document.getElementById("img-preview").src = src;
+  document.getElementById("img-upload-area").style.border = "2px solid var(--ok)";
+}
+function clearImgPreview() {
+  document.getElementById("img-placeholder").style.display = "";
+  document.getElementById("img-preview-container").style.display = "none";
+  document.getElementById("img-preview").src = "";
+  document.getElementById("img-upload-area").style.border = "";
+  const fi = document.getElementById("f-img");
+  if (fi) fi.value = "";
+}
+window.handleImgSelect = function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) {
+    alert("圖片不可超過 5MB / Ảnh không quá 5MB"); return;
+  }
+  _pendingImgFile = file;
+  _removeExistingImg = false;
+  showImgPreview(URL.createObjectURL(file));
+};
+window.handleImgDrop = function(e) {
+  e.preventDefault();
+  document.getElementById("img-upload-area").classList.remove("drag-over");
+  const file = e.dataTransfer.files[0];
+  if (!file || !file.type.startsWith("image/")) return;
+  if (file.size > 5 * 1024 * 1024) {
+    alert("圖片不可超過 5MB / Ảnh không quá 5MB"); return;
+  }
+  _pendingImgFile = file;
+  _removeExistingImg = false;
+  showImgPreview(URL.createObjectURL(file));
+};
+window.removeImg = function(e) {
+  e.stopPropagation();
+  _pendingImgFile = null;
+  _removeExistingImg = true;
+  clearImgPreview();
+};
+window.openLightbox = function(url) {
+  document.getElementById("lightbox-img").src = url;
+  document.getElementById("lightbox").classList.remove("hidden");
+};
+
+window.deleteItem = async function(id) {
+  if (!canManage) { alert("權限不足，僅工具室／管理員可刪除品項 / Không đủ quyền hạn"); return; }
+  const it = items[id]; if (!it) return;
+  if (!confirm(`確認刪除「${it.name}」？此操作不可復原。\nXác nhận xóa "${it.name}"?`)) return;
+  await deleteDoc(doc(db,"toolroom_items",id));
+};
+
+// ══════════════════════════════════════════════
+//  多品項 入/出庫 Modal
+// ══════════════════════════════════════════════
+let txType = "in";
+let rowCounter = 0;
+
+window.openTxModal = function(presetId, presetType) {
+  if (!canManage) { alert("權限不足，僅工具室／管理員可執行入/出庫 / Không đủ quyền hạn"); return; }
+  txType = presetType || "out";
+
+  // 重置欄位
+  document.getElementById("item-rows").innerHTML = "";
+  rowCounter = 0;
+  document.getElementById("tx-in-reason").value  = "";
+  document.getElementById("tx-out-reason").value = "";
+  document.getElementById("tx-recipient").value  = "";
+  document.getElementById("tx-operator").value   = "";
+  document.getElementById("tx-note").value       = "";
+  document.getElementById("tx-item-search").value = "";
+
+  // 填充分類快篩選單
+  const cats = [...new Set(Object.values(items).map(it=>it.category).filter(Boolean))].sort();
+  const catSel = document.getElementById("tx-cat-filter");
+  catSel.innerHTML = '<option value="">所有分類 / Tất cả</option>' +
+    cats.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+
+  setTxType(txType);
+  updateExchangeSummary();
+  addItemRow(presetId);
+  document.getElementById("tx-modal").classList.remove("hidden");
+};
+window.closeTxModal = () => document.getElementById("tx-modal").classList.add("hidden");
+
+window.setTxType = function(t) {
+  txType = t;
+  document.getElementById("tx-in-btn").className  = "tx-type-btn" + (t==="in"  ? " active-in"  : "");
+  document.getElementById("tx-out-btn").className = "tx-type-btn" + (t==="out" ? " active-out" : "");
+
+  // 切換顯示欄位
+  document.getElementById("tx-field-in-reason").style.display  = t==="in"  ? "" : "none";
+  document.getElementById("tx-field-out-reason").style.display = t==="out" ? "" : "none";
+  document.getElementById("tx-field-recipient").style.display  = t==="out" ? "" : "none";
+  // 經手人：入庫佔整行，出庫與領用人並排
+  const opWrap = document.getElementById("tx-field-operator");
+  opWrap.style.gridColumn = t==="in" ? "1/-1" : "";
+
+  updateExchangeSummary();
+};
+
+// 取得目前篩選後的品項清單
+function getFilteredItems() {
+  const q   = (document.getElementById("tx-item-search")?.value || "").toLowerCase();
+  const cat = document.getElementById("tx-cat-filter")?.value || "";
+  return Object.values(items)
+    .filter(it =>
+      (!cat || (it.category||'') === cat) &&
+      (!q   || (it.code||'').toLowerCase().includes(q) ||
+               (it.name||'').toLowerCase().includes(q) ||
+               (it.spec||'').toLowerCase().includes(q))
+    )
+    .sort((a,b) => (a.code||'').localeCompare(b.code||''));
+}
+
+// 建構品項選單 options HTML（依篩選結果）
+function buildItemOptions(selectedId) {
+  const opts = getFilteredItems();
+  return '<option value="">— 選擇品項 / Chọn —</option>' +
+    opts.map(it => {
+      const label = `${esc(it.code)} ${esc(it.name)}${it.spec ? ' ['+esc(it.spec)+']' : ''}`;
+      return `<option value="${it.id}" ${it.id===selectedId?'selected':''}>${label}</option>`;
+    }).join('');
+}
+
+// 搜尋/分類篩選變更時，重建所有行的下拉選單
+window.rebuildItemSelects = function() {
+  document.querySelectorAll(".item-row select").forEach(sel => {
+    const cur = sel.value;
+    sel.innerHTML = buildItemOptions(cur);
+    if (cur) sel.value = cur;
+  });
+};
+
+window.addItemRow = function(presetId) {
+  const rid = `row-${++rowCounter}`;
+  const container = document.getElementById("item-rows");
+  const div = document.createElement("div");
+  div.className = "item-row";
+  div.id = rid;
+  div.innerHTML = `
+    <select onchange="onRowItemChange('${rid}')">${buildItemOptions(presetId||'')}</select>
+    <input type="number" min="1" step="1" inputmode="numeric" placeholder="數量"
+           style="text-align:center" oninput="updateExchangeSummary()">
+    <span class="row-qty-display" style="font-size:.8rem;color:var(--text-soft);text-align:center">—</span>
+    <button class="remove-row" onclick="removeRow('${rid}')" title="移除 / Xóa">✕</button>
+  `;
+  container.appendChild(div);
+  if (presetId) onRowItemChange(rid);
+};
+
+window.removeRow = function(rid) {
+  const el = document.getElementById(rid);
+  if (el) el.remove();
+  updateExchangeSummary();
+};
+
+window.onRowItemChange = function(rid) {
+  const row = document.getElementById(rid);
+  if (!row) return;
+  const sel = row.querySelector("select");
+  const it = items[sel.value];
+  const qtySpan = row.querySelector(".row-qty-display");
+  if (it) {
+    qtySpan.textContent = `${it.qty??0} ${it.unit||''}`;
+    // exchange 標記
+    if (it.exchangeRequired) {
+      row.classList.add("exchange-flag");
+    } else {
+      row.classList.remove("exchange-flag");
+    }
+  } else {
+    qtySpan.textContent = "—";
+    row.classList.remove("exchange-flag");
+  }
+  updateExchangeSummary();
+};
+
+// 刷新現量（庫存更新後）
+function refreshRowQty() {
+  document.querySelectorAll(".item-row").forEach(row => {
+    const sel = row.querySelector("select");
+    const it = items[sel.value];
+    const span = row.querySelector(".row-qty-display");
+    if (it && span) span.textContent = `${it.qty??0} ${it.unit||''}`;
+  });
+}
+
+// 以舊換新提示彙整
+function updateExchangeSummary() {
+  if (txType !== "out") {
+    document.getElementById("exchange-summary").style.display = "none";
+    return;
+  }
+  const exchangeItems = [];
+  document.querySelectorAll(".item-row").forEach(row => {
+    const sel = row.querySelector("select");
+    const it = items[sel.value];
+    if (it && it.exchangeRequired) exchangeItems.push(it);
+  });
+  const summary = document.getElementById("exchange-summary");
+  const list = document.getElementById("exchange-list");
+  if (exchangeItems.length) {
+    list.innerHTML = exchangeItems.map(it => `<li><strong>${esc(it.code)}</strong> ${esc(it.name)}</li>`).join('');
+    summary.style.display = "flex";
+  } else {
+    summary.style.display = "none";
+  }
+}
+
+// ── 送出（含以舊換新二次確認）────────────────
+window.saveTx = async function() {
+  const rows = [...document.querySelectorAll(".item-row")];
+  const entries = [];
+  for (const row of rows) {
+    const sel = row.querySelector("select");
+    const qtyInput = row.querySelector("input[type=number]");
+    const id = sel.value;
+    const qty = Number(qtyInput.value);
+    if (!id) continue;  // 跳過未選的列
+    if (!qty || qty <= 0) { alert("請確認每個品項都填寫了有效數量\nVui lòng nhập số lượng hợp lệ cho từng mặt hàng"); return; }
+    entries.push({ id, qty });
+  }
+  if (!entries.length) { alert("請至少選擇一個品項\nVui lòng chọn ít nhất một mặt hàng"); return; }
+
+  // 出庫：先檢查庫存是否足夠
+  if (txType === "out") {
+    for (const e of entries) {
+      const it = items[e.id];
+      if (!it) { alert("品項資料錯誤，請重試"); return; }
+      if ((it.qty??0) < e.qty) {
+        alert(`「${it.name}」現量不足（現量：${it.qty??0}，出庫：${e.qty}）\n"${it.name}" Tồn kho không đủ (Tồn: ${it.qty??0}, Xuất: ${e.qty})`);
+        return;
+      }
+    }
+    // 以舊換新確認
+    const exchangeEntries = entries.filter(e => items[e.id]?.exchangeRequired);
+    if (exchangeEntries.length) {
+      openConfirmModal(exchangeEntries, () => doCommitTx(entries));
+      return;
+    }
+  }
+  await doCommitTx(entries);
+};
+
+async function doCommitTx(entries) {
+  const reason   = txType === "in"
+    ? document.getElementById("tx-in-reason").value.trim()
+    : document.getElementById("tx-out-reason").value.trim();
+  const recipient = txType === "out" ? document.getElementById("tx-recipient").value.trim() : "";
+  const operator = document.getElementById("tx-operator").value.trim();
+  const note     = document.getElementById("tx-note").value.trim();
+  const btn = document.getElementById("tx-confirm-btn");
+  btn.disabled = true;
+  btn.querySelector("span").textContent = "處理中… / Đang xử lý…";
+
+  try {
+    const batch = writeBatch(db);
+    const now = Timestamp.now();
+    for (const e of entries) {
+      const it = items[e.id];
+      const delta = txType === "in" ? e.qty : -e.qty;
+      const newQty = (it.qty??0) + delta;
+      const txEntry = { type: txType, qty: e.qty, reason,
+        ...(recipient ? { recipient } : {}),
+        operator, note,
+        exchangeRequired: !!it.exchangeRequired, at: now };
+      batch.update(doc(db,"toolroom_items",e.id), {
+        qty: newQty,
+        txLog: arrayUnion(txEntry),
+        updatedAt: serverTimestamp(),
+      });
+    }
+    await batch.commit();
+    closeTxModal();
+    closeConfirmModal();
+  } catch(err) {
+    alert("儲存失敗，請重試：" + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.querySelector("span").textContent = "確認送出";
+  }
+}
+
+// ── 以舊換新確認 Modal ───────────────────────
+let _confirmCallback = null;
+function openConfirmModal(exchangeEntries, cb) {
+  _confirmCallback = cb;
+  const list = document.getElementById("confirm-exchange-list");
+  list.innerHTML = exchangeEntries.map(e => {
+    const it = items[e.id];
+    return `<li>🔄 <strong>${esc(it.code)}</strong> ${esc(it.name)} × ${e.qty} ${esc(it.unit||'')}
+      <br><em style="font-size:.85em;color:var(--text-soft);">— 需繳回 ${e.qty} 件舊品 / Phải trả ${e.qty} cái cũ</em></li>`;
+  }).join('');
+  document.getElementById("confirm-ok-btn").onclick = () => { if(_confirmCallback) _confirmCallback(); };
+  document.getElementById("confirm-modal").classList.remove("hidden");
+}
+window.closeConfirmModal = () => document.getElementById("confirm-modal").classList.add("hidden");
+
+// ── 歷史記錄 Modal ───────────────────────────
+window.openHistModal = function(id) {
+  const it = items[id]; if (!it) return;
+  document.getElementById("hist-modal-title").innerHTML =
+    `${esc(it.code)} ${esc(it.name)} — 異動記錄<span class="vi">Lịch sử giao dịch</span>`;
+  const log = (it.txLog||[]).slice().reverse();
+  const list = document.getElementById("hist-list");
+  list.innerHTML = !log.length
+    ? '<li style="padding:20px;text-align:center;color:var(--text-soft)">尚無記錄 / Chưa có lịch sử</li>'
+    : log.map(tx => {
+        const sign = tx.type==="in" ? "+" : "−";
+        const dt = tx.at ? new Date(tx.at.seconds*1000).toLocaleString("zh-TW") : "—";
+        const exTag = tx.exchangeRequired ? ' <span class="badge-exchange" style="font-size:.7rem">🔄</span>' : '';
+        return `<li class="tx-item">
+          <span class="tx-dot ${tx.type}"></span>
+          <span class="tx-qty ${tx.type}">${sign}${tx.qty}</span>
+          <span class="tx-meta">
+            ${esc(tx.operator||'—')}${exTag}
+            ${tx.recipient ? ` ／ 領用：${esc(tx.recipient)}` : ''}
+            ${tx.reason ? `・<em>${esc(tx.reason)}</em>` : ''}
+            ${tx.note ? `・${esc(tx.note)}` : ''}
+            <span style="float:right;color:#9ca3af;font-size:.78em">${dt}</span>
+          </span>
+        </li>`;
+      }).join('');
+  document.getElementById("hist-modal").classList.remove("hidden");
+};
+window.closeHistModal = () => document.getElementById("hist-modal").classList.add("hidden");
+
+// ── 匯出 CSV ────────────────────────────────
+window.exportCsv = function() {
+  const headers = ["料號/Mã hàng","品名/Tên hàng","分類","規格/Quy cách","儲位","現量","單位","單價(VND)","最低水位","最高水位","水位狀態","供應商/Nhà CC","以舊換新","EPE免稅品","備註"];
+  const sLabel = { empty:"庫存耗盡", low:"低水位", ok:"正常", high:"超量" };
+  // 依照目前搜尋／狀態篩選，與畫面顯示一致
+  const q  = document.getElementById("search-input").value.toLowerCase();
+  const sf = document.getElementById("filter-status").value;
+  const filtered = Object.values(items).filter(it =>
+    (!q || (it.name||'').toLowerCase().includes(q)||(it.code||'').toLowerCase().includes(q)||(it.location||'').toLowerCase().includes(q)||(it.category||'').toLowerCase().includes(q)||(it.spec||'').toLowerCase().includes(q)||(it.supplier||'').toLowerCase().includes(q)) &&
+    (!sf || getStatus(it)===sf)
+  ).sort((a,b) => (a.code||'').localeCompare(b.code||''));
+  const rows = filtered.map(it =>
+    [it.code,it.name,it.category,it.spec,it.location,it.qty??0,it.unit,it.unitPrice??'',it.minLevel??0,it.maxLevel??0,
+     sLabel[getStatus(it)],it.supplier,it.exchangeRequired?"是":"否",it.epe?"是":"否",it.note]
+    .map(v=>`"${String(v||'').replace(/"/g,'""')}"`));
+  const csv = "﻿" + [headers,...rows].map(r=>r.join(",")).join("\r\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
+  a.download = `工具室庫存_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+};
+
+// ══════════════════════════════════════════════
+// 領用申請
+// ══════════════════════════════════════════════
+const reqCol = collection(db, "toolroom_requisitions");
+
+const DEPT_TREE = [
+  {code:'A100',name:'董事長室',subs:[]},
+  {code:'A200',name:'總經理室',subs:[]},
+  {code:'B000',name:'總管理處',subs:[]},
+  {code:'G100',name:'營業部',subs:[
+    {code:'G110',name:'營業課'},{code:'G120',name:'業管課'}]},
+  {code:'B100',name:'財務部',subs:[
+    {code:'B110',name:'財務課'}]},
+  {code:'B200',name:'資訊管理課',subs:[]},
+  {code:'B300',name:'管理部',subs:[
+    {code:'B310',name:'人資課'},{code:'B320',name:'總務課'}]},
+  {code:'R000',name:'技術處',subs:[
+    {code:'R100',name:'開發部'},
+    {code:'R110',name:'生技課'},{code:'R120',name:'技術課'},{code:'R130',name:'開發課'}]},
+  {code:'S100',name:'品保部',subs:[
+    {code:'S110',name:'品保課'},{code:'S120',name:'檢驗課'}]},
+  {code:'M100',name:'資材部',subs:[
+    {code:'M110',name:'採購課'},{code:'M120',name:'成本課'},{code:'M130',name:'物料課'}]},
+  {code:'P000',name:'製造本部',subs:[
+    {code:'P010',name:'生管部'},
+    {code:'P100',name:'製造一部'},
+    {code:'P110',name:'沖床課'},{code:'P120',name:'焊接課'},{code:'P130',name:'噴漆課'},
+    {code:'P200',name:'製造二部'},
+    {code:'P210',name:'生產一課'},
+    {code:'P210A',name:'生產一課 A組'},{code:'P210B',name:'生產一課 B組'},
+    {code:'P210C',name:'生產一課 C組'},{code:'P210D',name:'生產一課 D組'},
+    {code:'P210E',name:'生產一課 E組'},{code:'P210F',name:'生產一課 F組'},
+    {code:'P210G',name:'生產一課 G組'},
+    {code:'P220',name:'生產二課'},
+    {code:'P220A',name:'生產二課 A組'},{code:'P220B',name:'生產二課 B組'},
+    {code:'P220C',name:'生產二課 C組'},{code:'P220D',name:'生產二課 D組'},
+    {code:'P220E',name:'生產二課 E組'},{code:'P220F',name:'生產二課 F組'},
+    {code:'P220G',name:'生產二課 G組'},
+    {code:'P300',name:'製造三部'},
+    {code:'P310',name:'加工課'}]},
+];
+
+// 初始化大分類下拉
+(function initDept1(){
+  const sel = document.getElementById('req-dept1');
+  DEPT_TREE.forEach(d => {
+    const o = document.createElement('option');
+    o.value = d.code; o.textContent = `${d.code} ${d.name}`;
+    sel.appendChild(o);
+  });
+})();
+
+window.onDept1Change = function() {
+  const code = document.getElementById('req-dept1').value;
+  const sel2 = document.getElementById('req-dept2');
+  sel2.innerHTML = '';
+  const dept = DEPT_TREE.find(d => d.code === code);
+  if (!dept || dept.subs.length === 0) {
+    sel2.innerHTML = '<option value="">（無細分類）</option>';
+    sel2.disabled = true;
+    return;
+  }
+  sel2.disabled = false;
+  const blank = document.createElement('option');
+  blank.value = ''; blank.textContent = '-- 請選擇細分類 --';
+  sel2.appendChild(blank);
+  dept.subs.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s.code; o.textContent = `${s.code} ${s.name}`;
+    sel2.appendChild(o);
+  });
+};
+
+window.openReqModal = function(presetId) {
+  // 重置表單
+  document.getElementById('req-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('req-person').value = '';
+  document.getElementById('req-dept1').value = '';
+  document.getElementById('req-dept2').innerHTML = '<option value="">（請先選大分類）</option>';
+  document.getElementById('req-dept2').disabled = true;
+  document.getElementById('req-note').value = '';
+  document.getElementById('req-items-body').innerHTML = '';
+  // 預填品項
+  if (presetId && items[presetId]) {
+    addReqRow(presetId);
+  } else {
+    addReqRow();
+  }
+  document.getElementById('req-modal').classList.remove('hidden');
+};
+window.closeReqModal = () => document.getElementById('req-modal').classList.add('hidden');
+
+window.addReqRow = function(presetId) {
+  const tbody = document.getElementById('req-items-body');
+  const idx = tbody.children.length;
+  const tr = document.createElement('tr');
+  tr.style.borderBottom = '1px solid var(--border)';
+  // 品項 select
+  const itemOpts = Object.values(items).sort((a,b)=>(a.code||'').localeCompare(b.code||''))
+    .map(it => `<option value="${esc(it.id)}" ${it.id===presetId?'selected':''}>${esc(it.code)} ${esc(it.name)}${it.spec?' ['+esc(it.spec)+']':''}</option>`).join('');
+  tr.innerHTML = `
+    <td style="padding:6px 8px">
+      <select class="form-input req-item-sel" style="width:100%;font-size:.82rem">
+        <option value="">-- 選擇品項 --</option>${itemOpts}
+      </select>
+    </td>
+    <td style="padding:6px 8px;text-align:center">
+      <input type="number" class="form-input req-item-qty" min="1" value="1" style="width:70px;text-align:center;font-size:.82rem">
+    </td>
+    <td style="padding:6px 8px;text-align:center">
+      <button class="btn-icon" style="color:var(--danger)" onclick="this.closest('tr').remove()">✕</button>
+    </td>`;
+  tbody.appendChild(tr);
+};
+
+window.submitReq = async function() {
+  const date    = document.getElementById('req-date').value;
+  const person  = document.getElementById('req-person').value.trim();
+  const dept1v  = document.getElementById('req-dept1').value;
+  const dept2v  = document.getElementById('req-dept2').value;
+
+  if (!date || !person || !dept1v) {
+    alert('請填寫申請日期、申請人及部門大分類\nVui lòng điền ngày, người yêu cầu và phòng ban'); return;
+  }
+
+  const rows = [...document.querySelectorAll('#req-items-body tr')];
+  const reqItems = rows.map(tr => {
+    const sel = tr.querySelector('.req-item-sel');
+    const qty = parseInt(tr.querySelector('.req-item-qty').value) || 0;
+    const it = sel.value ? items[sel.value] : null;
+    return it ? { itemId: it.id, code: it.code, name: it.name, spec: it.spec||'', unit: it.unit||'', qty } : null;
+  }).filter(Boolean);
+
+  if (reqItems.length === 0 || reqItems.some(r => r.qty < 1)) {
+    alert('請至少選擇一項品項並填入數量\nVui lòng chọn ít nhất một mặt hàng'); return;
+  }
+
+  const dept1 = DEPT_TREE.find(d => d.code === dept1v);
+  const dept2 = dept1?.subs.find(s => s.code === dept2v);
+  const deptLabel = dept2 ? `${dept1v} ${dept1?.name} ／ ${dept2v} ${dept2.name}` : `${dept1v} ${dept1?.name}`;
+
+  const reqNo = `REQ-${Date.now().toString(36).toUpperCase()}`;
+  await setDoc(doc(reqCol), {
+    reqNo, date, person, dept: deptLabel,
+    dept1: `${dept1v} ${dept1?.name}`,
+    dept2: dept2 ? `${dept2v} ${dept2.name}` : '',
+    items: reqItems,
+    note: document.getElementById('req-note').value.trim(),
+    status: '待審核',
+    createdAt: Timestamp.now()
+  });
+
+  alert(`✅ 領用申請已送出！\n申請單號：${reqNo}\n\nĐã gửi phiếu yêu cầu!\nSố phiếu: ${reqNo}`);
+  closeReqModal();
+};
+
+// ── 領用通知角標 ─────────────────────────────
+const reqColNotify = collection(db, "toolroom_requisitions");
+onSnapshot(reqColNotify, snap => {
+  const pending = snap.docs.filter(d => d.data().status === '待處理').length;
+  const badge = document.getElementById('req-notify-badge');
+  if (pending > 0) { badge.textContent = pending; badge.style.display = 'inline'; }
+  else badge.style.display = 'none';
+});
+
+// ── 工具 ────────────────────────────────────
+function esc(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+// 只有「不含資料輸入」的 modal 才允許點背景關閉，避免意外遺失填寫內容
+["hist-modal","confirm-modal"].forEach(id => {
+  document.getElementById(id).addEventListener("click", e => {
+    if (e.target === e.currentTarget) e.currentTarget.classList.add("hidden");
+  });
+});
+
+// ══ 料號產生器 ════════════════════════════════
+// ── 料號產生器：內建分類（含中越文） ──
+const CODE_SCHEME_BUILTIN = {
+  '4E':{ label:'E 消耗刀具類', labelVi:'Dao cụ tiêu hao', prefix:'4E', subs:[
+    {code:'A',name:'鑽床用粗加工刀頭',nameVi:'Đầu dao thô (máy khoan)'},
+    {code:'B',name:'木工用粗加工刀頭',nameVi:'Đầu dao thô (gỗ)'},
+    {code:'C',name:'圖面齒管鉸刀',nameVi:'Dao doa răng'},
+    {code:'D',name:'橫軸孔粗加工刀頭',nameVi:'Đầu dao thô lỗ ngang'},
+    {code:'E',name:'倒角刀類',nameVi:'Dao vát mép'},
+    {code:'F',name:'鑽孔鉸刀',nameVi:'Dao doa khoan'},
+    {code:'G',name:'絞孔刀',nameVi:'Dao doa lỗ'},
+    {code:'H',name:'T型槽刀',nameVi:'Dao rãnh chữ T'},
+    {code:'I',name:'鋸刃類',nameVi:'Lưỡi cưa/lưỡi cắt'},
+    {code:'L',name:'鑄鐵用車刀',nameVi:'Dao tiện gang'},
+    {code:'M',name:'鋼鐵用車刀',nameVi:'Dao tiện thép'},
+    {code:'P',name:'銑刀片',nameVi:'Mảnh dao phay'},
+    {code:'S',name:'公制鑽頭',nameVi:'Mũi khoan hệ mét'},
+    {code:'T',name:'英制鑽頭',nameVi:'Mũi khoan inch'},
+    {code:'U',name:'公制螺絲攻',nameVi:'Tarô hệ mét'},
+    {code:'V',name:'英制螺絲攻',nameVi:'Tarô inch'},
+    {code:'W',name:'修邊/研磨類',nameVi:'Dao sửa cạnh/đầu mài'},
+    {code:'X',name:'特殊銑刀類',nameVi:'Dao phay đặc biệt'},
+    {code:'Y',name:'公制調整板手',nameVi:'Cờ lê điều chỉnh hệ mét'},
+  ], hint:'格式：4E[種類][機種]-[流水號]　例：4EAA-01' },
+  '4H':{ label:'H 刀具夾持配件類', labelVi:'Phụ kiện kẹp dao', prefix:'4H', subs:[
+    {code:'A',name:'鑽夾頭類',nameVi:'Đầu kẹp mũi khoan'},
+    {code:'B',name:'刀柄/刀桿類',nameVi:'Cán dao/Chuôi dao'},
+    {code:'C',name:'筒夾類',nameVi:'Collet kẹp'},
+    {code:'D',name:'刀座類',nameVi:'Đế kẹp dao/giá đỡ'},
+  ], hint:'格式：4H[種類][機種]-[流水號]　例：4HAA-01' },
+  '4K':{ label:'K 消耗工具類', labelVi:'Dụng cụ tiêu hao', prefix:'4K', subs:[
+    {code:'A',name:'套筒類',nameVi:'Đầu khẩu'},
+    {code:'B',name:'起子類',nameVi:'Tua vít'},
+    {code:'C',name:'錘類',nameVi:'Búa'},
+    {code:'D',name:'攻牙板手類',nameVi:'Cờ lê tarô'},
+  ], hint:'格式：4K[種類][細項]-[流水號]　例：4KAG003-01' },
+  '4L':{ label:'L 電動工具類', labelVi:'Dụng cụ điện', prefix:'4L', subs:[
+    {code:'A',name:'電鑽類',nameVi:'Máy khoan điện'},
+    {code:'B',name:'電動平面砂輪',nameVi:'Máy mài phẳng điện'},
+    {code:'C',name:'電動內孔砂輪',nameVi:'Máy mài lỗ trong điện'},
+    {code:'D',name:'電動起子',nameVi:'Máy vặn vít điện'},
+    {code:'F',name:'電動平面砂布',nameVi:'Máy chà nhám phẳng điện'},
+    {code:'G',name:'電動剪斷機',nameVi:'Máy cắt điện'},
+    {code:'I',name:'電刻筆',nameVi:'Bút khắc điện'},
+    {code:'J',name:'特殊電動工具（熱工具等）',nameVi:'Dụng cụ điện đặc biệt (súng nhiệt...)'},
+    {code:'P',name:'電動攻牙機',nameVi:'Máy tarô điện cầm tay'},
+  ], hint:'格式：4L[種類][細項]-[流水號]　例：4LDD-07' },
+  '4M':{ label:'M 氣動工具類', labelVi:'Dụng cụ khí nén', prefix:'4M', subs:[
+    {code:'A',name:'氣動起子',nameVi:'Máy vặn vít khí nén'},
+    {code:'B',name:'氣動板手',nameVi:'Cờ lê khí nén'},
+    {code:'C',name:'氣動套筒板手',nameVi:'Khẩu khí nén'},
+    {code:'D',name:'氣動內孔砂輪機',nameVi:'Máy mài lỗ khí nén'},
+    {code:'F',name:'氣動鑽頭機',nameVi:'Máy khoan khí nén'},
+    {code:'G',name:'氣動銼刀',nameVi:'Dũa khí nén'},
+    {code:'I',name:'氣動噴槍',nameVi:'Súng phun khí'},
+    {code:'J',name:'氣動風槍',nameVi:'Súng thổi khí'},
+    {code:'K',name:'氣動打釘機',nameVi:'Máy đóng đinh khí nén'},
+    {code:'L',name:'氣動拉釘機',nameVi:'Máy tán đinh khí nén'},
+    {code:'M',name:'氣動扭力起子',nameVi:'Máy vặn vít mô-men khí nén'},
+    {code:'N',name:'氣動平面砂輪',nameVi:'Máy mài phẳng khí nén'},
+    {code:'H',name:'氣動砂磨類（砂光機/刻磨機）',nameVi:'Máy chà nhám/mài khuôn khí nén'},
+    {code:'O',name:'氣動油壓拉帽槍',nameVi:'Súng kéo đai ốc thủy lực khí'},
+    {code:'P',name:'氣動攻牙機',nameVi:'Máy tarô khí nén'},
+    {code:'Z',name:'氣動端子機',nameVi:'Máy bấm cos khí nén'},
+  ], hint:'格式：4M[種類][細項]-[流水號]　例：4MHB-02' },
+  '4N':{ label:'N 手工具類', labelVi:'Dụng cụ cầm tay', prefix:'4N', subs:[
+    {code:'A',name:'活動板手',nameVi:'Cờ lê điều chỉnh'},
+    {code:'B',name:'開口板手(公制)',nameVi:'Cờ lê miệng hở (mét)'},
+    {code:'C',name:'開口板手(英制)',nameVi:'Cờ lê miệng hở (inch)'},
+    {code:'D',name:'梅花板手(公制)',nameVi:'Cờ lê vòng (mét)'},
+    {code:'E',name:'梅花板手(英制)',nameVi:'Cờ lê vòng (inch)'},
+    {code:'F',name:'梅開板手',nameVi:'Cờ lê kết hợp'},
+    {code:'H',name:'套筒板手',nameVi:'Cờ lê đầu khẩu'},
+    {code:'I',name:'一般鉗類',nameVi:'Kìm thông dụng'},
+    {code:'J',name:'管系用鉗',nameVi:'Kìm ống'},
+    {code:'K',name:'拔輪器',nameVi:'Cảo vòng bi'},
+    {code:'L',name:'量尺',nameVi:'Thước đo'},
+    {code:'M',name:'雜項類',nameVi:'Linh tinh'},
+    {code:'Y',name:'六角板手類',nameVi:'Lục giác/Cờ lê lục giác'},
+  ], hint:'格式：4N[種類][細項]-[流水號]　例：4NBA-08-1' },
+  '4V':{ label:'V 電氣安裝修護耗材', labelVi:'Vật tư điện/điện tử', prefix:'4V', subs:[
+    {code:'02',name:'電線',nameVi:'Dây điện'},
+    {code:'03',name:'動力元件',nameVi:'Linh kiện động lực'},
+    {code:'07',name:'水電材料',nameVi:'Vật tư điện nước'},
+    {code:'09',name:'雜項',nameVi:'Linh tinh'},
+  ], hint:'格式：4V[功能碼][零件碼][規格]　例：4V09010004' },
+  '5': { label:'5 一般消耗品類', labelVi:'Vật tư tiêu dùng chung', prefix:'5', subs:[
+    {code:'0',name:'砂輪/鋸片/銼刀/套筒/六角板手',nameVi:'Đá mài/lưỡi cưa/dũa/đầu khẩu/lục giác'},
+    {code:'1',name:'止洩帶/手套/油刷',nameVi:'Băng keo ống/găng tay/chổi quét dầu'},
+    {code:'2',name:'羊毛刷/鐵鎚柄/油壺',nameVi:'Chổi len/cán búa/bình dầu'},
+    {code:'3',name:'口罩/刀片螺絲',nameVi:'Khẩu trang/vít lưỡi dao'},
+    {code:'4',name:'迫緊膏/破布/碳刷',nameVi:'Keo làm kín/giẻ lau/chổi than'},
+    {code:'5',name:'(電/氣動)頭類',nameVi:'Đầu (điện/khí nén)'},
+    {code:'6',name:'快速接頭/防銹油',nameVi:'Khớp nối nhanh/dầu chống rỉ'},
+    {code:'7',name:'噴式牛油/牙套',nameVi:'Mỡ bơm/ống ren'},
+    {code:'8',name:'砂布/風管/捲尺',nameVi:'Giấy nhám/ống hơi/thước cuộn'},
+    {code:'9',name:'塑膠牙刷/修邊刀',nameVi:'Bàn chải nhựa/dao bào'},
+    {code:'D',name:'切斷/研磨耗材',nameVi:'Đá cắt/mài (vật tư tiêu hao)'},
+  ], hint:'格式：5[公英制碼][機種碼]-[規格]-[流水號]　例：551-2-1' },
+  'P': { label:'P 電池類', labelVi:'Pin/Ắc quy', prefix:'P', subs:[
+    {code:'BA',name:'電池/鋰電池',nameVi:'Pin/Pin lithium'},
+  ], hint:'格式：P[BA][規格]-[流水號]　例：PBA001-01' },
+  'W': { label:'W 照明耗材類', labelVi:'Vật tư chiếu sáng', prefix:'W', subs:[
+    {code:'LA',name:'燈管/燈泡',nameVi:'Bóng đèn/ống đèn'},
+    {code:'LB',name:'手電筒/攜帶照明',nameVi:'Đèn pin/chiếu sáng di động'},
+  ], hint:'格式：W[LA][規格]-[流水號]　例：WLA005-01' },
+  '6': { label:'6 原材料/備料類', labelVi:'Nguyên liệu/Vật liệu', prefix:'6', subs:[
+    {code:'M',name:'金屬棒材類',nameVi:'Vật liệu kim loại dạng thanh'},
+  ], hint:'格式：6[種類][機種]-[流水號]　例：6MA-01' },
+};
+
+// localStorage key for custom additions
+const CH_CUSTOM_KEY = 'toolroom_code_custom';
+
+function chLoadCustom() {
+  try { return JSON.parse(localStorage.getItem(CH_CUSTOM_KEY)||'{"cats":{},"extraSubs":{}}'); }
+  catch(e) { return {cats:{}, extraSubs:{}}; }
+}
+function chSaveCustom(data) {
+  localStorage.setItem(CH_CUSTOM_KEY, JSON.stringify(data));
+}
+
+// Merge builtin + custom into one scheme object
+function chGetScheme() {
+  const custom = chLoadCustom();
+  const scheme = {};
+  // Built-in first
+  for (const [k,v] of Object.entries(CODE_SCHEME_BUILTIN)) {
+    const extraSubs = custom.extraSubs[k] || [];
+    scheme[k] = { ...v, subs: [...v.subs, ...extraSubs], _builtin: true };
+  }
+  // Custom categories
+  for (const [k,v] of Object.entries(custom.cats||{})) {
+    scheme[k] = { ...v, _builtin: false };
+  }
+  return scheme;
+}
+
+// ── 選料號面板 ──
+let _chCat = null, _chSub = null;
+
+window.openCodeHelper = function() {
+  _chCat = null; _chSub = null;
+  document.getElementById('ch-sub-area').style.display = 'none';
+  document.getElementById('ch-serial-area').style.display = 'none';
+  document.getElementById('ch-preview-area').style.display = 'none';
+  document.getElementById('ch-serial').value = '';
+  document.getElementById('ch-apply-btn').disabled = true;
+  document.getElementById('ch-apply-btn').style.opacity = '.5';
+  chCloseManage();
+  chRenderCatBtns();
+  document.getElementById('code-helper-overlay').style.display = 'flex';
+};
+
+window.closeCodeHelper = function() {
+  document.getElementById('code-helper-overlay').style.display = 'none';
+};
+
+function chRenderCatBtns() {
+  const scheme = chGetScheme();
+  document.getElementById('ch-cat-btns').innerHTML = Object.entries(scheme).map(([k,v]) =>
+    `<button onclick="chSelectCat('${k}')" data-key="${k}"
+      style="padding:8px 10px;border-radius:8px;border:1px solid #e2e5ed;background:#fff;cursor:pointer;font-size:.8rem;font-weight:600;text-align:left;line-height:1.35">
+      <div>${v.label}</div>
+      <div style="font-size:.72rem;font-weight:400;color:#64748b">${v.labelVi||''}</div>
+    </button>`
+  ).join('');
+}
+
+window.chSelectCat = function(key) {
+  _chCat = key; _chSub = null;
+  document.getElementById('ch-serial').value = '';
+  document.querySelectorAll('#ch-cat-btns button').forEach(b => {
+    const a = b.dataset.key === key;
+    b.style.background = a ? '#1e293b' : '#fff';
+    b.style.color = a ? '#fff' : '';
+    b.style.borderColor = a ? '#1e293b' : '#e2e5ed';
+    b.querySelector('div:last-child').style.color = a ? '#cbd5e1' : '#64748b';
+  });
+  const scheme = chGetScheme();
+  const v = scheme[key];
+  document.getElementById('ch-sub-btns').innerHTML = v.subs.map(s =>
+    `<button onclick="chSelectSub('${s.code.replace(/'/g,"\\\'")}')" data-sub="${s.code}"
+      style="padding:8px 10px;border-radius:8px;border:1px solid #e2e5ed;background:#fff;cursor:pointer;font-size:.8rem;text-align:left;line-height:1.35">
+      <div><span style="font-family:monospace;font-weight:700;color:#2563eb">${s.code}</span> ${s.name}</div>
+      <div style="font-size:.7rem;color:#64748b">${s.nameVi||''}</div>
+    </button>`
+  ).join('');
+  document.getElementById('ch-sub-area').style.display = '';
+  document.getElementById('ch-serial-area').style.display = 'none';
+  document.getElementById('ch-preview-area').style.display = 'none';
+  document.getElementById('ch-apply-btn').disabled = true;
+  document.getElementById('ch-apply-btn').style.opacity = '.5';
+};
+
+window.chSelectSub = function(sub) {
+  _chSub = sub;
+  document.querySelectorAll('#ch-sub-btns button').forEach(b => {
+    const a = b.dataset.sub === sub;
+    b.style.background = a ? '#2563eb' : '#fff';
+    b.style.color = a ? '#fff' : '';
+    b.style.borderColor = a ? '#2563eb' : '#e2e5ed';
+    b.querySelector('div:last-child').style.color = a ? '#bfdbfe' : '#64748b';
+  });
+  document.getElementById('ch-serial-area').style.display = '';
+  updatePreview();
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('ch-serial').addEventListener('input', updatePreview);
+});
+
+function updatePreview() {
+  if (!_chCat || !_chSub) return;
+  const scheme = chGetScheme();
+  const v = scheme[_chCat];
+  const serial = document.getElementById('ch-serial').value.trim();
+  let code = v.prefix + _chSub;
+  if (serial) code += '-' + serial;
+  document.getElementById('ch-preview').textContent = code;
+  document.getElementById('ch-rule-hint').textContent = v.hint || '';
+  document.getElementById('ch-preview-area').style.display = '';
+  document.getElementById('ch-apply-btn').disabled = false;
+  document.getElementById('ch-apply-btn').style.opacity = '1';
+}
+
+window.applyCode = function() {
+  const code = document.getElementById('ch-preview').textContent;
+  if (!code) return;
+  const input = document.getElementById('f-code');
+  input.value = code;
+  checkCodeDuplicate(input);
+  closeCodeHelper();
+  input.focus();
+};
+
+// ── 管理面板 ──
+let _mgCurrentCat = null;
+
+window.chOpenManage = function() {
+  document.getElementById('ch-main-panel').style.display = 'none';
+  document.getElementById('ch-manage-panel').style.display = '';
+  document.getElementById('ch-mg-cats').style.display = '';
+  document.getElementById('ch-mg-subs').style.display = 'none';
+  document.getElementById('ch-manage-btn').style.display = 'none';
+  document.getElementById('ch-back-btn').style.display = '';
+  document.getElementById('ch-apply-btn').style.display = 'none';
+  document.getElementById('ch-header-sub').textContent = '管理大分類及子類型';
+  chRenderManageCats();
+};
+
+window.chCloseManage = function() {
+  document.getElementById('ch-main-panel').style.display = '';
+  document.getElementById('ch-manage-panel').style.display = 'none';
+  document.getElementById('ch-manage-btn').style.display = '';
+  document.getElementById('ch-back-btn').style.display = 'none';
+  document.getElementById('ch-apply-btn').style.display = '';
+  document.getElementById('ch-header-sub').textContent = '逐步選擇，自動組合料號';
+  chRenderCatBtns();
+};
+
+function chRenderManageCats() {
+  const scheme = chGetScheme();
+  const custom = chLoadCustom();
+  const list = document.getElementById('ch-mg-cat-list');
+  list.innerHTML = Object.entries(scheme).map(([k,v]) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid #e2e5ed;border-radius:8px;background:#fafafa">
+      <div style="flex:1;min-width:0">
+        <span style="font-family:monospace;font-weight:700;color:#2563eb;margin-right:6px">${k}</span>
+        <span style="font-size:.85rem;font-weight:600">${v.label}</span>
+        <span style="font-size:.75rem;color:#64748b;margin-left:6px">${v.labelVi||''}</span>
+      </div>
+      <button onclick="chOpenSubManage('${k}')" style="padding:4px 10px;border-radius:5px;border:1px solid #2563eb;background:#eff6ff;color:#2563eb;font-size:.75rem;cursor:pointer;white-space:nowrap">子類型</button>
+      ${!v._builtin ? `<button onclick="chDeleteCat('${k}')" style="padding:4px 8px;border-radius:5px;border:1px solid #fca5a5;background:#fef2f2;color:#dc2626;font-size:.75rem;cursor:pointer">刪除</button>` : '<span style="font-size:.7rem;color:#94a3b8;white-space:nowrap">內建</span>'}
+    </div>`).join('');
+}
+
+window.chDeleteCat = function(key) {
+  if (!confirm(`確定刪除大分類「${key}」？`)) return;
+  const custom = chLoadCustom();
+  delete custom.cats[key];
+  chSaveCustom(custom);
+  chRenderManageCats();
+};
+
+window.chOpenSubManage = function(key) {
+  _mgCurrentCat = key;
+  const scheme = chGetScheme();
+  const v = scheme[key];
+  const custom = chLoadCustom();
+  const customSubCodes = new Set((custom.extraSubs[key]||[]).map(s=>s.code));
+  document.getElementById('ch-mg-cats').style.display = 'none';
+  document.getElementById('ch-mg-subs').style.display = '';
+  document.getElementById('ch-mg-subs-title').innerHTML =
+    `<span style="font-family:monospace;font-weight:700;color:#2563eb">${key}</span> ${v.label} <span style="font-weight:400;color:#64748b">${v.labelVi||''}</span> 的子類型`;
+  document.getElementById('ch-mg-sub-list').innerHTML = v.subs.map(s => `
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid #e2e5ed;border-radius:7px;background:#fafafa">
+      <span style="font-family:monospace;font-weight:700;color:#2563eb;min-width:32px">${s.code}</span>
+      <span style="flex:1;font-size:.82rem">${s.name}${s.nameVi ? ` <span style="color:#64748b;font-size:.75rem">/ ${s.nameVi}</span>` : ''}</span>
+      ${customSubCodes.has(s.code) ? `<button onclick="chDeleteSub('${key}','${s.code}')" style="padding:3px 8px;border-radius:5px;border:1px solid #fca5a5;background:#fef2f2;color:#dc2626;font-size:.72rem;cursor:pointer">刪除</button>` : '<span style="font-size:.7rem;color:#94a3b8">內建</span>'}
+    </div>`).join('');
+  document.getElementById('mg-sub-code').value = '';
+  document.getElementById('mg-sub-name').value = '';
+  document.getElementById('mg-sub-namevi').value = '';
+};
+
+window.chBackToCats = function() {
+  document.getElementById('ch-mg-cats').style.display = '';
+  document.getElementById('ch-mg-subs').style.display = 'none';
+  _mgCurrentCat = null;
+};
+
+window.chAddCat = function() {
+  const key     = document.getElementById('mg-new-key').value.trim().toUpperCase();
+  const prefix  = document.getElementById('mg-new-prefix').value.trim();
+  const label   = document.getElementById('mg-new-label').value.trim();
+  const labelVi = document.getElementById('mg-new-labelvi').value.trim();
+  const hint    = document.getElementById('mg-new-hint').value.trim();
+  if (!key || !label) { alert('請填入鍵值及中文名稱'); return; }
+  if (chGetScheme()[key]) { alert(`「${key}」已存在`); return; }
+  const custom = chLoadCustom();
+  custom.cats[key] = { label, labelVi, prefix: prefix||key, hint, subs: [] };
+  chSaveCustom(custom);
+  ['mg-new-key','mg-new-prefix','mg-new-label','mg-new-labelvi','mg-new-hint'].forEach(id => document.getElementById(id).value='');
+  chRenderManageCats();
+};
+
+window.chAddSub = function() {
+  const key    = _mgCurrentCat;
+  const code   = document.getElementById('mg-sub-code').value.trim().toUpperCase();
+  const name   = document.getElementById('mg-sub-name').value.trim();
+  const nameVi = document.getElementById('mg-sub-namevi').value.trim();
+  if (!code || !name) { alert('請填入代碼及中文名稱'); return; }
+  const custom = chLoadCustom();
+  if (!custom.extraSubs[key]) custom.extraSubs[key] = [];
+  if (custom.extraSubs[key].find(s=>s.code===code)) { alert(`代碼「${code}」已存在`); return; }
+  custom.extraSubs[key].push({ code, name, nameVi });
+  chSaveCustom(custom);
+  chOpenSubManage(key);
+};
+
+window.chDeleteSub = function(key, code) {
+  if (!confirm(`確定刪除子類型「${code}」？`)) return;
+  const custom = chLoadCustom();
+  custom.extraSubs[key] = (custom.extraSubs[key]||[]).filter(s=>s.code!==code);
+  chSaveCustom(custom);
+  chOpenSubManage(key);
+};
+</script>
+</body>
+</html>

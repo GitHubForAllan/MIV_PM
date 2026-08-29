@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>越南力山建築物問題反映系統</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: #333; -webkit-tap-highlight-color: transparent; }
+
+  header {
+    background: #1a73e8; color: white;
+    padding: 14px 20px; font-size: 17px; font-weight: 600;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  header .title { flex: 1; font-size: 15px; }
+
+  .lang-toggle {
+    display: flex; border: 1.5px solid rgba(255,255,255,0.5); border-radius: 20px; overflow: hidden; flex-shrink: 0;
+  }
+  .lang-toggle button {
+    background: transparent; color: rgba(255,255,255,0.7);
+    border: none; padding: 4px 12px; font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .lang-toggle button.active { background: white; color: #1a73e8; }
+
+  .container { max-width: 700px; margin: 0 auto; padding: 16px; }
+
+  .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .card h2 { font-size: 15px; font-weight: 700; color: #1a73e8; margin-bottom: 18px; border-bottom: 2px solid #e8f0fe; padding-bottom: 10px; }
+
+  .field { margin-bottom: 16px; }
+  label { display: block; font-size: 14px; font-weight: 600; color: #444; margin-bottom: 6px; }
+  label span.req { color: #e53935; }
+
+  input[type="text"], textarea, select {
+    width: 100%; padding: 13px 14px;
+    border: 1.5px solid #ddd; border-radius: 8px;
+    font-size: 16px; font-family: inherit;
+    transition: border-color 0.2s; background: #fafafa;
+  }
+  input[type="text"]:focus, textarea:focus, select:focus {
+    outline: none; border-color: #1a73e8; background: white;
+    box-shadow: 0 0 0 3px rgba(26,115,232,0.1);
+  }
+  textarea { resize: vertical; min-height: 100px; }
+
+  .photo-btn-row { display: flex; gap: 10px; margin-bottom: 12px; }
+  .photo-btn {
+    flex: 1; padding: 14px 10px;
+    border: 1.5px dashed #aac; border-radius: 8px;
+    background: #fafafa; font-size: 14px; color: #555; cursor: pointer;
+    text-align: center; display: flex; flex-direction: column; align-items: center; gap: 4px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .photo-btn:active { background: #eef4ff; border-color: #1a73e8; }
+  .photo-btn .icon { font-size: 24px; }
+  .photo-btn input { display: none; }
+
+  #preview-container { display: flex; flex-wrap: wrap; gap: 8px; }
+  .preview-img { position: relative; width: 80px; height: 80px; }
+  .preview-img img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
+  .preview-img .del {
+    position: absolute; top: -6px; right: -6px;
+    background: #e53935; color: white; border: none; border-radius: 50%;
+    width: 22px; height: 22px; font-size: 14px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 13px 20px; border: none; border-radius: 8px;
+    font-size: 15px; font-weight: 600; cursor: pointer;
+    transition: filter 0.15s, transform 0.1s; min-height: 48px;
+  }
+  .btn:active { transform: scale(0.97); filter: brightness(0.9); }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .btn-primary { background: #1a73e8; color: white; }
+  .btn-success { background: #34a853; color: white; }
+  .btn-danger  { background: #e53935; color: white; }
+  .btn-outline { background: white; color: #1a73e8; border: 1.5px solid #1a73e8; }
+  .btn-sm { padding: 8px 14px; font-size: 13px; min-height: 36px; }
+
+  .form-actions { display: flex; gap: 10px; margin-top: 4px; }
+  .form-actions .btn-primary { flex: 1; }
+
+  .toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
+  .badge { background: #e8f0fe; color: #1a73e8; border-radius: 20px; padding: 2px 10px; font-size: 13px; font-weight: 600; }
+  .toolbar-right { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .issue-card { border: 1px solid #eee; border-radius: 10px; padding: 14px; margin-bottom: 10px; background: #fafafa; }
+  .issue-card:last-child { margin-bottom: 0; }
+  .issue-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+  .issue-num { font-size: 11px; color: #aaa; font-weight: 600; }
+  .issue-time { font-size: 12px; color: #888; }
+  .issue-reporter { font-size: 13px; font-weight: 700; color: #1a73e8; }
+  .issue-location { font-size: 12px; color: #555; background: #f0f2f5; border-radius: 4px; padding: 2px 8px; }
+  .issue-desc { font-size: 14px; color: #333; line-height: 1.5; margin-bottom: 10px; white-space: pre-wrap; }
+  .issue-photos { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .photo-thumb { width: 64px; height: 64px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd; cursor: pointer; }
+  .issue-footer { display: flex; justify-content: flex-end; gap: 8px; }
+
+  .status-bar { text-align: center; font-size: 13px; padding: 8px; border-radius: 8px; margin-bottom: 12px; }
+  .status-bar.connecting { background: #fff8e1; color: #f57f17; }
+  .status-bar.online     { background: #e8f5e9; color: #2e7d32; }
+  .status-bar.error      { background: #ffebee; color: #c62828; }
+
+  .empty-state { text-align: center; padding: 40px 20px; color: #aaa; font-size: 14px; }
+  .empty-state .icon { font-size: 44px; margin-bottom: 10px; }
+
+  /* Filter bar */
+  .filter-bar { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+  .filter-row  { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .filter-bar input[type="text"],
+  .filter-bar select,
+  .filter-bar input[type="date"] {
+    padding: 9px 12px; border: 1.5px solid #ddd; border-radius: 8px;
+    font-size: 14px; font-family: inherit; background: #fafafa;
+    transition: border-color 0.2s;
+  }
+  .filter-bar input[type="text"] { flex: 1; min-width: 0; }
+  .filter-bar input[type="text"]:focus,
+  .filter-bar select:focus,
+  .filter-bar input[type="date"]:focus {
+    outline: none; border-color: #1a73e8; background: white;
+  }
+  .filter-bar select { min-width: 100px; }
+  .filter-bar input[type="date"] { flex: 1; min-width: 0; }
+  .filter-date-sep { color: #aaa; font-size: 13px; flex-shrink: 0; }
+  .btn-clear-filter {
+    padding: 8px 14px; border: 1.5px solid #ddd; border-radius: 8px;
+    background: white; color: #666; font-size: 13px; cursor: pointer;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .btn-clear-filter:hover { border-color: #e53935; color: #e53935; }
+  .filter-active-hint { font-size: 12px; color: #1a73e8; font-weight: 600; }
+
+  .toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.8); color: white;
+    padding: 12px 20px; border-radius: 24px;
+    font-size: 14px; opacity: 0; transition: opacity 0.3s;
+    pointer-events: none; z-index: 999; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; }
+
+  #lightbox {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.9); z-index: 1000; align-items: center; justify-content: center;
+  }
+  #lightbox.show { display: flex; }
+  #lightbox img { max-width: 95vw; max-height: 88vh; border-radius: 8px; }
+  #lightbox .close { position: fixed; top: 14px; right: 18px; color: white; font-size: 36px; cursor: pointer; line-height: 1; }
+
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5); z-index: 900; align-items: center; justify-content: center; padding: 16px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-box { background: white; border-radius: 14px; padding: 24px; width: 100%; max-width: 420px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+  .modal-box h3 { font-size: 16px; font-weight: 700; margin-bottom: 18px; color: #1a73e8; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 4px; }
+  .modal-actions .btn-success { flex: 1; }
+
+  .issue-card.is-resolved { border-left: 4px solid #34a853; }
+  .resolved-badge { background: #e8f5e9; color: #2e7d32; border-radius: 20px; padding: 2px 10px; font-size: 12px; font-weight: 600; }
+  .resolved-info { background: #e8f5e9; border-radius: 8px; padding: 10px 12px; font-size: 13px; color: #2e7d32; margin-bottom: 10px; line-height: 1.6; }
+</style>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
+</head>
+<body>
+
+<header>
+  <span class="title" data-i18n="title">📋 越南力山建築物問題反映系統</span>
+  <div class="lang-toggle">
+    <button id="btnZh" class="active" onclick="setLang('zh')">中文</button>
+    <button id="btnVi" onclick="setLang('vi')">Việt</button>
+  </div>
+  <a href="index.html" style="color:#fff;opacity:.85;text-decoration:none;font-size:13px;flex-shrink:0">🏠</a>
+</header>
+
+<div class="container">
+
+  <div class="card">
+    <h2 data-i18n="formTitle">新增問題回報</h2>
+    <form id="issueForm">
+      <div class="field">
+        <label data-i18n="lReporter">填寫人 <span class="req">*</span></label>
+        <input type="text" id="reporter" data-i18n-ph="phReporter" placeholder="請輸入姓名" required autocomplete="name">
+      </div>
+      <div class="field">
+        <label data-i18n="lBuilding">大分類 <span class="req">*</span></label>
+        <select id="building" required>
+          <option value="" data-i18n="optBuilding">請選擇棟別</option>
+          <option value="A棟">A棟</option>
+          <option value="B棟">B棟</option>
+          <option value="C棟">C棟</option>
+          <option value="專家樓">專家樓</option>
+        </select>
+      </div>
+      <div class="field">
+        <label data-i18n="lLocation">詳細地點 <span class="req">*</span></label>
+        <input type="text" id="location" data-i18n-ph="phLocation" placeholder="例如：3樓走廊、入口大門…" required>
+      </div>
+      <div class="field">
+        <label data-i18n="lDesc">問題描述 <span class="req">*</span></label>
+        <textarea id="description" data-i18n-ph="phDesc" placeholder="請詳細描述問題內容…" required></textarea>
+      </div>
+      <div class="field">
+        <label data-i18n="lPhotos">上傳照片（可多張）</label>
+        <div class="photo-btn-row">
+          <label class="photo-btn">
+            <span class="icon">📁</span>
+            <span data-i18n="fromGallery">從相簿選取</span>
+            <input type="file" accept="image/*" multiple onchange="handlePhotos(this)">
+          </label>
+          <label class="photo-btn">
+            <span class="icon">📷</span>
+            <span data-i18n="takePhoto">直接拍照</span>
+            <input type="file" accept="image/*" capture="environment" onchange="handlePhotos(this)">
+          </label>
+        </div>
+        <div id="preview-container"></div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" id="submitBtn" data-i18n="btnSubmit">提交問題</button>
+        <button type="button" class="btn btn-outline" onclick="resetForm()" data-i18n="btnClear">清除</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="toolbar">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <h2 style="margin-bottom:0;border:none;padding:0;" data-i18n="listTitle">問題清單</h2>
+        <span class="badge" id="count">0 筆</span>
+      </div>
+      <div class="toolbar-right">
+        <button class="btn btn-success btn-sm" onclick="exportCSV()" data-i18n="btnCsv">📄 匯出 CSV</button>
+        <button class="btn btn-primary btn-sm" onclick="exportExcel()" id="excelBtn" data-i18n="btnExcel">📊 匯出 Excel（含照片）</button>
+        <button class="btn btn-danger btn-sm" onclick="clearAll()" data-i18n="btnClearAll">🗑 清除全部</button>
+      </div>
+    </div>
+    <div class="filter-bar">
+      <div class="filter-row">
+        <input type="text" id="searchText" data-i18n-ph="phSearch" placeholder="搜尋人名、地點、描述…" oninput="applyFilter()">
+        <select id="filterBuilding" onchange="applyFilter()">
+          <option value="" data-i18n="allBuilding">全部棟別</option>
+          <option value="A棟">A棟</option>
+          <option value="B棟">B棟</option>
+          <option value="C棟">C棟</option>
+          <option value="專家樓">專家樓</option>
+        </select>
+      </div>
+      <div class="filter-row">
+        <input type="date" id="filterDateFrom" onchange="applyFilter()" data-i18n-ph="dateFrom">
+        <span class="filter-date-sep">—</span>
+        <input type="date" id="filterDateTo" onchange="applyFilter()" data-i18n-ph="dateTo">
+        <button class="btn-clear-filter" onclick="clearFilters()" data-i18n="clearFilter">✕ 清除篩選</button>
+      </div>
+      <div id="filterHint" style="display:none" class="filter-active-hint"></div>
+    </div>
+    <div id="statusBar" class="status-bar connecting" data-i18n="connecting">⏳ 連線中…</div>
+    <div id="listWrapper"></div>
+  </div>
+
+</div>
+
+<!-- Resolve modal -->
+<div class="modal-overlay" id="resolveModal" onclick="closeResolveModal(event)">
+  <div class="modal-box">
+    <h3 data-i18n="modalTitle">✅ 標記已解決</h3>
+    <div class="field">
+      <label data-i18n="lResolvedDate">完成日期 <span class="req">*</span></label>
+      <input type="date" id="resolvedDate">
+    </div>
+    <div class="field">
+      <label data-i18n="lResolution">改善狀況</label>
+      <textarea id="resolutionText" data-i18n-ph="phResolution" placeholder="請描述改善內容…" style="min-height:80px"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-success" onclick="confirmResolved()" data-i18n="btnConfirm">確認</button>
+      <button class="btn btn-outline" onclick="closeResolveModal()" data-i18n="btnCancel">取消</button>
+    </div>
+  </div>
+</div>
+
+<div id="lightbox" onclick="closeLightbox()">
+  <span class="close">&times;</span>
+  <img id="lightboxImg" src="" alt="">
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<script type="module">
+import { initializeApp }         from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, serverTimestamp, writeBatch, getDocs, deleteField }
+                                  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// ── i18n ────────────────────────────────────────────────
+const TR = {
+  zh: {
+    title:        '📋 越南力山建築物問題反映系統',
+    formTitle:    '新增問題回報',
+    lReporter:    '填寫人 *',
+    phReporter:   '請輸入姓名',
+    lBuilding:    '大分類 *',
+    optBuilding:  '請選擇棟別',
+    lLocation:    '詳細地點 *',
+    phLocation:   '例如：3樓走廊、入口大門…',
+    lDesc:        '問題描述 *',
+    phDesc:       '請詳細描述問題內容…',
+    lPhotos:      '上傳照片（可多張）',
+    fromGallery:  '從相簿選取',
+    takePhoto:    '直接拍照',
+    btnSubmit:    '提交問題',
+    btnClear:     '清除',
+    listTitle:    '問題清單',
+    btnCsv:       '📄 匯出 CSV',
+    btnExcel:     '📊 匯出 Excel（含照片）',
+    btnClearAll:  '🗑 清除全部',
+    connecting:   '⏳ 連線中…',
+    online:       '🟢 即時同步',
+    connErr:      '🔴 連線失敗：',
+    noData:       '目前尚無問題記錄',
+    syncing:      '同步中…',
+    resolvedBadge:'已解決',
+    resolvedInfo: (d) => `✅ 已解決 · ${d}`,
+    btnResolved:  '✅ 已解決',
+    btnReopen:    '🔄 重新開啟',
+    btnDelete:    '刪除',
+    modalTitle:   '✅ 標記已解決',
+    lResolvedDate:'完成日期 *',
+    lResolution:  '改善狀況',
+    phResolution: '請描述改善內容…',
+    btnConfirm:   '確認',
+    btnCancel:    '取消',
+    // toasts / confirms
+    submitted:    '✅ 問題已提交！',
+    submitFail:   '⚠️ 提交失敗：',
+    submitting:   '提交中…',
+    deleted:      '已刪除',
+    deleteFail:   '⚠️ 刪除失敗',
+    markedOk:     '✅ 已標記為解決',
+    updateFail:   '⚠️ 更新失敗：',
+    reopened:     '已重新開啟',
+    cleared:      '已清除全部資料',
+    noDataMsg:    '沒有資料',
+    noExport:     '沒有資料可匯出',
+    csvOk:        '✅ 已匯出 CSV',
+    xlsOk:        '✅ 已匯出 Excel',
+    xlsFail:      '⚠️ 匯出失敗：',
+    generating:   '⏳ 產生中…',
+    needDate:     '請填寫完成日期',
+    confirmDel:   '確定刪除此筆問題？',
+    confirmUnres: '確定取消已解決狀態？',
+    confirmClear: (n) => `確定清除全部 ${n} 筆資料？此動作無法復原。`,
+    // Excel headers
+    xNum:'序號', xTime:'提交時間', xReporter:'填寫人', xBuilding:'大分類',
+    xLocation:'詳細地點', xDesc:'問題描述', xStatus:'狀態', xDate:'完成日期',
+    xResolution:'改善狀況', xPhoto:'照片',
+    xResolved:'已解決', xPending:'處理中',
+    countUnit: (n) => `${n} 筆`,
+    phSearch:    '搜尋人名、地點、描述…',
+    allBuilding: '全部棟別',
+    dateFrom:    '開始日期',
+    dateTo:      '結束日期',
+    clearFilter: '✕ 清除篩選',
+    filterHint:  (f, t) => `顯示 ${f} / ${t} 筆`,
+  },
+  vi: {
+    title:        '📋 Hệ thống phản ánh vấn đề tòa nhà Lực Sơn Việt Nam',
+    formTitle:    'Thêm báo cáo vấn đề',
+    lReporter:    'Người báo cáo *',
+    phReporter:   'Nhập họ tên',
+    lBuilding:    'Phân loại *',
+    optBuilding:  'Chọn tòa nhà',
+    lLocation:    'Địa điểm chi tiết *',
+    phLocation:   'Ví dụ: Hành lang tầng 3, cổng vào...',
+    lDesc:        'Mô tả vấn đề *',
+    phDesc:       'Mô tả chi tiết vấn đề...',
+    lPhotos:      'Tải ảnh lên (nhiều ảnh)',
+    fromGallery:  'Chọn từ thư viện',
+    takePhoto:    'Chụp ảnh trực tiếp',
+    btnSubmit:    'Gửi vấn đề',
+    btnClear:     'Xóa',
+    listTitle:    'Danh sách vấn đề',
+    btnCsv:       '📄 Xuất CSV',
+    btnExcel:     '📊 Xuất Excel (kèm ảnh)',
+    btnClearAll:  '🗑 Xóa tất cả',
+    connecting:   '⏳ Đang kết nối...',
+    online:       '🟢 Đồng bộ thời gian thực',
+    connErr:      '🔴 Kết nối thất bại: ',
+    noData:       'Hiện chưa có báo cáo vấn đề nào',
+    syncing:      'Đang đồng bộ...',
+    resolvedBadge:'Đã giải quyết',
+    resolvedInfo: (d) => `✅ Đã giải quyết · ${d}`,
+    btnResolved:  '✅ Đã giải quyết',
+    btnReopen:    '🔄 Mở lại',
+    btnDelete:    'Xóa',
+    modalTitle:   '✅ Đánh dấu đã giải quyết',
+    lResolvedDate:'Ngày hoàn thành *',
+    lResolution:  'Tình trạng cải thiện',
+    phResolution: 'Mô tả nội dung cải thiện...',
+    btnConfirm:   'Xác nhận',
+    btnCancel:    'Hủy',
+    submitted:    '✅ Đã gửi vấn đề!',
+    submitFail:   '⚠️ Gửi thất bại: ',
+    submitting:   'Đang gửi...',
+    deleted:      'Đã xóa',
+    deleteFail:   '⚠️ Xóa thất bại',
+    markedOk:     '✅ Đã đánh dấu giải quyết',
+    updateFail:   '⚠️ Cập nhật thất bại: ',
+    reopened:     'Đã mở lại',
+    cleared:      'Đã xóa tất cả dữ liệu',
+    noDataMsg:    'Không có dữ liệu',
+    noExport:     'Không có dữ liệu để xuất',
+    csvOk:        '✅ Đã xuất CSV',
+    xlsOk:        '✅ Đã xuất Excel',
+    xlsFail:      '⚠️ Xuất thất bại: ',
+    generating:   '⏳ Đang tạo...',
+    needDate:     'Vui lòng điền ngày hoàn thành',
+    confirmDel:   'Bạn có chắc muốn xóa vấn đề này?',
+    confirmUnres: 'Bạn có chắc muốn hủy trạng thái đã giải quyết?',
+    confirmClear: (n) => `Bạn có chắc muốn xóa tất cả ${n} mục? Không thể hoàn tác.`,
+    xNum:'STT', xTime:'Thời gian gửi', xReporter:'Người báo cáo', xBuilding:'Phân loại',
+    xLocation:'Địa điểm chi tiết', xDesc:'Mô tả vấn đề', xStatus:'Trạng thái', xDate:'Ngày hoàn thành',
+    xResolution:'Tình trạng cải thiện', xPhoto:'Ảnh',
+    xResolved:'Đã giải quyết', xPending:'Đang xử lý',
+    countUnit: (n) => `${n} mục`,
+    phSearch:    'Tìm theo tên, địa điểm, mô tả…',
+    allBuilding: 'Tất cả tòa nhà',
+    dateFrom:    'Từ ngày',
+    dateTo:      'Đến ngày',
+    clearFilter: '✕ Xóa bộ lọc',
+    filterHint:  (f, total) => `Hiển thị ${f} / ${total} mục`,
+  }
+};
+
+let lang = localStorage.getItem('lang') || 'zh';
+const t = key => TR[lang][key];
+
+function setLang(l) {
+  lang = l;
+  localStorage.setItem('lang', l);
+  document.getElementById('btnZh').classList.toggle('active', l === 'zh');
+  document.getElementById('btnVi').classList.toggle('active', l === 'vi');
+  applyLang();
+  renderList();
+}
+window.setLang = setLang;
+
+function applyLang() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (TR[lang][key]) el.textContent = TR[lang][key];
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const key = el.dataset.i18nPh;
+    if (TR[lang][key]) el.placeholder = TR[lang][key];
+  });
+  // select first option
+  const opt = document.querySelector('#building option[value=""]');
+  if (opt) opt.textContent = t('optBuilding');
+  // count
+  document.getElementById('count').textContent = t('countUnit')(issues.length);
+  // title
+  document.title = t('title').replace('📋 ', '');
+}
+
+// ── Firebase ────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs",
+  authDomain: "miv-1426c.firebaseapp.com",
+  projectId: "miv-1426c",
+  storageBucket: "miv-1426c.firebasestorage.app",
+  messagingSenderId: "398934341623",
+  appId: "1:398934341623:web:4af46c057d2e202855a0f2"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+let issues = [];
+let pendingPhotos = [];
+let filteredIssues = [];
+
+function getFiltered() {
+  const text  = (document.getElementById('searchText')?.value || '').toLowerCase();
+  const bldg  = document.getElementById('filterBuilding')?.value || '';
+  const from  = document.getElementById('filterDateFrom')?.value || '';
+  const to    = document.getElementById('filterDateTo')?.value || '';
+  return issues.filter(r => {
+    if (text && !['reporter','building','location','description'].some(k =>
+      (r[k]||'').toLowerCase().includes(text))) return false;
+    if (bldg && r.building !== bldg) return false;
+    if (from || to) {
+      const d = r.createdAt ? r.createdAt.toDate().toISOString().split('T')[0] : '';
+      if (from && d < from) return false;
+      if (to   && d > to  ) return false;
+    }
+    return true;
+  });
+}
+
+window.applyFilter = () => { filteredIssues = getFiltered(); renderList(); };
+
+window.clearFilters = () => {
+  document.getElementById('searchText').value = '';
+  document.getElementById('filterBuilding').value = '';
+  document.getElementById('filterDateFrom').value = '';
+  document.getElementById('filterDateTo').value = '';
+  applyFilter();
+};
+
+const q = query(collection(db, 'issues'), orderBy('createdAt', 'desc'));
+onSnapshot(q, snapshot => {
+  issues = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+  filteredIssues = getFiltered();
+  renderList();
+  setStatus('online', t('online'));
+}, err => {
+  setStatus('error', t('connErr') + err.message);
+});
+
+// ── Form submit ─────────────────────────────────────────
+document.getElementById('issueForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = t('submitting');
+  try {
+    await addDoc(collection(db, 'issues'), {
+      createdAt:   serverTimestamp(),
+      reporter:    document.getElementById('reporter').value.trim(),
+      building:    document.getElementById('building').value,
+      location:    document.getElementById('location').value.trim(),
+      description: document.getElementById('description').value.trim(),
+      photos:      [...pendingPhotos]
+    });
+    resetForm();
+    showToast(t('submitted'));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch(err) {
+    showToast(t('submitFail') + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = t('btnSubmit');
+  }
+});
+
+// ── Delete ──────────────────────────────────────────────
+window.deleteIssue = async id => {
+  if (!confirm(t('confirmDel'))) return;
+  try {
+    await deleteDoc(doc(db, 'issues', id));
+    showToast(t('deleted'));
+  } catch { showToast(t('deleteFail')); }
+};
+
+// ── Resolve modal ───────────────────────────────────────
+let resolveTargetId = null;
+
+window.openResolveModal = id => {
+  resolveTargetId = id;
+  document.getElementById('resolvedDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('resolutionText').value = '';
+  document.getElementById('resolveModal').classList.add('show');
+};
+window.closeResolveModal = e => {
+  if (e && e.target !== document.getElementById('resolveModal')) return;
+  document.getElementById('resolveModal').classList.remove('show');
+};
+window.confirmResolved = async () => {
+  const date = document.getElementById('resolvedDate').value;
+  const text = document.getElementById('resolutionText').value.trim();
+  if (!date) { showToast(t('needDate')); return; }
+  try {
+    await updateDoc(doc(db, 'issues', resolveTargetId), { resolved: true, resolvedAt: date, resolution: text });
+    document.getElementById('resolveModal').classList.remove('show');
+    showToast(t('markedOk'));
+  } catch(err) { showToast(t('updateFail') + err.message); }
+};
+window.unresolve = async id => {
+  if (!confirm(t('confirmUnres'))) return;
+  try {
+    await updateDoc(doc(db, 'issues', id), { resolved: false, resolvedAt: deleteField(), resolution: deleteField() });
+    showToast(t('reopened'));
+  } catch { showToast(t('updateFail')); }
+};
+
+// ── Clear all ───────────────────────────────────────────
+window.clearAll = async () => {
+  if (issues.length === 0) { showToast(t('noDataMsg')); return; }
+  if (!confirm(t('confirmClear')(issues.length))) return;
+  try {
+    const snap = await getDocs(collection(db, 'issues'));
+    const batch = writeBatch(db);
+    snap.docs.forEach(d => batch.delete(d.ref));
+    await batch.commit();
+    showToast(t('cleared'));
+  } catch { showToast(t('updateFail')); }
+};
+
+// ── Photos ──────────────────────────────────────────────
+window.handlePhotos = input => {
+  Array.from(input.files).forEach(file => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const MAX = 800;
+      let w = img.width, h = img.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else       { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      pendingPhotos.push(canvas.toDataURL('image/jpeg', 0.7));
+      URL.revokeObjectURL(url);
+      renderPreviews();
+    };
+    img.src = url;
+  });
+  input.value = '';
+};
+window.removePhoto = i => { pendingPhotos.splice(i, 1); renderPreviews(); };
+
+function renderPreviews() {
+  const c = document.getElementById('preview-container');
+  c.innerHTML = '';
+  pendingPhotos.forEach((src, i) => {
+    const div = document.createElement('div');
+    div.className = 'preview-img';
+    div.innerHTML = `<img src="${src}"><button type="button" class="del" onclick="removePhoto(${i})">×</button>`;
+    c.appendChild(div);
+  });
+}
+window.resetForm = () => {
+  document.getElementById('issueForm').reset();
+  pendingPhotos = [];
+  renderPreviews();
+};
+
+// ── Render list ─────────────────────────────────────────
+function renderList() {
+  const list = filteredIssues.length || issues.length ? filteredIssues : [];
+  const isFiltering = filteredIssues.length !== issues.length;
+  document.getElementById('count').textContent = isFiltering
+    ? t('filterHint')(filteredIssues.length, issues.length)
+    : t('countUnit')(issues.length);
+  const hint = document.getElementById('filterHint');
+  if (hint) { hint.style.display = isFiltering ? '' : 'none'; hint.textContent = t('filterHint')(filteredIssues.length, issues.length); }
+  const wrapper = document.getElementById('listWrapper');
+  if (list.length === 0) {
+    wrapper.innerHTML = `<div class="empty-state"><div class="icon">📭</div>${t('noData')}</div>`;
+    return;
+  }
+  wrapper.innerHTML = list.map((r, idx) => {
+    const timeStr = r.createdAt ? r.createdAt.toDate().toLocaleString('zh-TW') : t('syncing');
+    const resolvedBlock = r.resolved ? `
+      <div class="resolved-info">
+        ${t('resolvedInfo')(esc(r.resolvedAt || ''))}
+        ${r.resolution ? `<br>📝 ${esc(r.resolution)}` : ''}
+      </div>` : '';
+    const actionBtn = r.resolved
+      ? `<button class="btn btn-sm" style="background:#e8f5e9;color:#2e7d32;border:1.5px solid #34a853" onclick="unresolve('${r.id}')">${t('btnReopen')}</button>`
+      : `<button class="btn btn-success btn-sm" onclick="openResolveModal('${r.id}')">${t('btnResolved')}</button>`;
+    return `
+    <div class="issue-card${r.resolved ? ' is-resolved' : ''}">
+      <div class="issue-meta">
+        <span class="issue-num">#${issues.length - idx}</span>
+        <span class="issue-reporter">${esc(r.reporter)}</span>
+        <span class="issue-location">📍 ${esc(r.building || '')} ${esc(r.location)}</span>
+        <span class="issue-time">${timeStr}</span>
+        ${r.resolved ? `<span class="resolved-badge">${t('resolvedBadge')}</span>` : ''}
+      </div>
+      <div class="issue-desc">${esc(r.description)}</div>
+      ${r.photos && r.photos.length ? `<div class="issue-photos">${r.photos.map(src =>
+        `<img class="photo-thumb" src="${src}" onclick="openLightbox('${src}')">`
+      ).join('')}</div>` : ''}
+      ${resolvedBlock}
+      <div class="issue-footer">
+        ${actionBtn}
+        <button class="btn btn-danger btn-sm" onclick="deleteIssue('${r.id}')">${t('btnDelete')}</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Export CSV ──────────────────────────────────────────
+window.exportCSV = () => {
+  if (issues.length === 0) { showToast(t('noExport')); return; }
+  const header = [t('xNum'),t('xTime'),t('xReporter'),t('xBuilding'),t('xLocation'),t('xDesc'),t('xStatus'),t('xDate'),t('xResolution')];
+  const rows = issues.map((r, i) => {
+    const timeStr = r.createdAt ? r.createdAt.toDate().toLocaleString('zh-TW') : '';
+    return [issues.length-i, timeStr, r.reporter, r.building||'', r.location,
+            (r.description||'').replace(/[\r\n]+/g,' '),
+            r.resolved ? t('xResolved') : t('xPending'), r.resolvedAt||'', r.resolution||''];
+  });
+  const csv = [header, ...rows].map(row => row.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const blob = new Blob(['﻿'+csv], { type:'text/csv;charset=utf-8;' });
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(blob),
+    download: `issues_${new Date().toLocaleDateString('zh-TW').replace(/\//g,'-')}.csv`
+  });
+  a.click(); URL.revokeObjectURL(a.href);
+  showToast(t('csvOk'));
+};
+
+// ── Export Excel ────────────────────────────────────────
+window.exportExcel = async () => {
+  if (issues.length === 0) { showToast(t('noExport')); return; }
+  const btn = document.getElementById('excelBtn');
+  btn.disabled = true; btn.textContent = t('generating');
+  try {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Issues');
+    const maxPhotos = Math.max(...issues.map(r=>(r.photos||[]).length), 1);
+    const photoCols = Array.from({length:maxPhotos},(_,i)=>({header:`${t('xPhoto')}${i+1}`,key:`p${i}`,width:28}));
+
+    sheet.columns = [
+      {header:t('xNum'),      key:'num',        width:6},
+      {header:t('xTime'),     key:'time',        width:22},
+      {header:t('xReporter'), key:'reporter',    width:12},
+      {header:t('xBuilding'), key:'building',    width:10},
+      {header:t('xLocation'), key:'location',    width:18},
+      {header:t('xDesc'),     key:'description', width:42},
+      {header:t('xStatus'),   key:'status',      width:12},
+      {header:t('xDate'),     key:'resolvedAt',  width:14},
+      {header:t('xResolution'),key:'resolution', width:36},
+      ...photoCols
+    ];
+
+    const hRow = sheet.getRow(1);
+    hRow.height = 26;
+    hRow.eachCell(cell => {
+      cell.fill = {type:'pattern',pattern:'solid',fgColor:{argb:'FF1a73e8'}};
+      cell.font = {bold:true,color:{argb:'FFFFFFFF'},size:11};
+      cell.alignment = {vertical:'middle',horizontal:'center'};
+      cell.border = {top:{style:'thin'},bottom:{style:'thin'},left:{style:'thin'},right:{style:'thin'}};
+    });
+
+    const IMG_H = 140;
+    const border = {top:{style:'thin',color:{argb:'FFdddddd'}},bottom:{style:'thin',color:{argb:'FFdddddd'}},
+                    left:{style:'thin',color:{argb:'FFdddddd'}},right:{style:'thin',color:{argb:'FFdddddd'}}};
+
+    for (let i = 0; i < issues.length; i++) {
+      const r = issues[i];
+      const timeStr = r.createdAt ? r.createdAt.toDate().toLocaleString('zh-TW') : '';
+      const row = sheet.addRow({
+        num: issues.length-i, time: timeStr,
+        reporter: r.reporter||'', building: r.building||'',
+        location: r.location||'', description: r.description||'',
+        status: r.resolved ? t('xResolved') : t('xPending'),
+        resolvedAt: r.resolvedAt||'', resolution: r.resolution||''
+      });
+      row.height = IMG_H;
+      const rowBg = r.resolved ? 'FFE8F5E9' : (i%2===1 ? 'FFF8F9FA' : 'FFFFFFFF');
+      row.eachCell({includeEmpty:true}, (cell, colNum) => {
+        cell.alignment = {vertical:'top',wrapText:true};
+        cell.border = border;
+        cell.fill = {type:'pattern',pattern:'solid',fgColor:{argb:rowBg}};
+        if (colNum === 7) {
+          cell.font = {bold:true,color:{argb:r.resolved?'FF2E7D32':'FFB45309'}};
+          cell.alignment = {vertical:'middle',horizontal:'center'};
+        }
+      });
+      const rowIdx = row.number - 1;
+      (r.photos||[]).forEach((photo, j) => {
+        const base64 = photo.split(',')[1];
+        const ext = photo.startsWith('data:image/png') ? 'png' : 'jpeg';
+        const imgId = workbook.addImage({base64, extension:ext});
+        sheet.addImage(imgId, {
+          tl:{col:9+j, row:rowIdx},
+          br:{col:10+j, row:rowIdx+1},
+          editAs:'twoCell'
+        });
+      });
+    }
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const a = Object.assign(document.createElement('a'), {
+      href: URL.createObjectURL(blob),
+      download: `issues_${new Date().toLocaleDateString('zh-TW').replace(/\//g,'-')}.xlsx`
+    });
+    a.click(); URL.revokeObjectURL(a.href);
+    showToast(t('xlsOk'));
+  } catch(err) {
+    showToast(t('xlsFail') + err.message); console.error(err);
+  } finally {
+    btn.disabled = false; btn.textContent = t('btnExcel');
+  }
+};
+
+// ── Lightbox ────────────────────────────────────────────
+window.openLightbox = src => {
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('lightbox').classList.add('show');
+};
+window.closeLightbox = () => document.getElementById('lightbox').classList.remove('show');
+
+// ── Helpers ─────────────────────────────────────────────
+function setStatus(type, msg) {
+  const bar = document.getElementById('statusBar');
+  bar.className = 'status-bar ' + type;
+  bar.textContent = msg;
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Init ────────────────────────────────────────────────
+applyLang();
+document.getElementById(lang==='zh'?'btnZh':'btnVi').classList.add('active');
+</script>
+</body>
+</html>

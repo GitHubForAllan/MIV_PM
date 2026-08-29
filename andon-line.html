@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="zh-Hant" data-page-key="line">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>安燈操作</title>
+  <link rel="stylesheet" href="andon.css">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
+</head>
+<body class="line-body">
+  <script type="module" src="auth-guard.js?v=3"></script>
+
+  <header class="line-header">
+    <div class="line-header-left">
+      <img src="Rexon%20logo.png" alt="REXON VN" style="height:48px;object-fit:contain;flex-shrink:0;border-radius:10px">
+      <h1 id="hdr-name">產線</h1>
+      <div class="line-meta" id="hdr-meta">載入中…</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span id="role-badge" style="font-size:.75rem;color:rgba(255,255,255,.5);padding:4px 10px;background:rgba(255,255,255,.08);border-radius:20px"></span>
+      <button class="lang-btn" title="Chuyển sang Tiếng Việt">VI</button>
+      <button id="btn-logout-line"
+        style="padding:6px 14px;background:transparent;border:1px solid rgba(255,255,255,.2);border-radius:8px;color:rgba(255,255,255,.6);font-size:.8rem;cursor:pointer"
+        data-i18n="btnLogout">登出</button>
+      <a href="andon.html" class="back-link" data-i18n="btnBack">← 回看板</a>
+    </div>
+  </header>
+
+  <div id="status-banner" class="status-banner status-banner--ok" data-i18n="statusNormalProd">正常生產中</div>
+
+  <main class="line-main">
+    <div id="spinner" class="spinner"></div>
+
+    <!-- 產線資訊 -->
+    <div id="info-card" class="info-card hidden">
+      <h2 data-i18n="lineInfoTitle">產線資訊</h2>
+      <div class="info-row"><span class="info-label" data-i18n="infoLineName">產線名稱</span><span class="info-value" id="info-name">—</span></div>
+      <div class="info-row"><span class="info-label" data-i18n="infoCategory">類別</span><span class="info-value" id="info-category">—</span></div>
+      <div class="info-row"><span class="info-label" data-i18n="infoModel">目前機種</span><span class="info-value" id="info-model">—</span></div>
+    </div>
+
+    <!-- 異常詳情 -->
+    <div id="alert-detail" class="alert-detail-card hidden">
+      <div class="alert-detail-title"><span id="ad-icon">⚠️</span><span id="ad-type">品質異常</span></div>
+      <div class="alert-detail-row"><span class="dl" data-i18n="adDescLabel">描述</span><span class="dv" id="ad-desc">—</span></div>
+      <div class="alert-detail-row"><span class="dl" data-i18n="adUnitLabel">希望處理單位</span><span class="dv" id="ad-unit">—</span></div>
+      <div class="alert-detail-row"><span class="dl" data-i18n="adByLabel">啟動人員</span><span class="dv" id="ad-by">—</span></div>
+      <div class="alert-detail-row"><span class="dl" data-i18n="adTimeLabel">啟動時間</span><span class="dv" id="ad-time">—</span></div>
+      <div class="alert-detail-row"><span class="dl" data-i18n="adElapsedLabel">已持續</span><span class="dv elapsed-timer" id="ad-elapsed">—</span></div>
+    </div>
+
+    <!-- 觸發安燈表單 -->
+    <div id="trigger-form" class="form-card hidden">
+      <h2 data-i18n="triggerFormTitle">啟動安燈</h2>
+      <div class="form-group">
+        <label data-i18n="alertTypeLabel">異常類型</label>
+        <div class="alert-type-grid" id="type-grid">
+          <label class="alert-type-option selected">
+            <input type="radio" name="atype" value="quality" checked> <span data-i18n="typeQuality">⚠️ 品質異常</span>
+          </label>
+          <label class="alert-type-option">
+            <input type="radio" name="atype" value="material"> <span data-i18n="typeMaterial">📦 缺料</span>
+          </label>
+          <label class="alert-type-option">
+            <input type="radio" name="atype" value="equipment"> <span data-i18n="typeEquipment">🔧 設備故障</span>
+          </label>
+          <label class="alert-type-option">
+            <input type="radio" name="atype" value="other"> <span data-i18n="typeOther">❗ 其他異常</span>
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label data-i18n="alertDescLabel">異常描述</label>
+        <textarea id="t-desc" rows="3" data-i18n-ph="alertDescPh" placeholder="請簡述發生的問題…"></textarea>
+      </div>
+      <div class="form-group">
+        <label>
+          <span data-i18n="requestUnitLabel">希望處理單位</span>
+          <span style="font-weight:400;font-size:.8rem;color:#94a3b8" data-i18n="unitMax">（最多 3 個）</span>
+        </label>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <input id="t-unit1" type="text" data-i18n-ph="unit1Ph" placeholder="單位 1（必填）">
+          <input id="t-unit2" type="text" data-i18n-ph="unit2Ph" placeholder="單位 2（選填）">
+          <input id="t-unit3" type="text" data-i18n-ph="unit3Ph" placeholder="單位 3（選填）">
+        </div>
+      </div>
+      <div class="form-group">
+        <label data-i18n="triggeredByLabel">啟動人員姓名</label>
+        <input id="t-by" type="text" data-i18n-ph="triggeredByPh" placeholder="請輸入您的姓名">
+      </div>
+      <button class="btn-trigger" id="btn-trigger" type="button" data-i18n="btnTrigger">🚨 啟動安燈</button>
+    </div>
+
+    <!-- 解除安燈表單 -->
+    <div id="resolve-form" class="form-card hidden">
+      <h2 data-i18n="resolveFormTitle">解除安燈</h2>
+      <div class="form-group">
+        <label data-i18n="resolvedByLabel">負責人姓名</label>
+        <input id="r-by" type="text" data-i18n-ph="resolvedByPh" placeholder="請輸入您的姓名">
+      </div>
+      <div class="form-group">
+        <label data-i18n="countermeasureLabel">解決對策</label>
+        <textarea id="r-action" rows="4" data-i18n-ph="countermeasurePh" placeholder="請描述採取的對策或處理方式…"></textarea>
+      </div>
+      <button class="btn-resolve" id="btn-resolve" type="button" data-i18n="btnResolve">✅ 熄滅安燈</button>
+      <button class="btn-secondary" id="btn-cancel-resolve" type="button" data-i18n="btnCancel">取消</button>
+    </div>
+
+    <!-- 正常狀態下的按鈕 -->
+    <div id="ok-actions" class="hidden">
+      <button class="btn-trigger" id="btn-show-trigger" type="button" data-i18n="btnShowTrigger">🚨 啟動安燈</button>
+    </div>
+
+    <!-- 警示中的解除按鈕 -->
+    <div id="alert-actions" class="hidden">
+      <button class="btn-resolve" id="btn-show-resolve" type="button" data-i18n="btnShowResolve">✅ 熄滅安燈</button>
+    </div>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getFirestore, doc, onSnapshot, updateDoc, addDoc,
+      collection, serverTimestamp, getDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { initLang, t } from "./lang.js";
+    import { mivAuthReady, mivLogout, mivRequireApp } from "./auth-guard.js?v=3";
+
+    const db = getFirestore(initializeApp({
+      apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs",
+      authDomain: "miv-1426c.firebaseapp.com",
+      projectId: "miv-1426c",
+      storageBucket: "miv-1426c.firebasestorage.app",
+      messagingSenderId: "398934341623",
+      appId: "1:398934341623:web:4af46c057d2e202855a0f2"
+    }));
+    const configRef = doc(db, "andon", "config");
+    const logsCol   = collection(db, "andon-logs");
+    const lineId    = new URLSearchParams(location.search).get("line");
+    if (!lineId) location.href = "andon.html";
+
+    /* ── 語言初始化（切換時重新 render） */
+    initLang(() => { if (currentLine) renderLine(currentLine); });
+
+    /* ── 權限驗證：需要「安燈系統」的使用權
+       （未登入時 auth-guard.js 會自動導向 login.html）── */
+    mivRequireApp("andon", "use", "andon.html").then(user => {
+      document.getElementById("role-badge").textContent = user.name || user.employeeId;
+    }).catch(() => {});   // 權限不足時 mivRequireApp 已顯示提示畫面
+    document.getElementById("btn-logout-line").onclick = () => mivLogout();
+
+    function getAlertTypes() {
+      return {
+        quality:   { label: t("typeQualityS"),   icon: "⚠️" },
+        material:  { label: t("typeMaterialS"),  icon: "📦" },
+        equipment: { label: t("typeEquipmentS"), icon: "🔧" },
+        other:     { label: t("typeOtherS"),     icon: "❗" },
+      };
+    }
+
+    let currentLine = null;
+    let elapsedTimer = null;
+
+    function show(...ids) { ids.forEach(id => document.getElementById(id)?.classList.remove("hidden")); }
+    function hide(...ids) { ids.forEach(id => document.getElementById(id)?.classList.add("hidden")); }
+
+    function fmtTime(ts) {
+      if (!ts) return "—";
+      const d = ts.toDate ? ts.toDate() : new Date(ts);
+      return d.toLocaleString("zh-TW", { month:"numeric", day:"numeric", hour:"2-digit", minute:"2-digit", hour12:false });
+    }
+
+    function elapsedStr(ts) {
+      if (!ts) return "—";
+      const ms = Date.now() - (ts.toMillis ? ts.toMillis() : ts);
+      const m = Math.floor(ms / 60000);
+      const h = Math.floor(m / 60);
+      if (h > 0) return `${h} h ${m % 60} min`;
+      return `${m} min`;
+    }
+
+    function renderLine(line) {
+      currentLine = line;
+      const hasAlert = !!line.alert;
+      const ALERT_TYPES = getAlertTypes();
+
+      document.getElementById("hdr-name").textContent = line.name;
+      document.getElementById("hdr-meta").textContent =
+        `${line.category || ""}${line.model ? "　" + line.model : ""}`;
+      document.title = `${line.name} — ${t("pageTitle_line")}`;
+
+      document.getElementById("info-name").textContent     = line.name;
+      document.getElementById("info-category").textContent = line.category || "—";
+      document.getElementById("info-model").textContent    = line.model || t("noModel");
+
+      const banner = document.getElementById("status-banner");
+      if (hasAlert) {
+        const at = ALERT_TYPES[line.alert.type] ?? ALERT_TYPES.other;
+        banner.textContent = `${at.icon} ${at.label} — ${t("bannerAlert")}`;
+        banner.className = "status-banner status-banner--alert";
+      } else {
+        banner.textContent = t("statusNormalProd");
+        banner.className = "status-banner status-banner--ok";
+      }
+
+      hide("spinner"); show("info-card");
+
+      if (hasAlert) {
+        const at = ALERT_TYPES[line.alert.type] ?? ALERT_TYPES.other;
+        document.getElementById("ad-icon").textContent = at.icon;
+        document.getElementById("ad-type").textContent = at.label;
+        document.getElementById("ad-desc").textContent = line.alert.description || "—";
+        const units = line.alert.requestUnits?.length
+          ? line.alert.requestUnits.join("、")
+          : (line.alert.requestUnit || "—");
+        document.getElementById("ad-unit").textContent    = units;
+        document.getElementById("ad-by").textContent     = line.alert.triggeredBy || "—";
+        document.getElementById("ad-time").textContent   = fmtTime(line.alert.triggeredAt);
+        show("alert-detail", "alert-actions");
+        hide("ok-actions", "trigger-form");
+
+        clearInterval(elapsedTimer);
+        elapsedTimer = setInterval(() => {
+          document.getElementById("ad-elapsed").textContent = elapsedStr(line.alert.triggeredAt);
+        }, 5000);
+        document.getElementById("ad-elapsed").textContent = elapsedStr(line.alert.triggeredAt);
+      } else {
+        clearInterval(elapsedTimer);
+        hide("alert-detail", "alert-actions", "resolve-form");
+        show("ok-actions");
+      }
+    }
+
+    onSnapshot(configRef, snap => {
+      const line = snap.data()?.lines?.[lineId];
+      if (!line) {
+        document.getElementById("hdr-name").textContent = "—";
+        hide("spinner"); return;
+      }
+      renderLine(line);
+    });
+
+    /* ── Alert type radio UI */
+    document.getElementById("type-grid").addEventListener("change", e => {
+      document.querySelectorAll(".alert-type-option").forEach(el => el.classList.remove("selected"));
+      e.target.closest(".alert-type-option")?.classList.add("selected");
+    });
+
+    /* ── Trigger */
+    document.getElementById("btn-show-trigger").onclick = () => {
+      hide("ok-actions"); show("trigger-form");
+      document.getElementById("t-by").focus();
+    };
+
+    document.getElementById("btn-trigger").onclick = async () => {
+      const byEl    = document.getElementById("t-by");
+      const descEl  = document.getElementById("t-desc");
+      const unit1El = document.getElementById("t-unit1");
+      const unit2El = document.getElementById("t-unit2");
+      const unit3El = document.getElementById("t-unit3");
+      const type    = document.querySelector('input[name="atype"]:checked')?.value ?? "quality";
+      const requestUnits = [unit1El.value.trim(), unit2El.value.trim(), unit3El.value.trim()].filter(Boolean);
+
+      if (!byEl.value.trim()) { byEl.focus(); byEl.style.borderColor="red"; return; }
+      byEl.style.borderColor = "";
+
+      const btn = document.getElementById("btn-trigger");
+      btn.disabled = true; btn.textContent = t("btnTriggerIng");
+      try {
+        const snap = await getDoc(configRef);
+        const line = snap.data()?.lines?.[lineId];
+        if (!line) throw new Error("找不到產線");
+
+        const logRef = await addDoc(logsCol, {
+          lineId, lineName: line.name, category: line.category||"",
+          model: line.model||"", alertType: type,
+          description: descEl.value.trim(), requestUnits,
+          triggeredBy: byEl.value.trim(), triggeredAt: serverTimestamp(),
+          resolvedBy:null, resolvedAt:null, countermeasure:null, durationMinutes:null,
+        });
+
+        await updateDoc(configRef, {
+          [`lines.${lineId}.alert`]: {
+            logId: logRef.id, type,
+            description: descEl.value.trim(), requestUnits,
+            triggeredBy: byEl.value.trim(), triggeredAt: serverTimestamp(),
+          }
+        });
+
+        descEl.value=""; unit1El.value=""; unit2El.value=""; unit3El.value=""; byEl.value="";
+        hide("trigger-form");
+      } catch (err) {
+        alert("啟動失敗 / Lỗi kích hoạt：" + err.message);
+      } finally {
+        btn.disabled = false; btn.textContent = t("btnTrigger");
+      }
+    };
+
+    /* ── Resolve */
+    document.getElementById("btn-show-resolve").onclick = () => {
+      hide("alert-actions"); show("resolve-form");
+      document.getElementById("r-by").focus();
+    };
+    document.getElementById("btn-cancel-resolve").onclick = () => {
+      hide("resolve-form"); show("alert-actions");
+    };
+
+    document.getElementById("btn-resolve").onclick = async () => {
+      const byEl     = document.getElementById("r-by");
+      const actionEl = document.getElementById("r-action");
+      if (!byEl.value.trim()) { byEl.focus(); byEl.style.borderColor="red"; return; }
+      byEl.style.borderColor = "";
+
+      const btn = document.getElementById("btn-resolve");
+      btn.disabled = true; btn.textContent = t("btnResolveIng");
+      try {
+        const snap = await getDoc(configRef);
+        const alertData = snap.data()?.lines?.[lineId]?.alert;
+        if (!alertData) throw new Error("找不到警示資料");
+
+        const triggeredMs = alertData.triggeredAt?.toMillis?.() ?? 0;
+        const durationMinutes = triggeredMs ? Math.round((Date.now()-triggeredMs)/60000) : null;
+
+        if (alertData.logId) {
+          const { updateDoc: upd, doc: d } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+          await upd(d(db,"andon-logs",alertData.logId), {
+            resolvedBy: byEl.value.trim(), resolvedAt: serverTimestamp(),
+            countermeasure: actionEl.value.trim(), durationMinutes,
+          });
+        }
+
+        await updateDoc(configRef, { [`lines.${lineId}.alert`]: null });
+        byEl.value=""; actionEl.value=""; hide("resolve-form");
+      } catch (err) {
+        alert("解除失敗 / Lỗi tắt báo：" + err.message);
+      } finally {
+        btn.disabled = false; btn.textContent = t("btnResolve");
+      }
+    };
+  </script>
+</body>
+</html>

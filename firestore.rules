@@ -32,6 +32,8 @@ service cloud.firestore {
     function nonToolroom(){ return hasRole(['viewer', 'production', 'quality', 'admin']); }
     function isQuality()  { return hasRole(['quality', 'admin']); }
     function isToolroom() { return hasRole(['toolroom', 'admin']); }
+    // 排除純檢視者：可實際編輯資料的角色
+    function nonViewer()  { return hasRole(['production', 'toolroom', 'quality', 'admin']); }
 
     // ── 使用者角色表 ────────────────────────────────────────────
     // 每個人都要能讀自己的角色（auth-guard 判斷可用功能）；
@@ -182,6 +184,44 @@ service cloud.firestore {
         || (anyStaff()
             && resource.data.requesterUid == request.auth.uid
             && resource.data.status in ['pending_approval', 'rejected']);
+    }
+    // ── 採購流程進度追蹤系統 ───────────────────────
+    // 採購單位主檔：所有人可讀（建案時要選單位、清單要做篩選），僅管理員可維護
+    match /purchase_units/{unitId} {
+      allow read:  if anyStaff();
+      allow write: if isAdmin();
+    }
+
+    // 廠商主檔：所有人可讀（建案時輸入廠商會帶出建議），僅管理員可維護
+    match /purchase_vendors/{vendorId} {
+      allow read:  if anyStaff();
+      allow write: if isAdmin();
+    }
+
+    // 流程判斷匯率等參數：所有人可讀（前台要用來建議走 A 或 B 流程），僅管理員可改
+    match /purchase_meta/config {
+      allow read:  if anyStaff();
+      allow write: if isAdmin();
+    }
+
+    // 案件流水號：每次建案都要遞增，因此可編輯的角色皆可寫，
+    // 但限制只能有 period（年月，如 2608）與 seq 兩個欄位，避免被塞入其他資料。
+    match /purchase_meta/counter {
+      allow read: if anyStaff();
+      allow write: if nonViewer()
+        && request.resource.data.keys().hasOnly(['period', 'seq'])
+        && request.resource.data.period is string
+        && request.resource.data.seq is number;
+    }
+
+    // 採購案件：採購單位是篩選維度而非權限牆，因此全員可讀、viewer 以外皆可維護。
+    // 若日後要讓各單位只能改自己的案件，把 update 條件改成比對 userDoc().unit 即可。
+    match /purchase_cases/{caseId} {
+      allow read:   if anyStaff();
+      allow create: if nonViewer() && request.resource.data.no is string;
+      // 案件單號不可被竄改
+      allow update: if nonViewer() && request.resource.data.no == resource.data.no;
+      allow delete: if isAdmin();
     }
   }
 }

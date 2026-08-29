@@ -11,7 +11,9 @@
       "**/.*",
       ".git/**",
       ".claude/**",
-      ".firebase/**"
+      ".firebase/**",
+      "_preview-*",
+      "purchase_seed.json"
     ],
     "headers": [
       {

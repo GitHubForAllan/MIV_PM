@@ -1,0 +1,1176 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>採購流程進度追蹤系統 / Hệ thống theo dõi tiến độ mua hàng</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f5f6fa; --surface: #ffffff; --border: #e2e5ed;
+    --text: #1a1d23; --text-soft: #6b7280;
+    --accent: #2563eb; --accent-hover: #1d4ed8;
+    --danger: #dc2626; --warn: #d97706; --ok: #16a34a; --muted: #64748b; --violet: #7c3aed;
+    --warn-bg: #fffbeb; --danger-bg: #fef2f2; --ok-bg: #f0fdf4; --muted-bg: #f1f5f9; --violet-bg: #f3eefe;
+    --radius: 8px; --shadow: 0 1px 4px rgba(0,0,0,.08);
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .vi { font-size: .72em; color: var(--text-soft); font-style: italic; }
+
+  .topbar { background: #1e293b; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,.25); gap: 12px; flex-wrap: wrap; }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .topbar-logo { height: 42px; object-fit: contain; border-radius: 8px; }
+  .topbar h1 { font-size: .95rem; font-weight: 700; color: #fff; }
+  .topbar h1 .vi { display: block; font-size: .68rem; color: rgba(255,255,255,.5); font-weight: 400; }
+  .topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .nav-link { font-size: .78rem; color: rgba(255,255,255,.8); padding: 6px 10px; border-radius: 6px;
+    border: 1px solid rgba(255,255,255,.2); text-decoration: none; display: flex; flex-direction: column; align-items: center; line-height: 1.3; }
+  .nav-link .vi { font-size: .82em; opacity: .75; color: inherit; }
+  .nav-link:hover { background: rgba(255,255,255,.1); }
+
+  .main { max-width: 1560px; margin: 0 auto; padding: 18px 20px 60px; }
+
+  .tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--border); margin-bottom: 16px; flex-wrap: wrap; }
+  .tabs button { padding: 9px 16px; border: none; background: transparent; font-size: .86rem; font-weight: 600;
+    color: var(--text-soft); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; line-height: 1.3; }
+  .tabs button .vi { display: block; font-size: .68rem; }
+  .tabs button.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: 12px; margin-bottom: 16px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; cursor: pointer; }
+  .stat-card.on { outline: 2px solid var(--accent); }
+  .stat-card .lbl { font-size: .72rem; color: var(--text-soft); line-height: 1.3; }
+  .stat-card .lbl .vi { display: block; font-size: .82em; }
+  .stat-card .val { font-size: 1.5rem; font-weight: 700; margin-top: 4px; }
+  .stat-card .sub { font-size: .7rem; color: var(--text-soft); }
+  .stat-card.danger { border-left: 4px solid var(--danger); background: var(--danger-bg); }
+  .stat-card.warn   { border-left: 4px solid var(--warn);   background: var(--warn-bg); }
+  .stat-card.ok     { border-left: 4px solid var(--ok);     background: var(--ok-bg); }
+  .stat-card.violet { border-left: 4px solid var(--violet); background: var(--violet-bg); }
+
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
+  .search-box { flex: 1; min-width: 180px; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius); font-size: .88rem; }
+  .filter-select { padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius); font-size: .82rem; background: var(--surface); }
+  .btn { padding: 8px 15px; border-radius: var(--radius); font-size: .84rem; font-weight: 700; cursor: pointer; border: none; white-space: nowrap; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-outline { background: var(--surface); border: 1px solid var(--border); color: var(--text); }
+  .btn-danger  { background: var(--danger); color: #fff; }
+  .btn-ok      { background: var(--ok); color: #fff; }
+  .btn-sm { padding: 4px 10px; font-size: .75rem; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .panel + .panel { margin-top: 16px; }
+  .panel-head { padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 700; font-size: .88rem;
+    display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  th { background: var(--muted-bg); font-size: .74rem; color: var(--text-soft); font-weight: 700; white-space: nowrap; position: sticky; top: 0; z-index: 2; }
+  th .vi { display: block; font-size: .85em; }
+  tbody tr:hover { background: #f8fafc; }
+  td .vi { display: block; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  th.num { text-align: right; }
+  td.nw, th.nw { white-space: nowrap; }
+  th.mid, td.mid { text-align: center; }
+  .empty { padding: 40px; text-align: center; color: var(--text-soft); font-size: .88rem; }
+
+  /* 步驟軌 */
+  .track { display: flex; gap: 3px; align-items: center; }
+  .dot { width: 17px; height: 17px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+    font-size: .6rem; font-weight: 700; border: 1px solid var(--border); background: #fff; color: var(--text-soft); cursor: help; flex: none; }
+  .dot.done  { background: var(--ok); border-color: var(--ok); color: #fff; }
+  .dot.doing { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,.18); }
+  .dot.skip  { background: #e2e8f0; border-color: #cbd5e1; color: #94a3b8; text-decoration: line-through; }
+  .dot.opt { border-style: dashed; border-width: 2px; }
+
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: .7rem; font-weight: 700; white-space: nowrap; }
+  .risk-overdue { background: #fee2e2; color: #b91c1c; }
+  .risk-high    { background: #ffedd5; color: #c2410c; }
+  .risk-mid     { background: #fef9c3; color: #a16207; }
+  .risk-low     { background: #dcfce7; color: #15803d; }
+  .risk-none    { background: #f1f5f9; color: #64748b; }
+  .path-A { background: #ede9fe; color: #6d28d9; }
+  .path-B { background: #cffafe; color: #0e7490; }
+  .tag-review { background: #fef3c7; color: #92400e; }
+  .tag-closed { background: #e2e8f0; color: #475569; }
+
+  /* 付款期別色塊：一個案件的各期排成一列，用顏色表示如期或逾期 */
+  .pay-chips { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-start; }
+  .pay-chip { text-align: center; }
+  .pay-chip .cap { font-size: .65rem; color: var(--text-soft); white-space: nowrap; margin-bottom: 2px; }
+  .pay-chip .amt { display: block; padding: 5px 14px; border-radius: 999px; font-size: .8rem; font-weight: 700;
+    color: #fff; font-variant-numeric: tabular-nums; white-space: nowrap; border: 1px solid rgba(0,0,0,.08); }
+  .pay-chip .due { font-size: .64rem; color: var(--text-soft); margin-top: 2px; white-space: nowrap; }
+  .pay-paid .amt { background: #16a34a; }
+  .pay-late .amt { background: #dc2626; }
+  .pay-soon .amt { background: #ea580c; }
+  .pay-open .amt { background: #2563eb; }
+  .pay-none .amt { background: #94a3b8; }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; font-size: .75rem; color: var(--text-soft); }
+  .legend span.k { display: inline-flex; align-items: center; gap: 5px; }
+  .legend i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+
+  .bar { height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; min-width: 60px; }
+  .bar > i { display: block; height: 100%; background: var(--accent); }
+
+  /* 對話框 */
+  .modal { position: fixed; inset: 0; background: rgba(15,23,42,.55); display: none; align-items: flex-start;
+    justify-content: center; padding: 24px 14px; z-index: 500; overflow-y: auto; }
+  .modal.on { display: flex; }
+  .modal-box { background: var(--surface); border-radius: 12px; width: 100%; max-width: 1000px; box-shadow: 0 20px 50px rgba(0,0,0,.3); }
+  .modal-head { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .modal-head h2 { font-size: 1rem; }
+  .modal-body { padding: 16px 18px; }
+  .modal-foot { padding: 12px 18px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .x-btn { border: none; background: transparent; font-size: 1.3rem; cursor: pointer; color: var(--text-soft); line-height: 1; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: 12px; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field > label { font-size: .74rem; font-weight: 700; color: var(--text-soft); line-height: 1.3; }
+  .field > label .vi { display: block; font-size: .85em; font-weight: 400; }
+  .field input, .field select, .field textarea {
+    padding: 7px 9px; border: 1px solid var(--border); border-radius: 6px; font-size: .84rem; font-family: inherit; background: #fff; width: 100%; }
+  .field textarea { resize: vertical; min-height: 62px; }
+  .field .hint { font-size: .68rem; color: var(--text-soft); }
+  .section-title { font-size: .82rem; font-weight: 700; margin: 20px 0 8px; padding-bottom: 5px; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+
+  .steps-editor { border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .step-row { display: grid; grid-template-columns: 52px 1fr 108px 128px 120px 1fr; gap: 8px; align-items: center;
+    padding: 7px 10px; border-bottom: 1px solid var(--border); font-size: .8rem; }
+  .step-row:last-child { border-bottom: none; }
+  .step-row.is-current { background: #eff6ff; }
+  .step-row.is-done { background: #f8fdf9; }
+  .step-row .k { font-weight: 700; color: var(--accent); }
+  .step-row .nm { line-height: 1.3; }
+  .step-row .nm small { display: block; color: var(--text-soft); font-size: .78em; }
+  .step-row input, .step-row select { padding: 4px 6px; border: 1px solid var(--border); border-radius: 5px; font-size: .76rem; width: 100%; font-family: inherit; }
+  .step-row .own { font-size: .7rem; color: var(--text-soft); }
+  @media (max-width: 820px) { .step-row { grid-template-columns: 44px 1fr; } .step-row .own { display: none; } }
+
+  .pay-row { display: grid; grid-template-columns: 46px 68px 118px 66px 1fr 128px 128px 26px; gap: 7px; align-items: center; margin-bottom: 6px; }
+  .pay-row input, .pay-row select { padding: 5px 7px; border: 1px solid var(--border); border-radius: 5px; font-size: .78rem; width: 100%; font-family: inherit; }
+  .pay-head { font-size: .68rem; color: var(--text-soft); font-weight: 700; }
+  .pay-row input:disabled { background: #f1f5f9; color: #94a3b8; }
+  .pay-row .p-amt.auto { background: #f0fdf4; }
+  @media (max-width: 820px) { .pay-row { grid-template-columns: 1fr 1fr; } .pay-head { display: none; } }
+
+  .flow-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .flow-note { background: var(--warn-bg); border: 1px solid #fde68a; border-radius: var(--radius); padding: 12px 16px; font-size: .82rem; line-height: 1.7; }
+  .fatal { background: var(--danger-bg); color: #b91c1c; border: 1px solid #fecaca; border-radius: var(--radius); padding: 12px 16px; margin-bottom: 14px; font-size: .85rem; display: none; }
+  .toast { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%); background: #1e293b; color: #fff;
+    padding: 10px 20px; border-radius: 8px; font-size: .85rem; z-index: 900; opacity: 0; pointer-events: none; transition: opacity .2s; }
+  .toast.on { opacity: 1; }
+  .ro-note { font-size: .76rem; color: var(--text-soft); }
+</style>
+</head>
+<body>
+<script type="module" src="auth-guard.js?v=2"></script>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <img src="Rexon%20logo.png" alt="REXON VN" class="topbar-logo">
+    <h1>採購流程進度追蹤系統<span class="vi">Hệ thống theo dõi tiến độ mua hàng</span></h1>
+  </div>
+  <div class="topbar-right">
+    <a class="nav-link" href="index.html">🏠 首頁<span class="vi">Trang chủ</span></a>
+    <a class="nav-link" id="adminLink" href="purchase-admin.html" style="display:none">⚙️ 主檔管理<span class="vi">Quản trị</span></a>
+  </div>
+</div>
+
+<div class="main">
+  <div class="fatal" id="fatal"></div>
+
+  <div class="tabs" id="tabs">
+    <button data-tab="board"  class="active">📋 案件進度<span class="vi">Tiến độ</span></button>
+    <button data-tab="pay">💰 付款排程<span class="vi">Lịch thanh toán</span></button>
+    <button data-tab="cash">📈 現金流預估<span class="vi">Dự báo dòng tiền</span></button>
+    <button data-tab="stat">⏱️ 階段分析<span class="vi">Phân tích giai đoạn</span></button>
+    <button data-tab="flow">📖 流程說明<span class="vi">Quy trình</span></button>
+  </div>
+
+  <!-- ══ 案件進度 ══ -->
+  <section id="tab-board">
+    <div class="stats-row" id="stats"></div>
+    <div class="toolbar">
+      <input class="search-box" id="q" placeholder="搜尋廠商、採購項目、單號… / Tìm nhà CC, hạng mục, số đơn…">
+      <select class="filter-select" id="fUnit"><option value="">全部單位 / Tất cả BP</option></select>
+      <select class="filter-select" id="fPath">
+        <option value="">全部流程 / Tất cả</option>
+        <option value="A">A 一般合約</option>
+        <option value="B">B 訂貨契約單</option>
+      </select>
+      <select class="filter-select" id="fRisk">
+        <option value="">全部風險 / Tất cả</option>
+        <option value="overdue">🔴 已逾期</option>
+        <option value="high">🟠 高風險</option>
+        <option value="mid">🟡 中風險</option>
+        <option value="low">🟢 低風險</option>
+        <option value="none">⚪ 未評估</option>
+      </select>
+      <select class="filter-select" id="fStatus">
+        <option value="open">進行中 / Đang chạy</option>
+        <option value="closed">已結案 / Đã đóng</option>
+        <option value="review">待覆核 / Chờ rà soát</option>
+        <option value="all">全部 / Tất cả</option>
+      </select>
+      <button class="btn btn-outline" id="btnCsv">⬇ 匯出 CSV</button>
+      <button class="btn btn-primary" id="btnNew">＋ 新增案件 / Thêm</button>
+    </div>
+    <div class="panel">
+      <div class="table-wrap">
+        <table id="tbl">
+          <thead><tr>
+            <th>單號<span class="vi">Số</span></th>
+            <th class="nw">單位<span class="vi">Bộ phận</span></th>
+            <th>廠商 / 採購項目<span class="vi">NCC / Hạng mục</span></th>
+            <th class="mid">流程<span class="vi">Đường dẫn</span></th>
+            <th>步驟進度<span class="vi">Tiến độ các bước</span></th>
+            <th>目前步驟 / 下一步行動<span class="vi">Bước hiện tại</span></th>
+            <th class="num">金額<span class="vi">Số tiền</span></th>
+            <th class="num">必要日期<span class="vi">Ngày cần</span></th>
+            <th class="num">預計完成<span class="vi">DK xong</span></th>
+            <th class="num">餘裕<span class="vi">Dự phòng</span></th>
+            <th>風險<span class="vi">Rủi ro</span></th>
+            <th></th>
+          </tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="emptyRow" style="display:none">沒有符合條件的案件 / Không có hồ sơ phù hợp</div>
+    </div>
+  </section>
+
+  <!-- ══ 付款排程 ══ -->
+  <section id="tab-pay" hidden>
+    <div class="toolbar">
+      <select class="filter-select" id="pUnit"><option value="">全部單位 / Tất cả BP</option></select>
+      <select class="filter-select" id="pState">
+        <option value="unpaid">尚有未付 / Còn chưa trả</option>
+        <option value="paid">已全部付清 / Đã trả xong</option>
+        <option value="all">全部 / Tất cả</option>
+      </select>
+      <select class="filter-select" id="pCur">
+        <option value="">全部幣別 / Tất cả</option>
+        <option value="VND">VND</option><option value="USD">USD</option><option value="TWD">TWD</option>
+      </select>
+      <button class="btn btn-outline" id="btnPayCsv">⬇ 匯出 CSV</button>
+    </div>
+    <div class="panel">
+      <div class="panel-head">付款進度 <span class="vi">Tiến độ thanh toán</span>
+        <div class="legend">
+          <span class="k"><i style="background:#16a34a"></i>已付 / Đã trả</span>
+          <span class="k"><i style="background:#dc2626"></i>逾期未付 / Quá hạn</span>
+          <span class="k"><i style="background:#ea580c"></i>7 天內到期 / Sắp đến hạn</span>
+          <span class="k"><i style="background:#2563eb"></i>未到期 / Chưa đến hạn</span>
+          <span class="k"><i style="background:#94a3b8"></i>無應付日 / Chưa có ngày</span>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>單號<span class="vi">Số</span></th>
+            <th class="nw">單位<span class="vi">BP</span></th>
+            <th>廠商 / 項目<span class="vi">NCC / Hạng mục</span></th>
+            <th>付款期別（色塊＝各期狀態）<span class="vi">Các kỳ thanh toán</span></th>
+            <th class="num">合計<span class="vi">Tổng</span></th>
+            <th class="num">已付<span class="vi">Đã trả</span></th>
+            <th>狀態<span class="vi">Trạng thái</span></th>
+          </tr></thead>
+          <tbody id="payBody"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="payEmpty" style="display:none">尚無付款資料 / Chưa có dữ liệu thanh toán</div>
+    </div>
+  </section>
+
+  <!-- ══ 現金流 ══ -->
+  <section id="tab-cash" hidden>
+    <div class="flow-note" style="margin-bottom:14px">
+      應付日取「預計付款日」；未填時依付款條件推估並標示為 <span class="pill risk-none">推估</span>：
+      <b>TT</b> 類＝預計完成日 + 天數；<b>月結</b> 類＝預計完成日當月月底再 + 天數。推估值僅供資金規劃參考。
+      <span class="vi">Ngày đến hạn lấy theo ngày TT dự kiến; nếu trống thì ước tính theo điều kiện TT (TT: ngày DK xong + số ngày; kết toán cuối tháng: cuối tháng + số ngày).</span>
+    </div>
+    <div class="panel">
+      <div class="panel-head">未來 12 個月應付金額 <span class="vi">Số tiền phải trả 12 tháng tới</span>
+        <select class="filter-select" id="cUnit"><option value="">全部單位 / Tất cả BP</option></select>
+      </div>
+      <div class="table-wrap"><table><thead id="cashHead"></thead><tbody id="cashBody"></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- ══ 階段分析 ══ -->
+  <section id="tab-stat" hidden>
+    <div class="flow-note" style="margin-bottom:14px">
+      以各步驟填寫的「完成日期」計算實際耗時，與流程表的典型天數比較，找出真正卡關的階段。只統計前後兩步都有填日期的案件。
+      <span class="vi">Tính thời gian thực tế theo ngày hoàn thành đã nhập, so với số ngày tiêu biểu để tìm bước đang tắc.</span>
+    </div>
+    <div class="panel">
+      <div class="panel-head">各步驟耗時 <span class="vi">Thời gian từng bước</span>
+        <select class="filter-select" id="sPath"><option value="A">A 一般合約</option><option value="B">B 訂貨契約單</option></select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>步驟<span class="vi">Bước</span></th><th>名稱<span class="vi">Tên</span></th>
+            <th>執行單位<span class="vi">Đơn vị</span></th><th>典型天數<span class="vi">Tiêu biểu</span></th>
+            <th>實際平均<span class="vi">TB thực tế</span></th><th>最長<span class="vi">Lâu nhất</span></th>
+            <th>樣本<span class="vi">Mẫu</span></th><th>目前卡在此步<span class="vi">Đang dừng ở đây</span></th>
+          </tr></thead>
+          <tbody id="statBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 流程說明 ══ -->
+  <section id="tab-flow" hidden>
+    <div class="flow-note" style="margin-bottom:14px">
+      <b>步驟 2 詢價完成取得報價單後，依金額判斷路徑：</b>預付款 &lt; 台幣 30 萬 <b>且</b> 總價 &lt; 台幣 100 萬 → <b>B 訂貨契約單流程</b>；否則 → <b>A 一般合約流程</b>。★ 為條件步驟，不符合條件時可標記「略過」。
+      <span class="vi">Sau bước 2, căn cứ số tiền để chọn đường: đặt cọc &lt; 300.000 NTD và tổng &lt; 1.000.000 NTD → quy trình B; ngược lại → quy trình A.</span>
+    </div>
+    <div id="flowDoc"></div>
+  </section>
+</div>
+
+<!-- ══ 案件編輯對話框 ══ -->
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2 id="mTitle">新增採購案件</h2>
+      <button class="x-btn" id="mClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="grid">
+        <div class="field"><label>採購單位 <span class="vi">Bộ phận mua</span></label>
+          <select id="fdUnit"></select></div>
+        <div class="field"><label>廠商 <span class="vi">Nhà cung cấp</span></label>
+          <input id="fdVendor" list="vendorList" placeholder="輸入或選擇"><datalist id="vendorList"></datalist></div>
+        <div class="field"><label>採購項目（中文） <span class="vi">Hạng mục (TQ)</span></label>
+          <input id="fdItem"></div>
+        <div class="field"><label>採購項目（越南文） <span class="vi">Hạng mục (VN)</span></label>
+          <input id="fdItemVi"></div>
+        <div class="field"><label>幣別 <span class="vi">Tiền tệ</span></label>
+          <select id="fdCur"><option value="">—</option><option>VND</option><option>USD</option><option>TWD</option></select></div>
+        <div class="field"><label>總金額 <span class="vi">Tổng tiền</span></label>
+          <input id="fdAmount" type="number" step="any" min="0"></div>
+        <div class="field"><label>流程路徑 <span class="vi">Đường dẫn</span></label>
+          <select id="fdPath"><option value="A">A 一般合約 / HĐ thông thường</option><option value="B">B 訂貨契約單 / Phiếu đặt hàng</option></select>
+          <span class="hint" id="pathHint"></span></div>
+        <div class="field"><label>合約／訂貨契約單號 <span class="vi">Số HĐ / PO</span></label>
+          <input id="fdPoNo" placeholder="CON-XXX / PO-XXX"></div>
+        <div class="field"><label>必要日期 <span class="vi">Ngày cần</span></label>
+          <input id="fdRequired" type="date"></div>
+        <div class="field"><label>預計完成日 <span class="vi">Ngày DK xong</span></label>
+          <input id="fdEta" type="date"></div>
+        <div class="field"><label>狀態 <span class="vi">Trạng thái</span></label>
+          <select id="fdStatus"><option value="open">進行中 / Đang chạy</option><option value="closed">已結案 / Đã đóng</option><option value="cancelled">已取消 / Đã hủy</option></select></div>
+        <div class="field"><label>資料待覆核 <span class="vi">Cần rà soát</span></label>
+          <select id="fdReview"><option value="no">否 / Không</option><option value="yes">是 / Có</option></select>
+          <span class="hint">由 Excel 匯入、單位或幣別尚未確認者請保持「是」</span></div>
+      </div>
+
+      <div class="section-title">流程步驟 <span class="vi">Các bước quy trình</span>
+        <span class="ro-note" id="stepSummary"></span></div>
+      <div class="steps-editor" id="stepsEditor"></div>
+
+      <div class="section-title">付款期別 <span class="vi">Các kỳ thanh toán</span>
+        <button class="btn btn-outline btn-sm" id="btnAddPay" type="button">＋ 新增一期</button></div>
+      <div class="pay-row pay-head">
+        <span>期別</span><span>比率%</span><span>付款條件</span><span>天數</span><span>金額</span><span>預計付款日</span><span>實際付款日</span><span></span>
+      </div>
+      <div id="payEditor"></div>
+      <p class="ro-note" id="paySum" style="margin-top:6px"></p>
+
+      <div class="section-title">備註 <span class="vi">Ghi chú</span></div>
+      <div class="field"><textarea id="fdRemark" placeholder="交貨安排、緩解措施、與廠商溝通紀錄…"></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-danger" id="mDelete" style="display:none">刪除案件</button>
+      <span style="flex:1"></span>
+      <button class="btn btn-outline" id="mCancel">取消 / Hủy</button>
+      <button class="btn btn-primary" id="mSave">儲存 / Lưu</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore, collection, doc, addDoc, updateDoc, deleteDoc,
+  onSnapshot, runTransaction, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { mivAuthReady } from "./auth-guard.js?v=2";
+import {
+  stepsOf, progressOf, slackDays, riskOf, RISK, suggestPath,
+  COMMON_STEPS, PATH_A_STEPS, PATH_B_STEPS, THRESHOLD, DEFAULT_FX_TO_TWD,
+  DEFAULT_PAY_TERMS, parseTerm, formatTerm, dueFromTerm
+} from "./purchase-flow.js?v=2";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs",
+  authDomain: "miv-1426c.firebaseapp.com",
+  projectId: "miv-1426c",
+  storageBucket: "miv-1426c.firebasestorage.app",
+  messagingSenderId: "398934341623",
+  appId: "1:398934341623:web:4af46c057d2e202855a0f2"
+};
+const db = getFirestore(initializeApp(firebaseConfig));
+const caseCol   = collection(db, "purchase_cases");
+const unitCol   = collection(db, "purchase_units");
+const vendorCol = collection(db, "purchase_vendors");
+const configRef = doc(db, "purchase_meta", "config");
+const counterRef = doc(db, "purchase_meta", "counter");
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const pad2 = n => String(n).padStart(2, "0");
+const isoOf = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+const monthOf = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`;
+const todayISO = () => isoOf(new Date());
+
+let cases = [], units = [], vendors = [], config = { fxToTWD: DEFAULT_FX_TO_TWD, payTerms: DEFAULT_PAY_TERMS };
+// 付款條件類型清單：管理員可在 purchase-admin.html 維護，未設定時用出廠預設
+const termDefs = () => (config.payTerms && config.payTerms.length ? config.payTerms : DEFAULT_PAY_TERMS);
+let me = null, canEdit = false, editingId = null, draftSteps = {}, draftPays = [];
+let tab = "board";
+
+const toast = msg => {
+  const t = $("toast"); t.textContent = msg; t.classList.add("on");
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("on"), 2200);
+};
+const fatal = msg => { const f = $("fatal"); f.textContent = msg; f.style.display = "block"; };
+const onDbError = err => { console.error(err); fatal("讀取資料失敗：" + err.message + " / Lỗi tải dữ liệu"); };
+
+// ── 金額格式：VND 不帶小數，其餘保留 2 位 ─────────────────────
+function fmtMoney(v, cur) {
+  if (v === null || v === undefined || v === "" || isNaN(v)) return "";
+  const d = cur === "VND" ? 0 : 2;
+  return Number(v).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: d });
+}
+const money = (v, cur) => v === null || v === undefined || v === "" ? "" : fmtMoney(v, cur) + (cur ? " " + cur : "");
+
+// ── 登入與權限 ───────────────────────────────────────────────
+me = await mivAuthReady;
+canEdit = ["admin", "quality", "toolroom", "production"].includes(me.role);
+if (me.role === "admin") $("adminLink").style.display = "";
+if (!canEdit) {
+  $("btnNew").style.display = "none";
+  fatal("您目前是唯讀身分（角色：" + (me.role || "未指派") + "），可檢視但無法編輯。／ Bạn chỉ có quyền xem.");
+}
+
+// ── 訂閱資料 ─────────────────────────────────────────────────
+onSnapshot(unitCol, snap => {
+  units = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+    .sort((a, b) => (a.order ?? 99) - (b.order ?? 99) || String(a.name).localeCompare(String(b.name)));
+  fillUnitSelects(); render();
+}, onDbError);
+
+onSnapshot(vendorCol, snap => {
+  vendors = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  $("vendorList").innerHTML = vendors.map(v => `<option value="${esc(v.name)}">${esc(v.nameVi || "")}</option>`).join("");
+}, onDbError);
+
+onSnapshot(configRef, snap => {
+  config = snap.exists()
+    ? { fxToTWD: DEFAULT_FX_TO_TWD, payTerms: DEFAULT_PAY_TERMS, ...snap.data() }
+    : { fxToTWD: DEFAULT_FX_TO_TWD, payTerms: DEFAULT_PAY_TERMS };
+  if ($("modal").classList.contains("on")) renderPayEditor();   // 主檔改了就即時反映到開著的表單
+  render();
+}, onDbError);
+
+onSnapshot(caseCol, snap => {
+  cases = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  cases.sort((a, b) => String(b.no || "").localeCompare(String(a.no || "")));
+  render();
+}, onDbError);
+
+function fillUnitSelects() {
+  const opts = units.map(u => `<option value="${esc(u.name)}">${esc(u.name)}${u.nameVi ? " / " + esc(u.nameVi) : ""}</option>`).join("");
+  for (const id of ["fUnit", "pUnit", "cUnit"]) {
+    const el = $(id), keep = el.value;
+    el.innerHTML = `<option value="">全部單位 / Tất cả BP</option>` + opts;
+    el.value = keep;
+  }
+  const fd = $("fdUnit"), keep = fd.value;
+  fd.innerHTML = `<option value="">— 請選擇 / Chọn —</option>` + opts;
+  fd.value = keep;
+}
+
+// ── 衍生資料 ─────────────────────────────────────────────────
+function decorate(c) {
+  c = { ...c, path: c.path === "B" ? "B" : "A" };   // 匯入資料可能沒填路徑，一律視為 A
+  const prog = progressOf(c);
+  const slack = slackDays(c.requiredDate, c.etaDate);
+  return { ...c, prog, slack, risk: c.status === "closed" || prog.finished ? RISK.low : riskOf(slack) };
+}
+
+function visibleCases() {
+  const q = $("q").value.trim().toLowerCase();
+  const fu = $("fUnit").value, fp = $("fPath").value, fr = $("fRisk").value, fs = $("fStatus").value;
+  return cases.map(decorate).filter(c => {
+    if (fs === "open" && c.status !== "open") return false;
+    if (fs === "closed" && c.status !== "closed") return false;
+    if (fs === "review" && !c.needsReview) return false;
+    if (fu && c.unit !== fu) return false;
+    if (fp && c.path !== fp) return false;
+    if (fr && c.risk.key !== fr) return false;
+    if (q) {
+      const hay = [c.no, c.vendor, c.item, c.itemVi, c.poNo, c.remark, c.unit].join(" ").toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+// ── 統計卡 ───────────────────────────────────────────────────
+function renderStats(list) {
+  const open = cases.map(decorate).filter(c => c.status === "open");
+  const n = k => open.filter(c => c.risk.key === k).length;
+  const review = cases.filter(c => c.needsReview && c.status === "open").length;
+  const due = duePayments().filter(p => !p.paidDate && p.dueISO && p.dueISO.slice(0, 7) === todayISO().slice(0, 7));
+  const byCur = {};
+  due.forEach(p => { if (p.amount) byCur[p.currency || "?"] = (byCur[p.currency || "?"] || 0) + p.amount; });
+  const dueTxt = Object.entries(byCur).map(([c, v]) => fmtMoney(v, c) + " " + c).join(" ／ ") || "—";
+  const cards = [
+    { k: "", cls: "", lbl: "進行中案件", vi: "Đang chạy", val: open.length, sub: "共 " + cases.length + " 筆" },
+    { k: "overdue", cls: "danger", lbl: "🔴 已逾期", vi: "Đã quá hạn", val: n("overdue") },
+    { k: "high", cls: "warn", lbl: "🟠 高風險（7天內）", vi: "Rủi ro cao", val: n("high") },
+    { k: "mid", cls: "", lbl: "🟡 中風險（14天內）", vi: "Rủi ro TB", val: n("mid") },
+    { k: "review", cls: "violet", lbl: "待覆核資料", vi: "Chờ rà soát", val: review },
+    { k: "", cls: "ok", lbl: "本月應付", vi: "Phải trả tháng này", val: "", sub: dueTxt },
+  ];
+  $("stats").innerHTML = cards.map(c => `
+    <div class="stat-card ${c.cls}" data-k="${c.k}">
+      <div class="lbl">${c.lbl}<span class="vi">${c.vi}</span></div>
+      ${c.val !== "" ? `<div class="val">${c.val}</div>` : ""}
+      ${c.sub ? `<div class="sub">${esc(c.sub)}</div>` : ""}
+    </div>`).join("");
+  $("stats").querySelectorAll(".stat-card").forEach(el => el.addEventListener("click", () => {
+    const k = el.dataset.k;
+    if (k === "review") { $("fStatus").value = "review"; $("fRisk").value = ""; }
+    else { $("fStatus").value = "open"; $("fRisk").value = k; }
+    render();
+  }));
+}
+
+// ── 案件表格 ─────────────────────────────────────────────────
+function trackHtml(c) {
+  return `<div class="track">` + c.prog.list.map((s, i) => {
+    const cls = s.state === "done" ? "done" : s.state === "doing" ? "doing" : s.state === "skip" ? "skip" : "";
+    const tip = `${s.key}. ${s.zh}${s.star ? "（條件步驟）" : ""}${s.date ? " — " + s.date : ""}${s.by ? " (" + s.by + ")" : ""}`;
+    return `<span class="dot ${cls}${s.star ? " opt" : ""}" title="${esc(tip)}">${i + 1}</span>`;
+  }).join("") + `</div>`;
+}
+
+function renderTable(list) {
+  $("emptyRow").style.display = list.length ? "none" : "block";
+  $("tbody").innerHTML = list.map(c => {
+    const cur = c.prog.current;
+    const next = cur ? `${cur.key}. ${cur.zh}<span class="vi">${esc(cur.vi)}</span>`
+                     : `<span class="pill risk-low">流程已走完 / Hoàn tất</span>`;
+    return `<tr data-id="${c.id}">
+      <td style="white-space:nowrap">${esc(c.no || "—")}${c.needsReview ? ` <span class="pill tag-review">待覆核</span>` : ""}${c.status === "closed" ? ` <span class="pill tag-closed">結案</span>` : ""}</td>
+      <td class="nw">${esc(c.unit || "—")}</td>
+      <td><b>${esc(c.vendor || "—")}</b><br>${esc(c.item || "")}${c.poNo ? `<br><span class="vi">${esc(c.poNo)}</span>` : ""}</td>
+      <td class="mid"><span class="pill path-${c.path}">${c.path}</span></td>
+      <td>${trackHtml(c)}<div class="bar" style="margin-top:5px"><i style="width:${c.prog.percent}%"></i></div>
+          <span class="vi">${c.prog.doneCount}/${c.prog.totalCount}（${c.prog.percent}%）</span></td>
+      <td style="min-width:200px">${next}</td>
+      <td class="num">${esc(money(c.amount, c.currency))}</td>
+      <td class="num">${esc(c.requiredDate || "—")}</td>
+      <td class="num">${esc(c.etaDate || "—")}</td>
+      <td class="num">${c.slack === null ? "—" : c.slack}</td>
+      <td><span class="pill ${c.risk.cls}">${c.risk.icon} ${c.risk.zh}</span></td>
+      <td style="white-space:nowrap">
+        ${canEdit && cur ? `<button class="btn btn-ok btn-sm act-next" data-id="${c.id}">完成本步 ✓</button> ` : ""}
+        <button class="btn btn-outline btn-sm act-edit" data-id="${c.id}">${canEdit ? "編輯" : "檢視"}</button>
+      </td>
+    </tr>`;
+  }).join("");
+  $("tbody").querySelectorAll(".act-edit").forEach(b => b.addEventListener("click", () => openModal(b.dataset.id)));
+  $("tbody").querySelectorAll(".act-next").forEach(b => b.addEventListener("click", () => advanceStep(b.dataset.id)));
+}
+
+// 一鍵完成目前步驟：填上今天日期與經手人，並把下一步標成進行中
+async function advanceStep(id) {
+  const c = cases.find(x => x.id === id); if (!c) return;
+  const prog = progressOf(c);
+  if (!prog.current) return;
+  if (!confirm(`確定將「${prog.current.key}. ${prog.current.zh}」標記為完成（${todayISO()}）？`)) return;
+  const steps = { ...(c.steps || {}) };
+  steps[prog.current.key] = {
+    ...(steps[prog.current.key] || {}), state: "done",
+    date: steps[prog.current.key]?.date || todayISO(),
+    by: steps[prog.current.key]?.by || (me.name || me.employeeId),
+  };
+  const all = stepsOf(c.path);
+  const idx = all.findIndex(s => s.key === prog.current.key);
+  const nxt = all.slice(idx + 1).find(s => (steps[s.key]?.state || "todo") === "todo");
+  if (nxt) steps[nxt.key] = { ...(steps[nxt.key] || {}), state: "doing" };
+  try {
+    await updateDoc(doc(db, "purchase_cases", id), {
+      steps, updatedAt: serverTimestamp(), updatedBy: me.name || me.employeeId,
+      ...(nxt ? {} : { status: "closed" }),
+    });
+    toast(nxt ? `已完成，下一步：${nxt.key}. ${nxt.zh}` : "流程已全部完成，案件自動結案");
+  } catch (e) { alert("更新失敗：" + e.message); }
+}
+
+// ── 付款彙整（供付款排程／現金流／統計卡共用） ────────────────
+function estimateDue(p, c) {
+  if (p.dueDate) return { iso: p.dueDate, est: false };
+  const t = termOf(p);
+  const iso = dueFromTerm(c.etaDate, t.type, t.days, termDefs());
+  return iso ? { iso, est: true } : { iso: "", est: false };
+}
+
+// 取得付款條件：新資料直接有 termType/termDays，舊資料從 term 字串拆出來
+function termOf(p) {
+  if (p.termType !== undefined && p.termType !== null && p.termType !== "") {
+    return { type: p.termType, days: p.termDays ?? null };
+  }
+  return parseTerm(p.term, termDefs());
+}
+
+function duePayments() {
+  const out = [];
+  cases.forEach(c => {
+    if (c.status === "cancelled") return;
+    (c.payments || []).forEach(p => {
+      const amount = p.amount ?? (c.amount && p.pct ? c.amount * p.pct : null);
+      const d = estimateDue(p, c);
+      out.push({
+        caseId: c.id, no: c.no, unit: c.unit, vendor: c.vendor, item: c.item,
+        currency: c.currency, seq: p.seq, pct: p.pct,
+        term: p.term || formatTerm(termOf(p).type, termOf(p).days),
+        termType: termOf(p).type, termDays: termOf(p).days,
+        amount, paidDate: p.paidDate || "", dueISO: d.iso, estimated: d.est, note: p.note || "",
+      });
+    });
+  });
+  return out;
+}
+
+// 單期付款的狀態：決定色塊顏色與整列的彙總狀態
+function payState(p) {
+  if (p.paidDate) return { key: "paid", cls: "pay-paid", zh: "已付", vi: "Đã trả", rank: 0 };
+  if (!p.dueISO) return { key: "none", cls: "pay-none", zh: "無應付日", vi: "Chưa có ngày", rank: 1 };
+  const d = Math.round((new Date(p.dueISO + "T00:00:00") - new Date(todayISO() + "T00:00:00")) / 86400000);
+  if (d < 0) return { key: "late", cls: "pay-late", zh: "逾期未付", vi: "Quá hạn", rank: 4, days: d };
+  if (d <= 7) return { key: "soon", cls: "pay-soon", zh: "7 天內到期", vi: "Sắp đến hạn", rank: 3, days: d };
+  return { key: "open", cls: "pay-open", zh: "未到期", vi: "Chưa đến hạn", rank: 2, days: d };
+}
+
+const PAY_PILL = {
+  paid: "risk-low", late: "risk-overdue", soon: "risk-high", open: "risk-mid", none: "risk-none",
+};
+
+function renderPay() {
+  const fu = $("pUnit").value, fs = $("pState").value, fc = $("pCur").value;
+
+  // 一個案件一列，把各期收在一起
+  const groups = new Map();
+  duePayments().forEach(p => {
+    if (fu && p.unit !== fu) return;
+    if (fc && p.currency !== fc) return;
+    if (!groups.has(p.caseId)) groups.set(p.caseId, { ...p, pays: [] });
+    groups.get(p.caseId).pays.push(p);
+  });
+
+  let rows = [...groups.values()];
+  rows.forEach(g => {
+    g.pays.sort((a, b) => (a.seq || 0) - (b.seq || 0));
+    g.states = g.pays.map(payState);
+    g.total = g.pays.reduce((s, p) => s + (p.amount || 0), 0);
+    g.paidAmt = g.pays.filter(p => p.paidDate).reduce((s, p) => s + (p.amount || 0), 0);
+    g.paidCount = g.pays.filter(p => p.paidDate).length;
+    g.allPaid = g.paidCount === g.pays.length;
+    // 整列狀態取最嚴重的一期；全部付清則為已付清
+    g.worst = g.allPaid
+      ? { key: "paid", zh: "已付清", vi: "Đã trả xong" }
+      : g.states.reduce((a, b) => (b.rank > a.rank ? b : a), g.states[0]);
+    // 下一筆要付的款
+    g.next = g.pays.find(p => !p.paidDate && p.dueISO) || g.pays.find(p => !p.paidDate) || null;
+  });
+
+  if (fs === "paid") rows = rows.filter(g => g.allPaid);
+  if (fs === "unpaid") rows = rows.filter(g => !g.allPaid);
+
+  // 最急的排前面：逾期 > 快到期 > 未到期，同級再依最近應付日
+  rows.sort((a, b) => (b.allPaid ? -1 : b.worst.rank ?? 0) - (a.allPaid ? -1 : a.worst.rank ?? 0)
+    || String(a.next?.dueISO || "9999").localeCompare(String(b.next?.dueISO || "9999")));
+
+  $("payEmpty").style.display = rows.length ? "none" : "block";
+  $("payBody").innerHTML = rows.map(g => {
+    const chips = g.pays.map((p, i) => {
+      const st = g.states[i];
+      const cap = `第${p.seq} 期${p.pct != null ? "　" + Math.round(p.pct * 1000) / 10 + "%" : ""}${p.term ? "　" + esc(p.term) : ""}`;
+      const foot = p.paidDate ? "已付 " + p.paidDate
+        : p.dueISO ? p.dueISO + (p.estimated ? "（推估）" : "")
+        : "無應付日";
+      const tip = `第${p.seq} 期｜${st.zh}${st.days !== undefined ? `（${st.days < 0 ? "逾期 " + -st.days : "剩 " + st.days} 天）` : ""}` +
+        `
+金額：${money(p.amount, p.currency) || "—"}
+應付日：${p.dueISO || "—"}${p.estimated ? "（依付款條件推估）" : ""}
+實付日：${p.paidDate || "—"}`;
+      return `<div class="pay-chip ${st.cls}" title="${esc(tip)}">
+        <div class="cap">${esc(cap)}</div>
+        <span class="amt">${esc(fmtMoney(p.amount, p.currency) || "—")}</span>
+        <div class="due">${esc(foot)}</div>
+      </div>`;
+    }).join("");
+    const pctPaid = g.total ? Math.round(g.paidAmt / g.total * 100) : 0;
+    return `<tr>
+      <td style="white-space:nowrap">${esc(g.no || "—")}</td>
+      <td class="nw">${esc(g.unit || "—")}</td>
+      <td style="min-width:150px"><b>${esc(g.vendor || "")}</b><span class="vi">${esc(g.item || "")}</span></td>
+      <td><div class="pay-chips">${chips}</div></td>
+      <td class="num">${esc(money(g.total, g.currency))}</td>
+      <td class="num">${esc(fmtMoney(g.paidAmt, g.currency))}<span class="vi">${g.paidCount}/${g.pays.length} 期・${pctPaid}%</span></td>
+      <td><span class="pill ${PAY_PILL[g.worst.key] || "risk-none"}">${esc(g.worst.zh)}</span></td>
+    </tr>`;
+  }).join("");
+}
+
+// ── 現金流：月份 × 幣別 ──────────────────────────────────────
+function renderCash() {
+  const fu = $("cUnit").value;
+  const now = new Date();
+  const months = Array.from({ length: 12 }, (_, i) => monthOf(new Date(now.getFullYear(), now.getMonth() + i, 1)));
+  const first = months[0], last = months[months.length - 1];
+  const rows = duePayments().filter(p => !p.paidDate && p.amount && p.dueISO && (!fu || p.unit === fu));
+  const currencies = [...new Set(rows.map(p => p.currency || "?"))].sort();
+  $("cashHead").innerHTML = `<tr><th>幣別<span class="vi">Tiền tệ</span></th>` +
+    `<th class="num" style="text-align:right">逾期未付<span class="vi">Quá hạn</span></th>` +
+    months.map(m => `<th class="num" style="text-align:right">${m}</th>`).join("") +
+    `<th class="num" style="text-align:right">12 個月後<span class="vi">Sau 12 tháng</span></th>` +
+    `<th class="num" style="text-align:right">合計<span class="vi">Tổng</span></th></tr>`;
+  if (!currencies.length) {
+    $("cashBody").innerHTML = `<tr><td colspan="${months.length + 4}" class="empty">尚無未付款項 / Chưa có khoản phải trả</td></tr>`;
+    return;
+  }
+  $("cashBody").innerHTML = currencies.map(cur => {
+    const mine = rows.filter(p => (p.currency || "?") === cur);
+    const sum = f => mine.filter(f).reduce((s, p) => s + p.amount, 0);
+    const late = sum(p => p.dueISO.slice(0, 7) < first);
+    const cells = months.map(m => sum(p => p.dueISO.slice(0, 7) === m));
+    const beyond = sum(p => p.dueISO.slice(0, 7) > last);
+    const total = late + cells.reduce((a, b) => a + b, 0) + beyond;
+    const cell = v => `<td class="num">${v ? fmtMoney(v, cur) : "—"}</td>`;
+    return `<tr><td><b>${esc(cur)}</b></td>` +
+      `<td class="num" style="color:var(--danger);font-weight:700">${late ? fmtMoney(late, cur) : "—"}</td>` +
+      cells.map(cell).join("") + cell(beyond) +
+      `<td class="num" style="font-weight:700">${fmtMoney(total, cur)}</td></tr>`;
+  }).join("");
+}
+
+// ── 階段分析：各步驟實際耗時 ─────────────────────────────────
+function renderStat() {
+  const path = $("sPath").value;
+  const defs = stepsOf(path);
+  const acc = {}; defs.forEach(s => acc[s.key] = { spans: [], stuck: 0 });
+  cases.filter(c => (c.path === "B" ? "B" : "A") === path).forEach(c => {
+    const list = stepsOf(path);
+    let prev = null;
+    list.forEach(s => {
+      const rec = (c.steps || {})[s.key] || {};
+      if (rec.state === "done" && rec.date) {
+        if (prev) {
+          const d = (new Date(rec.date) - new Date(prev)) / 86400000;
+          if (d >= 0 && d < 400) acc[s.key].spans.push(d);
+        }
+        prev = rec.date;
+      } else if (rec.state === "skip") { /* 略過不計 */ }
+      else if (rec.state === "doing") { acc[s.key].stuck++; }
+    });
+    const cur = progressOf(c).current;
+    if (cur && !((c.steps || {})[cur.key]?.state === "doing")) acc[cur.key].stuck++;
+  });
+  $("statBody").innerHTML = defs.map(s => {
+    const a = acc[s.key], n = a.spans.length;
+    const avg = n ? Math.round(a.spans.reduce((x, y) => x + y, 0) / n) : null;
+    const max = n ? Math.round(Math.max(...a.spans)) : null;
+    const typical = s.days ? `${s.days[0]}-${s.days[1]} 天` : "依合約";
+    const over = avg !== null && s.days && avg > s.days[1];
+    return `<tr>
+      <td><b>${esc(s.key)}</b>${s.star ? ` <span title="條件步驟">★</span>` : ""}</td>
+      <td>${esc(s.zh)}<span class="vi">${esc(s.vi)}</span></td>
+      <td><span class="vi" style="font-style:normal">${esc(s.owner)}</span></td>
+      <td class="num">${typical}</td>
+      <td class="num" style="${over ? "color:var(--danger);font-weight:700" : ""}">${avg === null ? "—" : avg + " 天"}</td>
+      <td class="num">${max === null ? "—" : max + " 天"}</td>
+      <td class="num">${n || "—"}</td>
+      <td class="num">${a.stuck ? `<span class="pill risk-high">${a.stuck} 件</span>` : "—"}</td>
+    </tr>`;
+  }).join("");
+}
+
+// ── 流程說明 ─────────────────────────────────────────────────
+function renderFlowDoc() {
+  const tableFor = (title, vi, arr) => `
+    <div class="panel" style="margin-bottom:16px">
+      <div class="panel-head">${title} <span class="vi">${vi}</span></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>步驟<span class="vi">Bước</span></th><th>步驟名稱<span class="vi">Tên bước</span></th>
+        <th>執行單位<span class="vi">Đơn vị</span></th><th>說明<span class="vi">Giải thích</span></th>
+        <th>典型天數<span class="vi">Số ngày</span></th></tr></thead>
+        <tbody>${arr.map(s => `<tr${s.star ? ' style="background:var(--warn-bg)"' : ""}>
+          <td><b>${esc(s.key)}</b>${s.star ? " ★" : ""}</td>
+          <td>${esc(s.zh)}<span class="vi">${esc(s.vi)}</span></td>
+          <td>${esc(s.owner)}<span class="vi">${esc(s.ownerVi)}</span></td>
+          <td style="min-width:280px">${esc(s.desc)}<span class="vi">${esc(s.descVi)}</span></td>
+          <td class="num">${s.days ? s.days[0] + "-" + s.days[1] + " 天" : "依合約"}</td>
+        </tr>`).join("")}</tbody>
+      </table></div>
+    </div>`;
+  $("flowDoc").innerHTML =
+    tableFor("共用步驟（A / B 皆走）", "Bước dùng chung", COMMON_STEPS) +
+    tableFor("A 一般合約流程", "Quy trình A - Hợp đồng thông thường", PATH_A_STEPS) +
+    tableFor("B 訂貨契約單流程", "Quy trình B - Phiếu đặt hàng", PATH_B_STEPS) +
+    `<div class="flow-note">
+       <b>⚠️ 重要提醒 / Lưu ý quan trọng</b><br>
+       • 步驟 2 取得報價單後立即判斷金額，確認走 A 或 B 流程再繼續，避免後續步驟走錯。<br>
+       • A 流程：總價 ≥ 100 萬 或 預付款 ≥ 30 萬（台幣）。B 流程：兩者皆未達。<br>
+       • ★ 條件步驟（A3、A4）僅在符合條件時執行，否則於本系統標記為「略過」。<br>
+       • 新供應商第一次交易務必完成 A3 索取匯款資料，否則無法付款。<br>
+       • B 流程週期短，確認金額符合條件後再走捷徑，避免合規風險。
+     </div>`;
+}
+
+// ── 編輯對話框 ───────────────────────────────────────────────
+function renderStepsEditor(path) {
+  const defs = stepsOf(path);
+  const first = defs.find(s => (draftSteps[s.key]?.state || "todo") !== "done" && draftSteps[s.key]?.state !== "skip");
+  $("stepsEditor").innerHTML = defs.map(s => {
+    const r = draftSteps[s.key] || {};
+    const st = r.state || "todo";
+    const cls = st === "done" ? "is-done" : (first && first.key === s.key ? "is-current" : "");
+    return `<div class="step-row ${cls}" data-key="${s.key}">
+      <span class="k">${esc(s.key)}${s.star ? "★" : ""}</span>
+      <span class="nm">${esc(s.zh)}<small>${esc(s.vi)}</small></span>
+      <select class="st" ${canEdit ? "" : "disabled"}>
+        <option value="todo"${st === "todo" ? " selected" : ""}>未開始</option>
+        <option value="doing"${st === "doing" ? " selected" : ""}>進行中</option>
+        <option value="done"${st === "done" ? " selected" : ""}>完成</option>
+        <option value="skip"${st === "skip" ? " selected" : ""}>略過</option>
+      </select>
+      <input class="dt" type="date" value="${esc(r.date || "")}" ${canEdit ? "" : "disabled"} title="完成日期">
+      <input class="by" value="${esc(r.by || "")}" placeholder="經手人" ${canEdit ? "" : "disabled"}>
+      <input class="nt" value="${esc(r.note || "")}" placeholder="備註 / Ghi chú" ${canEdit ? "" : "disabled"}>
+    </div>`;
+  }).join("");
+  $("stepsEditor").querySelectorAll(".step-row").forEach(row => {
+    const key = row.dataset.key;
+    const sync = () => {
+      const st = row.querySelector(".st").value;
+      const dt = row.querySelector(".dt");
+      if (st === "done" && !dt.value) dt.value = todayISO();
+      const by = row.querySelector(".by");
+      if (st === "done" && !by.value) by.value = me.name || me.employeeId;
+      draftSteps[key] = { state: st, date: dt.value, by: by.value, note: row.querySelector(".nt").value };
+      if (st === "todo" && !dt.value && !by.value && !row.querySelector(".nt").value) delete draftSteps[key];
+      updateStepSummary();
+    };
+    row.querySelector(".st").addEventListener("change", () => { sync(); renderStepsEditor($("fdPath").value); });
+    row.querySelectorAll(".dt,.by,.nt").forEach(el => el.addEventListener("change", sync));
+  });
+  updateStepSummary();
+}
+
+function updateStepSummary() {
+  const p = progressOf({ path: $("fdPath").value, steps: draftSteps });
+  $("stepSummary").textContent = p.current
+    ? `目前步驟：${p.current.key}. ${p.current.zh}（${p.doneCount}/${p.totalCount}）`
+    : `流程已全部完成（${p.doneCount}/${p.totalCount}）`;
+}
+
+// 依「案件總金額 × 比率」算出該期金額。手動改過金額的期別不覆蓋（清空該欄即恢復自動）。
+function payAmountOf(pay) {
+  const amt = Number($("fdAmount").value) || 0;
+  if (!amt || pay.pct === null || pay.pct === undefined) return null;
+  const raw = amt * pay.pct;
+  return $("fdCur").value === "VND" ? Math.round(raw) : Math.round(raw * 100) / 100;
+}
+
+function recalcPayAmounts() {
+  draftPays.forEach((pay, i) => {
+    if (pay.amtManual) return;
+    const v = payAmountOf(pay);
+    if (v === null) return;
+    pay.amount = v;
+    const el = document.querySelector(`#payEditor .pay-row[data-i="${i}"] .p-amt`);
+    if (el) { el.value = v; el.classList.add("auto"); }
+  });
+  updatePaySum();
+}
+
+function renderPayEditor() {
+  const defs = termDefs();
+  const dis = canEdit ? "" : "disabled";
+  $("payEditor").innerHTML = draftPays.map((pay, i) => {
+    const known = defs.some(d => d.code === pay.termType);
+    const opts = `<option value="">—</option>` +
+      defs.map(d => `<option value="${esc(d.code)}"${pay.termType === d.code ? " selected" : ""}>${esc(d.label)}</option>`).join("") +
+      // 主檔裡沒有的舊寫法照樣列出來，避免匯入資料的付款條件被清掉
+      (!known && pay.termType ? `<option value="${esc(pay.termType)}" selected>${esc(pay.termType)}（未在主檔）</option>` : "");
+    const def = defs.find(d => d.code === pay.termType);
+    const needDays = def ? !!def.days : !!pay.termType;
+    return `<div class="pay-row" data-i="${i}">
+      <input class="p-seq" type="number" min="1" value="${pay.seq ?? i + 1}" ${dis}>
+      <input class="p-pct" type="number" step="any" min="0" max="100" value="${pay.pct != null ? Math.round(pay.pct * 1000) / 10 : ""}" placeholder="%" ${dis}>
+      <select class="p-type" ${dis}>${opts}</select>
+      <input class="p-days" type="number" min="0" max="365" value="${needDays ? (pay.termDays ?? "") : ""}" placeholder="天" ${needDays ? dis : "disabled"} title="${needDays ? "付款天數" : "此付款條件不需填天數"}">
+      <input class="p-amt${pay.amtManual ? "" : " auto"}" type="number" step="any" min="0" value="${pay.amount ?? ""}" placeholder="依比率自動計算" ${dis} title="留空則依比率自動計算；手動輸入後不再自動更新">
+      <input class="p-due" type="date" value="${esc(pay.dueDate || "")}" title="預計付款日（留空則依付款條件推估）" ${dis}>
+      <input class="p-paid" type="date" value="${esc(pay.paidDate || "")}" title="實際付款日" ${dis}>
+      ${canEdit ? `<button class="x-btn p-del" type="button" title="刪除此期">✕</button>` : ""}
+    </div>`;
+  }).join("");
+
+  $("payEditor").querySelectorAll(".pay-row").forEach(row => {
+    const i = Number(row.dataset.i);
+    const sync = cls => {
+      const pay = draftPays[i];
+      const val = c => row.querySelector("." + c).value;
+      pay.seq = Number(val("p-seq")) || i + 1;
+      pay.pct = val("p-pct") === "" ? null : Number(val("p-pct")) / 100;
+      pay.termType = val("p-type");
+      // 不需天數的條件（現金、預付…）一律清掉天數，否則會被拿去推估應付日
+      const tdef = termDefs().find(d => d.code === pay.termType);
+      const wantDays = tdef ? !!tdef.days : !!pay.termType;
+      pay.termDays = (!wantDays || val("p-days") === "") ? null : Number(val("p-days"));
+      pay.term = formatTerm(pay.termType, pay.termDays);
+      pay.dueDate = val("p-due") || null;
+      pay.paidDate = val("p-paid") || null;
+      if (cls === "p-amt") {
+        // 自己填了金額就固定住不再自動算；清空則交回自動計算
+        pay.amtManual = val("p-amt") !== "";
+        row.querySelector(".p-amt").classList.toggle("auto", !pay.amtManual);
+      }
+      pay.amount = val("p-amt") === "" ? null : Number(val("p-amt"));
+      if (cls === "p-type") { renderPayEditor(); recalcPayAmounts(); return; }   // 天數欄要重新啟用/停用
+      recalcPayAmounts();
+    };
+    row.querySelectorAll("input, select").forEach(el => {
+      const cls = [...el.classList].find(c => c.startsWith("p-"));
+      el.addEventListener("change", () => sync(cls));
+      if (el.classList.contains("p-pct")) el.addEventListener("input", () => sync("p-pct"));
+    });
+    row.querySelector(".p-del")?.addEventListener("click", () => { draftPays.splice(i, 1); renderPayEditor(); recalcPayAmounts(); });
+  });
+  updatePaySum();
+}
+
+function updatePaySum() {
+  const cur = $("fdCur").value, amt = Number($("fdAmount").value) || 0;
+  const pct = draftPays.reduce((s, p) => s + (p.pct || 0), 0);
+  const sum = draftPays.reduce((s, p) => s + (p.amount || 0), 0);
+  const warnPct = draftPays.length && Math.abs(pct - 1) > 0.001;
+  const warnSum = draftPays.length && amt && Math.abs(sum - amt) > (cur === "VND" ? 1 : 0.01);
+  $("paySum").innerHTML = draftPays.length
+    ? `比率合計 <b style="${warnPct ? "color:var(--danger)" : ""}">${Math.round(pct * 1000) / 10}%</b>` +
+      (warnPct ? `（不等於 100%，請確認）` : "") +
+      `　｜　金額合計 <b style="${warnSum ? "color:var(--danger)" : ""}">${fmtMoney(sum, cur)} ${esc(cur)}</b>` +
+      (amt ? `　｜　案件總金額 ${fmtMoney(amt, cur)} ${esc(cur)}` : "") +
+      `<br><span style="font-style:normal">綠底金額為依比率自動計算；手動輸入後即固定，清空該欄可恢復自動。</span>`
+    : "尚未設定付款期別。";
+}
+
+function refreshPathHint() {
+  const amt = Number($("fdAmount").value) || 0, cur = $("fdCur").value;
+  const first = draftPays.find(p => p.seq === 1) || draftPays[0];
+  const sug = suggestPath(amt, cur, first?.pct, config.fxToTWD);
+  if (!sug) { $("pathHint").textContent = "填入幣別與金額後可自動建議路徑"; return; }
+  const rate = (config.fxToTWD || DEFAULT_FX_TO_TWD)[cur];
+  const twd = Math.round(amt * rate);
+  $("pathHint").innerHTML = `建議 <b>${sug}</b> 流程（約 NT$${twd.toLocaleString()}；門檻 預付&lt;${(THRESHOLD.prepayTWD / 10000)}萬 且 總價&lt;${(THRESHOLD.totalTWD / 10000)}萬）`;
+}
+
+function openModal(id) {
+  editingId = id || null;
+  const c = id ? cases.find(x => x.id === id) : null;
+  $("mTitle").textContent = c ? `${c.no || "案件"}　${c.vendor || ""}` : "新增採購案件 / Thêm hồ sơ mua hàng";
+  $("fdUnit").value = c?.unit || "";
+  $("fdVendor").value = c?.vendor || "";
+  $("fdItem").value = c?.item || "";
+  $("fdItemVi").value = c?.itemVi || "";
+  $("fdCur").value = c?.currency || "";
+  $("fdAmount").value = c?.amount ?? "";
+  $("fdPath").value = c?.path || "A";
+  $("fdPoNo").value = c?.poNo || "";
+  $("fdRequired").value = c?.requiredDate || "";
+  $("fdEta").value = c?.etaDate || "";
+  $("fdStatus").value = c?.status || "open";
+  $("fdReview").value = c?.needsReview ? "yes" : "no";
+  $("fdRemark").value = c?.remark || "";
+  draftSteps = JSON.parse(JSON.stringify(c?.steps || {}));
+  draftPays = JSON.parse(JSON.stringify(c?.payments || [])).map(pay => {
+    if (pay.termType === undefined) {
+      const t = parseTerm(pay.term, termDefs());
+      pay.termType = t.type; pay.termDays = t.days;
+    }
+    // 既有金額一律視為手動值，匯入的實際金額不會被比率算出來的數字蓋掉
+    if (pay.amtManual === undefined) pay.amtManual = pay.amount !== null && pay.amount !== undefined;
+    return pay;
+  });
+  $("mDelete").style.display = c && me.role === "admin" ? "" : "none";
+  $("mSave").style.display = canEdit ? "" : "none";
+  renderStepsEditor($("fdPath").value);
+  renderPayEditor();
+  refreshPathHint();
+  $("modal").classList.add("on");
+}
+const closeModal = () => { $("modal").classList.remove("on"); editingId = null; };
+
+// 案件單號 PC-YYMM-NNN，與技術課委託系統採相同的流水號機制
+async function nextNo() {
+  const d = new Date();
+  const period = String(d.getFullYear()).slice(2) + String(d.getMonth() + 1).padStart(2, "0");
+  const seq = await runTransaction(db, async tx => {
+    const snap = await tx.get(counterRef);
+    const cur = snap.exists() ? snap.data() : {};
+    const n = cur.period === period ? (cur.seq || 0) + 1 : 1;
+    tx.set(counterRef, { period, seq: n });
+    return n;
+  });
+  return `PC-${period}-${String(seq).padStart(3, "0")}`;
+}
+
+async function save() {
+  if (!canEdit) return;
+  const unit = $("fdUnit").value, vendor = $("fdVendor").value.trim(), item = $("fdItem").value.trim();
+  if (!unit) return alert("請選擇採購單位 / Vui lòng chọn bộ phận");
+  if (!vendor && !item) return alert("請至少填寫廠商或採購項目 / Nhập nhà cung cấp hoặc hạng mục");
+  const payload = {
+    unit, vendor, item,
+    itemVi: $("fdItemVi").value.trim(),
+    currency: $("fdCur").value,
+    amount: $("fdAmount").value === "" ? null : Number($("fdAmount").value),
+    path: $("fdPath").value,
+    poNo: $("fdPoNo").value.trim(),
+    requiredDate: $("fdRequired").value || null,
+    etaDate: $("fdEta").value || null,
+    status: $("fdStatus").value,
+    needsReview: $("fdReview").value === "yes",
+    remark: $("fdRemark").value.trim(),
+    steps: draftSteps,
+    payments: draftPays,
+    updatedAt: serverTimestamp(),
+    updatedBy: me.name || me.employeeId,
+  };
+  $("mSave").disabled = true;
+  try {
+    if (editingId) {
+      await updateDoc(doc(db, "purchase_cases", editingId), payload);
+      toast("已儲存 / Đã lưu");
+    } else {
+      payload.no = await nextNo();
+      payload.createdAt = serverTimestamp();
+      payload.createdBy = me.name || me.employeeId;
+      await addDoc(caseCol, payload);
+      toast("已新增 " + payload.no);
+    }
+    closeModal();
+  } catch (e) { alert("儲存失敗：" + e.message); }
+  finally { $("mSave").disabled = false; }
+}
+
+async function removeCase() {
+  if (!editingId || me.role !== "admin") return;
+  const c = cases.find(x => x.id === editingId);
+  if (!confirm(`確定刪除案件「${c?.no || ""} ${c?.vendor || ""}」？此動作無法復原。`)) return;
+  try { await deleteDoc(doc(db, "purchase_cases", editingId)); toast("已刪除"); closeModal(); }
+  catch (e) { alert("刪除失敗：" + e.message); }
+}
+
+// ── CSV 匯出 ─────────────────────────────────────────────────
+function toCsv(rows) {
+  return "﻿" + rows.map(r => r.map(v => {
+    const s = String(v ?? "");
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  }).join(",")).join("\r\n");
+}
+function download(name, text) {
+  const url = URL.createObjectURL(new Blob([text], { type: "text/csv;charset=utf-8" }));
+  const a = document.createElement("a"); a.href = url; a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+$("btnCsv").addEventListener("click", () => {
+  const list = visibleCases();
+  const rows = [["單號", "採購單位", "廠商", "採購項目", "流程", "目前步驟", "進度", "幣別", "金額", "單號(PO/CON)", "必要日期", "預計完成日", "餘裕天數", "風險", "狀態", "備註"]];
+  list.forEach(c => rows.push([
+    c.no, c.unit, c.vendor, c.item, c.path,
+    c.prog.current ? c.prog.current.key + ". " + c.prog.current.zh : "已完成",
+    c.prog.doneCount + "/" + c.prog.totalCount, c.currency, c.amount ?? "", c.poNo,
+    c.requiredDate ?? "", c.etaDate ?? "", c.slack ?? "", c.risk.zh, c.status, (c.remark || "").replace(/\n/g, " / "),
+  ]));
+  download(`採購進度_${todayISO()}.csv`, toCsv(rows));
+});
+
+$("btnPayCsv").addEventListener("click", () => {
+  const rows = [["單號", "採購單位", "廠商", "項目", "期別", "比率", "付款條件", "條件類型", "天數", "幣別", "金額", "應付日", "推估", "實付日"]];
+  duePayments().forEach(p => rows.push([
+    p.no, p.unit, p.vendor, p.item, p.seq, p.pct ?? "", p.term, p.termType ?? "", p.termDays ?? "",
+    p.currency, p.amount ?? "", p.dueISO, p.estimated ? "推估" : "", p.paidDate,
+  ]));
+  download(`付款排程_${todayISO()}.csv`, toCsv(rows));
+});
+
+// ── 事件綁定 ─────────────────────────────────────────────────
+$("tabs").addEventListener("click", e => {
+  const b = e.target.closest("button[data-tab]"); if (!b) return;
+  tab = b.dataset.tab;
+  $("tabs").querySelectorAll("button").forEach(x => x.classList.toggle("active", x === b));
+  ["board", "pay", "cash", "stat", "flow"].forEach(t => $("tab-" + t).hidden = t !== tab);
+  render();
+});
+["q", "fUnit", "fPath", "fRisk", "fStatus"].forEach(id => $(id).addEventListener("input", render));
+["pUnit", "pState", "pCur"].forEach(id => $(id).addEventListener("change", renderPay));
+$("cUnit").addEventListener("change", renderCash);
+$("sPath").addEventListener("change", renderStat);
+$("btnNew").addEventListener("click", () => openModal(null));
+$("mClose").addEventListener("click", closeModal);
+$("mCancel").addEventListener("click", closeModal);
+$("mSave").addEventListener("click", save);
+$("mDelete").addEventListener("click", removeCase);
+$("modal").addEventListener("click", e => { if (e.target === $("modal")) closeModal(); });
+$("fdPath").addEventListener("change", () => { renderStepsEditor($("fdPath").value); refreshPathHint(); });
+["fdCur", "fdAmount"].forEach(id => {
+  const h = () => { refreshPathHint(); recalcPayAmounts(); };
+  $(id).addEventListener("change", h);
+  $(id).addEventListener("input", h);
+});
+$("btnAddPay").addEventListener("click", () => {
+  const defs = termDefs();
+  draftPays.push({
+    seq: draftPays.length + 1, pct: null,
+    termType: defs[0]?.code || "", termDays: null, term: "",
+    amount: null, amtManual: false, dueDate: null, paidDate: null, note: "",
+  });
+  renderPayEditor();
+  recalcPayAmounts();
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+
+function render() {
+  if (tab === "board") { const list = visibleCases(); renderStats(list); renderTable(list); }
+  else if (tab === "pay") renderPay();
+  else if (tab === "cash") renderCash();
+  else if (tab === "stat") renderStat();
+  else if (tab === "flow") renderFlowDoc();
+}
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,8387 @@
+{
+ "generatedAt": "2026-08-29",
+ "note": "由「品保設備採購進度追蹤_最終版.xlsx」與「订单情况- TÌNH TRẠNG ĐƠN HÀNG.xlsx」轉出；needsReview=true 者請於匯入前人工覆核採購單位與幣別。",
+ "units": [
+  {
+   "name": "品保課",
+   "nameVi": "Bộ phận QA",
+   "order": 1
+  },
+  {
+   "name": "工具室",
+   "nameVi": "Phòng dụng cụ",
+   "order": 2
+  },
+  {
+   "name": "生技課",
+   "nameVi": "Bộ phận Kỹ thuật SX",
+   "order": 3
+  },
+  {
+   "name": "總務課",
+   "nameVi": "Bộ phận Hành chính",
+   "order": 4
+  }
+ ],
+ "vendors": [
+  {
+   "name": "盛戈",
+   "nameVi": "THỊNH QUA"
+  },
+  {
+   "name": "华禹",
+   "nameVi": "HÒA VŨ"
+  },
+  {
+   "name": "华达",
+   "nameVi": "HOA ĐẠT"
+  },
+  {
+   "name": "復盛",
+   "nameVi": "FUSHENG"
+  },
+  {
+   "name": "振東",
+   "nameVi": "ZHEN DONG"
+  },
+  {
+   "name": "裕硕",
+   "nameVi": "DỤ THẠC"
+  },
+  {
+   "name": "貝克立",
+   "nameVi": "BEIKELI"
+  },
+  {
+   "name": "越火",
+   "nameVi": "LỬA VIỆT"
+  },
+  {
+   "name": "锋硕",
+   "nameVi": "FULLSHARP"
+  },
+  {
+   "name": "新锋",
+   "nameVi": "TÂN PHONG"
+  },
+  {
+   "name": "鑫富",
+   "nameVi": "TÂM PHÚ"
+  },
+  {
+   "name": "海豐",
+   "nameVi": "HẢI PHONG"
+  },
+  {
+   "name": "潤蓬",
+   "nameVi": "RUN PENG"
+  },
+  {
+   "name": "恒丰",
+   "nameVi": "HẰNG PHONG"
+  },
+  {
+   "name": "HPJ",
+   "nameVi": ""
+  },
+  {
+   "name": "南越",
+   "nameVi": "LỬA VIỆT"
+  },
+  {
+   "name": "新鋒",
+   "nameVi": "TÂM PHÚ"
+  },
+  {
+   "name": "天山",
+   "nameVi": "THIÊN SƠN"
+  },
+  {
+   "name": "wenna.zen@rexon.com.tw,hoangtrang41001@gmail.com,marco.chou@rexon.com.tw,yu.chen@rexon.com.tw",
+   "nameVi": ""
+  },
+  {
+   "name": "dangthiloan204@gmail.com",
+   "nameVi": ""
+  }
+ ],
+ "cases": [
+  {
+   "source": "品保設備採購進度追蹤",
+   "unit": "品保課",
+   "vendor": "鑫福設備儀器",
+   "item": "品保檢驗儀器設備",
+   "itemVi": "",
+   "path": "A",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "A3": {
+     "state": "done"
+    },
+    "A4": {
+     "state": "done"
+    },
+    "A5": {
+     "state": "done"
+    },
+    "A6": {
+     "state": "done"
+    },
+    "A7": {
+     "state": "done"
+    },
+    "A8": {
+     "state": "done"
+    },
+    "A9": {
+     "state": "done"
+    },
+    "A10": {
+     "state": "done"
+    },
+    "A11": {
+     "state": "doing"
+    }
+   },
+   "requiredDate": "2026-05-25",
+   "etaDate": "2026-07-20",
+   "currency": "USD",
+   "amount": 10657.7,
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.4,
+     "term": "TT30",
+     "amount": 4263.08,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "poNo": "",
+   "remark": "預計7/10快遞   7/15到廠內  (7/8更新)\n金額計算：10657.7*40%=4263.08",
+   "status": "open",
+   "imported": true,
+   "needsReview": false
+  },
+  {
+   "source": "品保設備採購進度追蹤",
+   "unit": "品保課",
+   "vendor": "馬路科技",
+   "item": "3D掃描儀、移動式三次元",
+   "itemVi": "",
+   "path": "A",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "A3": {
+     "state": "done"
+    },
+    "A4": {
+     "state": "done"
+    },
+    "A5": {
+     "state": "done"
+    },
+    "A6": {
+     "state": "done"
+    },
+    "A7": {
+     "state": "done"
+    },
+    "A8": {
+     "state": "done"
+    },
+    "A9": {
+     "state": "done"
+    },
+    "A10": {
+     "state": "done"
+    },
+    "A11": {
+     "state": "doing"
+    }
+   },
+   "requiredDate": "2026-05-25",
+   "etaDate": "2026-06-25",
+   "currency": "VND",
+   "amount": 3100000000.0,
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.3,
+     "term": "TT30",
+     "amount": 930000000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": 0.4,
+     "term": "TT30",
+     "amount": 1240000000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.2,
+     "term": "TT30",
+     "amount": 620000000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 4,
+     "pct": 0.1,
+     "term": "TT30",
+     "amount": 310000000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "poNo": "",
+   "remark": "5/19第一期付款憑單\n7/31 第二期財務\n金額計算：3100000000*40%=1,240,000,000",
+   "status": "open",
+   "imported": true,
+   "needsReview": false
+  },
+  {
+   "source": "品保設備採購進度追蹤",
+   "unit": "品保課",
+   "vendor": "供群設備儀器",
+   "item": "品保儀器（台灣採購）",
+   "itemVi": "",
+   "path": "A",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "A3": {
+     "state": "done"
+    },
+    "A4": {
+     "state": "done"
+    },
+    "A5": {
+     "state": "done"
+    },
+    "A6": {
+     "state": "done"
+    },
+    "A7": {
+     "state": "done"
+    },
+    "A8": {
+     "state": "done"
+    },
+    "A9": {
+     "state": "done"
+    },
+    "A10": {
+     "state": "done"
+    },
+    "A11": {
+     "state": "doing"
+    }
+   },
+   "requiredDate": "2026-05-25",
+   "etaDate": "2026-07-08",
+   "currency": "USD",
+   "amount": 90199.0,
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 45099.5,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "poNo": "",
+   "remark": "7/14出貨海運 \n7/28到港\n8/7到廠內\n金額計算：90199*50%=45100",
+   "status": "open",
+   "imported": true,
+   "needsReview": false
+  },
+  {
+   "source": "品保設備採購進度追蹤",
+   "unit": "品保課",
+   "vendor": "聖詠辰設備儀器",
+   "item": "品保儀器（越南採購）",
+   "itemVi": "",
+   "path": "A",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "A3": {
+     "state": "done"
+    },
+    "A4": {
+     "state": "done"
+    },
+    "A5": {
+     "state": "done"
+    },
+    "A6": {
+     "state": "done"
+    },
+    "A7": {
+     "state": "done"
+    },
+    "A8": {
+     "state": "done"
+    },
+    "A9": {
+     "state": "done"
+    },
+    "A10": {
+     "state": "doing"
+    }
+   },
+   "requiredDate": "2026-05-25",
+   "etaDate": "2026-07-15",
+   "currency": "",
+   "amount": null,
+   "payments": [],
+   "poNo": "",
+   "remark": "第一期付款憑單 已簽核付款  等供應商剩餘儀器設備到貨 預計8/8到廠內",
+   "status": "open",
+   "imported": true,
+   "needsReview": false
+  },
+  {
+   "source": "品保設備採購進度追蹤",
+   "unit": "品保課",
+   "vendor": "環牙規廠商",
+   "item": "環牙規",
+   "itemVi": "",
+   "path": "A",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "doing"
+    }
+   },
+   "requiredDate": "2026-05-25",
+   "etaDate": "2026-07-15",
+   "currency": "",
+   "amount": null,
+   "payments": [],
+   "poNo": "",
+   "remark": "台灣環牙規採購 台灣已到貨 協調調播問題",
+   "status": "open",
+   "imported": true,
+   "needsReview": false
+  },
+  {
+   "source": "品保設備採購進度追蹤",
+   "unit": "品保課",
+   "vendor": "六合一廠商",
+   "item": "六合一綜合測試機",
+   "itemVi": "",
+   "path": "A",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "A3": {
+     "state": "done"
+    },
+    "A4": {
+     "state": "done"
+    },
+    "A5": {
+     "state": "done"
+    },
+    "A6": {
+     "state": "done"
+    },
+    "A7": {
+     "state": "done"
+    },
+    "A8": {
+     "state": "done"
+    },
+    "A9": {
+     "state": "done"
+    },
+    "A10": {
+     "state": "done"
+    },
+    "A11": {
+     "state": "doing"
+    }
+   },
+   "requiredDate": "2026-07-12",
+   "etaDate": "2026-07-23",
+   "currency": "USD",
+   "amount": 9070.07,
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 4535.03,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "poNo": "",
+   "remark": "7/10出貨海運\n7/24到港口\n8/5到廠內\n金額計算：9070.07*50%=4,535",
+   "status": "open",
+   "imported": true,
+   "needsReview": false
+  },
+  {
+   "source": "品保設備採購進度追蹤",
+   "unit": "品保課",
+   "vendor": "摩擦測試機廠商",
+   "item": "摩擦測試機",
+   "itemVi": "",
+   "path": "A",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "A3": {
+     "state": "done"
+    },
+    "A4": {
+     "state": "doing"
+    }
+   },
+   "requiredDate": "2026-07-05",
+   "etaDate": "2026-07-25",
+   "currency": "",
+   "amount": null,
+   "payments": [],
+   "poNo": "",
+   "remark": "7/9訂貨契約給王總簽核",
+   "status": "open",
+   "imported": true,
+   "needsReview": false
+  },
+  {
+   "source": "品保設備採購進度追蹤",
+   "unit": "品保課",
+   "vendor": "可靠度實驗室",
+   "item": "可靠度實驗室儀器設備",
+   "itemVi": "",
+   "path": "A",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "A3": {
+     "state": "done"
+    },
+    "A4": {
+     "state": "doing"
+    }
+   },
+   "requiredDate": "2026-09-01",
+   "etaDate": "2026-09-22",
+   "currency": "",
+   "amount": null,
+   "payments": [],
+   "poNo": "",
+   "remark": "7/13待確認 喬山購買價格",
+   "status": "open",
+   "imported": true,
+   "needsReview": false
+  },
+  {
+   "source": "品保設備採購進度追蹤",
+   "unit": "品保課",
+   "vendor": "移動式三次元配件",
+   "item": "移動式三次元配件",
+   "itemVi": "",
+   "path": "A",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "A3": {
+     "state": "done"
+    },
+    "A4": {
+     "state": "done"
+    },
+    "A5": {
+     "state": "done"
+    },
+    "A6": {
+     "state": "done"
+    },
+    "A7": {
+     "state": "doing"
+    }
+   },
+   "requiredDate": "2026-05-25",
+   "etaDate": "2026-06-25",
+   "currency": "USD",
+   "amount": 3620.0,
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 1810.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 1810.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "poNo": "",
+   "remark": "7/1付款憑單 付款憑單簽核完成 預計7/30付款\n金額計算：3620*50%=1810",
+   "status": "open",
+   "imported": true,
+   "needsReview": false
+  },
+  {
+   "source": "品保設備採購進度追蹤",
+   "unit": "總務課",
+   "vendor": "標籤機 \n總務採購",
+   "item": "標籤機",
+   "itemVi": "",
+   "path": "A",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "doing"
+    }
+   },
+   "requiredDate": "2026-07-15",
+   "etaDate": "2026-07-25",
+   "currency": "",
+   "amount": null,
+   "payments": [],
+   "poNo": "",
+   "remark": "7/11已到廠內",
+   "status": "open",
+   "imported": true,
+   "needsReview": false
+  },
+  {
+   "source": "品保設備採購進度追蹤",
+   "unit": "生技課",
+   "vendor": "EMIN",
+   "item": "檢驗儀器設備製造課需求",
+   "itemVi": "",
+   "path": "A",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "doing"
+    }
+   },
+   "requiredDate": "2026-07-12",
+   "etaDate": "2026-08-03",
+   "currency": "VND",
+   "amount": 29386000.0,
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.4,
+     "term": "TT30",
+     "amount": 11754400.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": 0.6,
+     "term": "TT30",
+     "amount": 17631600.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "poNo": "2026071404/RX-EMIN",
+   "remark": "7/8請購 給王總簽核",
+   "status": "open",
+   "imported": true,
+   "needsReview": false
+  },
+  {
+   "source": "品保設備採購進度追蹤",
+   "unit": "生技課",
+   "vendor": "EMIN",
+   "item": "檢驗儀器設備技術課需求",
+   "itemVi": "",
+   "path": "A",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "doing"
+    }
+   },
+   "requiredDate": "2026-07-12",
+   "etaDate": "2026-08-03",
+   "currency": "VND",
+   "amount": 29386000.0,
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.4,
+     "term": "TT30",
+     "amount": 11754400.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": 0.6,
+     "term": "TT30",
+     "amount": 17631600.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "poNo": "2026071404/RX-EMIN",
+   "remark": "7/8請購 給王總簽核",
+   "status": "open",
+   "imported": true,
+   "needsReview": false
+  }
+ ],
+ "orders": [
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "盛戈",
+   "item": "Giá cấp liệu con lăn",
+   "itemVi": "滚轮送料架",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 10800000.0,
+   "poNo": "2026051902/RX-TQ",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 10800000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v\n付款憑證單：v\n預計/送貨時間原文：6月下旬\n關務資料：*\n請購來源：VN",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "盛戈",
+   "item": "高频金屡感應加熱机",
+   "itemVi": "Máy gia nhiệt cảm ứng kim loại cao tần， 鑽床 Máy khoan， 火線鋸床-帶鋸機 Máy cưa kim loại，。。。",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 765200000.0,
+   "poNo": "2026052104/RX-TQ",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.5,
+     "term": "TT14",
+     "amount": 382600000.0,
+     "dueDate": null,
+     "paidDate": "2026-02-07",
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 382600000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v\n付款憑證單：第一付款\n预计7月2号付款\n預計/送貨時間原文：进口通知，正在运输途中\n請購來源：TW",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "盛戈",
+   "item": "热熔打孔机",
+   "itemVi": "Máy đột lỗ CNC",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 186000000.0,
+   "poNo": "2026052601/RX-TQ",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.5,
+     "term": "TT14",
+     "amount": 93000000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 93000000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v\n付款憑證單：v 第一付款\n预计7月2号付款\n預計/送貨時間原文：7月下旬\n關務資料：*\n請購來源：TW",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "盛戈",
+   "item": "SPSG1000液压平台升降车",
+   "itemVi": "Xe nâng mặt bàn thủy lực SPSG1000",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 72000000.0,
+   "poNo": "2026060402/RX-TQ",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.5,
+     "term": "TT14",
+     "amount": 36000000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 36000000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v\n付款憑證單：定金9/7 付款\n關務資料：*\n請購來源：VN",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "华禹",
+   "item": "流利条货架",
+   "itemVi": "Giá hàng con lăn trượt",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 41000000.0,
+   "poNo": "2026052805/RX-HV",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.4,
+     "term": "TT15",
+     "amount": 16400000.0,
+     "dueDate": null,
+     "paidDate": "2026-09-07",
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": 0.4,
+     "term": "TT30",
+     "amount": 16400000.0,
+     "dueDate": null,
+     "paidDate": "2026-09-03",
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.2,
+     "term": "TT60",
+     "amount": 8200000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v\n付款憑證單：v第一付款7月9号\n預計/送貨時間原文：等海关文件反馈\n關務資料：*\n請購來源：VN",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "华达",
+   "item": "Khung nhôm",
+   "itemVi": "鋁框, Căng lưới khuôn in hoàn thiện 完成拉網的印刷網版",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 9054000.0,
+   "poNo": "2026051901/RX-HD",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "TT60",
+     "amount": 9054000.0,
+     "dueDate": null,
+     "paidDate": "2026-08-27",
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v\n付款憑證單：v 27/8 付款\n預計/送貨時間原文：2026年6月3号\n關務資料：V\n請購來源：VN",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "华达",
+   "item": "大号手印台",
+   "itemVi": "Bàn in tay thủ công bằng thép， 刮胶70度 Lưỡi dao gạt mực",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 10200000.0,
+   "poNo": "2026060101/RX-HD",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "TT60",
+     "amount": 10200000.0,
+     "dueDate": null,
+     "paidDate": "2026-08-27",
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v\n付款憑證單：v 27/8 付款\n預計/送貨時間原文：已经收货\n關務資料：V\n請購來源：VN",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "复盛",
+   "item": "MÁY SẤY KHÍ HẤP THỤ THÁP ĐÔI TÁI SINH DÙNG NHIỆT",
+   "itemVi": "微热再生双塔吸附式干燥机",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 145000000.0,
+   "poNo": "2026052202/RX-FS",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.3,
+     "term": "TT30",
+     "amount": 43500000.0,
+     "dueDate": null,
+     "paidDate": "2026-07-16",
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": 0.4,
+     "term": "TT60",
+     "amount": 58000000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.3,
+     "term": "TT60",
+     "amount": 43500000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v\n付款憑證單：v 第一付款7月16号\n預計/送貨時間原文：已经收货\n關務資料：V\n請購來源：TW",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "裕硕",
+   "item": "Cầu kẹp khuôn thẳng M20",
+   "itemVi": "直式模具壓板 M20， Đai ốc mặt bích M20 法蘭螺母 M20， Vòng đệm phẳng 20 平墊圈 20,…",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 13560000.0,
+   "poNo": "2026051903/RX-DT",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "TT60",
+     "amount": 13560000.0,
+     "dueDate": null,
+     "paidDate": "2026-08-27",
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "月結付款：v\n付款條件變更：v\n付款憑證單：27/8 付款\n預計/送貨時間原文：2026年6月1号\n請購來源：VN",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "裕硕",
+   "item": "高壓水槍機",
+   "itemVi": "Máy phun xịt rửa áp lực, 粉碎機 Máy nghiền,...",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 361141000.0,
+   "poNo": "2026052105/RX-MB",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.5,
+     "term": "TT15",
+     "amount": 180570500.0,
+     "dueDate": null,
+     "paidDate": "2026-09-07",
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 180570500.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": "2026-06-20",
+   "remark": "付款條件變更：v\n付款憑證單：v第一付款\n等台湾签\n预计2026/07/09 付款\n請購來源：TW",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "裕硕",
+   "item": "三相隔离变压器",
+   "itemVi": "Biến áp",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 28680000.0,
+   "poNo": "20260602002/RX-DT\n（VN 请购）",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 28680000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": "2026-06-20",
+   "remark": "付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "贝克立",
+   "item": "焊机/控制器架",
+   "itemVi": "Kệ để máy hàn và bộ điều khiển",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 120000000.0,
+   "poNo": "2026052201/RX-BKL",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.4,
+     "term": "TT14",
+     "amount": 48000000.0,
+     "dueDate": null,
+     "paidDate": "2026-02-07",
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": 0.4,
+     "term": "TT30",
+     "amount": 48000000.0,
+     "dueDate": null,
+     "paidDate": "2026-08-13",
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.2,
+     "term": "TT30",
+     "amount": 24000000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v\n付款憑證單：v 第一付款\n预计7月2号付款\nV 第二付款（等签好）\n預計/送貨時間原文：v\n請購來源：VN",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "贝克立",
+   "item": "不锈钢挂具",
+   "itemVi": "Móc inox",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 108015000.0,
+   "poNo": "20260602001/RX-BKL\n（VN 请购）",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.4,
+     "term": "TT14",
+     "amount": 43206000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": 0.4,
+     "term": "TT30",
+     "amount": 43206000.0,
+     "dueDate": null,
+     "paidDate": "2026-08-13",
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.2,
+     "term": "TT30",
+     "amount": 21603000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v\n付款憑證單：v 第一付款 \n2026/07/09 付款\nV 第二付款（等签好）\n預計/送貨時間原文：v\n關務資料：V",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "鋒碩自動化",
+   "item": "Cần trục điện (small crane), Cần cẩu quay kiểu cột",
+   "itemVi": "電動起重機, 立柱式旋臂起重機",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 440000000.0,
+   "poNo": "2026060601/RX-FS",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.3,
+     "term": "TT7",
+     "amount": 132000000.0,
+     "dueDate": null,
+     "paidDate": "2026-09-07",
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 220000000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.2,
+     "term": "TT30",
+     "amount": 88000000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v\n付款憑證單：v 第一付款 7月9号\n關務資料：*\n請購來源：VN",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "贝克立",
+   "item": "产品展示架",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 33125000.0,
+   "poNo": "20260608001/RX-BKL",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.5,
+     "term": "TT14",
+     "amount": 16562500.0,
+     "dueDate": null,
+     "paidDate": "2026-09-07",
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 16562500.0,
+     "dueDate": null,
+     "paidDate": "2026-06-08",
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v\n付款憑證單：v 第一付款 7月9号\nV 第二付款（等签好）\n關務資料：*",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "裕硕",
+   "item": "安装设备工具(补单）",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 28085000.0,
+   "poNo": "20260608002/RX-DT",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 28085000.0,
+     "dueDate": null,
+     "paidDate": "2026-08-27",
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "月結付款：v\n付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "裕硕",
+   "item": "安装设备工具 (补单）",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 138686000.0,
+   "poNo": "2026061005/RX-DUTHAC",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 138686000.0,
+     "dueDate": null,
+     "paidDate": "2026-08-27",
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "月結付款：v\n付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "越火",
+   "item": "氣站增加消防設備",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 100000000.0,
+   "poNo": "2026061004/RX-LUAVIET",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.6,
+     "term": "TT15",
+     "amount": 60000000.0,
+     "dueDate": null,
+     "paidDate": "2026-09-07",
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.4,
+     "term": "TT30",
+     "amount": 40000000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v\n付款憑證單：第一付款7月9号\n關務資料：V",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "海丰",
+   "item": "BU25VS",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 158800000.0,
+   "poNo": "2026061003/RX-HAIPHONG",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 158800000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "贝克立",
+   "item": "側蓋放置台車, 檢驗放置台車,檢驗放置台車,牛奶箱台車,蝴蝶籠台車...",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 1469656000.0,
+   "poNo": "合约",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.4,
+     "term": "TT14",
+     "amount": 587862400.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": 0.4,
+     "term": "TT30",
+     "amount": 587862400.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.2,
+     "term": "TT30",
+     "amount": 293931200.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "裕硕",
+   "item": "升降台车",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 59500000.0,
+   "poNo": "2026063003/RX-DTHAC",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 59500000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "華禹",
+   "item": "五金料架(請購簽核中)",
+   "itemVi": "",
+   "path": "",
+   "steps": {},
+   "currency": "",
+   "amount": null,
+   "poNo": "",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "鑫富",
+   "item": "盛油盤，墊高腿踏板，工作桌，組立工作桌",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 65000000.0,
+   "poNo": "2026062001/RX-TPHU",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.5,
+     "term": "TT15",
+     "amount": 32500000.0,
+     "dueDate": null,
+     "paidDate": "2026-07-30",
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 32500000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：V",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "裕硕",
+   "item": "折叠仓储笼",
+   "itemVi": "Lồng sắt",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 169200000.0,
+   "poNo": "2026061902RX-DTHAC",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.5,
+     "term": "TT60",
+     "amount": 84600000.0,
+     "dueDate": null,
+     "paidDate": "2026-08-27",
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.5,
+     "term": "TT60",
+     "amount": 84600000.0,
+     "dueDate": null,
+     "paidDate": "2026-08-13",
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v\n付款憑證單：定金8/27 付款\n尾款8月13好",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "裕硕",
+   "item": "震動電鑽,四爪水泥鑽頭,套管式壁虎,鐵錯,...",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 6636000.0,
+   "poNo": "2026061301/RX-DUTHAC",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 6636000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "月結付款：v\n付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "TKD",
+   "item": "維修操作台",
+   "itemVi": "Sửa chữa bàn thao tác",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 35000000.0,
+   "poNo": "2026061601/RX-TKD",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "TT15",
+     "amount": 35000000.0,
+     "dueDate": null,
+     "paidDate": "2026-07-16",
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v\n付款憑證單：7/16 付款\n預計/送貨時間原文：完整 6/19",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "裕硕",
+   "item": "8- 裕硕-訂貨契約單-抽屉收纳盒,75抽无门零件柜,铁油桶吊钩,...",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 41010000.0,
+   "poNo": "2026061536RX-DUTHAC",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 41010000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "裕硕",
+   "item": "机床液箱清渣机",
+   "itemVi": "Máy hút cặn",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 100880000.0,
+   "poNo": "2026061537/RX-DUTHAC",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 100880000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "ATECH",
+   "item": "Máy đột dập",
+   "itemVi": "液压机",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 209000000.0,
+   "poNo": "2026061701/RX-ATECH",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.3,
+     "term": "TT15",
+     "amount": 62700000.0,
+     "dueDate": null,
+     "paidDate": "2026-07-30",
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 104500000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.2,
+     "term": "TT30",
+     "amount": 41800000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "SHINI",
+   "item": "脚架N型FSN-400，脚架N型FSN-200， 歐化吸料盒SBU-160-38S，單機真空料斗",
+   "itemVi": "Giá đỡ cho phễu sấy FSN-400, giá đỡ cho phễu sấy FSN-200, đế chia liệu SBU-160-38S, phễu cấp liệu SMH-12L",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 72100000.0,
+   "poNo": "2026070601/RX-SHINI",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.3,
+     "term": "TT15",
+     "amount": 21630000.0,
+     "dueDate": null,
+     "paidDate": "2026-08-13",
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": 0.2,
+     "term": "TT15",
+     "amount": 14420000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.5,
+     "term": "TT60",
+     "amount": 36050000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：V\n付款憑證單：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "喬山",
+   "item": "粘膠吊具",
+   "itemVi": "Gá treo nhúng keo",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "",
+   "amount": null,
+   "poNo": "採購處理",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "SHINI",
+   "item": "分離式真空填料機",
+   "itemVi": "Máy cấp liệu",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 78300000.0,
+   "poNo": "2026070603/RX-SHINI",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.3,
+     "term": "TT15",
+     "amount": 23490000.0,
+     "dueDate": null,
+     "paidDate": "2026-09-10",
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": 0.2,
+     "term": "TT15",
+     "amount": 15660000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.5,
+     "term": "TT60",
+     "amount": 39150000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：V\n付款憑證單：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "SHINI",
+   "item": "料斗乾燥機",
+   "itemVi": "Máy sấy nhựa",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 46200000.0,
+   "poNo": "2026070602/RX-SHINI",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.3,
+     "term": "TT15",
+     "amount": 13860000.0,
+     "dueDate": null,
+     "paidDate": "2026-09-10",
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": 0.2,
+     "term": "TT15",
+     "amount": 9240000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.5,
+     "term": "TT60",
+     "amount": 23100000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：V\n付款憑證單：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "华禹",
+   "item": "增架方管梁",
+   "itemVi": "Tăng thêm dầm ống vuông giá hàng",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 25772000.0,
+   "poNo": "2026061901/RX-HOAVU",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.4,
+     "term": "TT15",
+     "amount": 10308800.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": 0.4,
+     "term": "TT30",
+     "amount": 10308800.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.2,
+     "term": "TT60",
+     "amount": 5154400.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v\n付款憑證單：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "製造 - 组装",
+   "vendor": "海丰",
+   "item": "BR25VS",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 73300000.0,
+   "poNo": "2026063002/RX-HPVN",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.5,
+     "term": "TT15",
+     "amount": 36650000.0,
+     "dueDate": null,
+     "paidDate": "2026-07-30",
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 36650000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款憑證單：v 定金",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "技术课 - 阿倫",
+   "vendor": "裕硕",
+   "item": "工具",
+   "itemVi": "",
+   "path": "B",
+   "steps": {},
+   "currency": "VND",
+   "amount": 36254000.0,
+   "poNo": "",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月結30天",
+     "amount": 36254000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "技术课 - 阿倫",
+   "vendor": "裕硕",
+   "item": "工具",
+   "itemVi": "",
+   "path": "B",
+   "steps": {},
+   "currency": "VND",
+   "amount": 38198000.0,
+   "poNo": "",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月結30天",
+     "amount": 38198000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "SOCO",
+   "item": "W10398變頻器(飛博得)FC-51PK37T2E20H3X (200~240V",
+   "itemVi": "WI0435變頻器,SLT可改用WI0386FR-A820-00167-1-N6 (200-240V WD0176保險絲10*38-AM-25A(慢速型) WD0018保險絲10*38-GL-2A(快速型) YB0170墨力比例閥(维修用)E1B20AN(MLS LANNY GMBH) \"WD0076刀型保險絲 MH00-AM-80A(慢速型)\" 9999-005運费",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "USD",
+   "amount": 3200.0,
+   "poNo": "2026062202/RX-SOCO",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "TT60",
+     "amount": 3200.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：V",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "润蓬",
+   "item": "超低飛濺專用盤装送絲架",
+   "itemVi": "Giá cấp dây hàn dạng cuộn chuyên dụng chống siêu siêu văng bắn",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "USD",
+   "amount": 5200.0,
+   "poNo": "2026062201/RX-TRIAD",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.9,
+     "term": "TT15",
+     "amount": 4680.0,
+     "dueDate": null,
+     "paidDate": "2026-07-30",
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.1,
+     "term": "TT30",
+     "amount": 520.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v\n付款憑證單：V 王总",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "仓库",
+   "vendor": "华禹",
+   "item": "托盘增加方管梁",
+   "itemVi": "Thêm dầm ống vuông cho pallet",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 60000000.0,
+   "poNo": "2026061901/RX-HOAVU",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.5,
+     "term": "TT15",
+     "amount": 30000000.0,
+     "dueDate": null,
+     "paidDate": "2026-07-30",
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.5,
+     "term": "TT15",
+     "amount": 30000000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "技术课 - 阿倫",
+   "vendor": "快捷",
+   "item": "拉桿",
+   "itemVi": "Draw bar Thanh kéo",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "USD",
+   "amount": 320.0,
+   "poNo": "2026070101/RX-QJET",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.5,
+     "term": "TT15",
+     "amount": 160.0,
+     "dueDate": null,
+     "paidDate": "2026-07-30",
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.5,
+     "term": "TT15",
+     "amount": 160.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：V",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "技术课 - 阿倫",
+   "vendor": "裕硕",
+   "item": "工具（手套， 棘轮双头扳手， 平面砂布轮。。。）",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 7246000.0,
+   "poNo": "2026062703/RX-DTHAC",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "TT30",
+     "amount": 7246000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "技术课 - 阿倫",
+   "vendor": "裕硕",
+   "item": "工具 -补单-（刀具车，75抽无门零件柜）",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 17790000.0,
+   "poNo": "2026062704/RX-DTHAC",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "TT31",
+     "amount": 17790000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "技术课 -xiaochen",
+   "vendor": "裕硕",
+   "item": "工具 -补单-（插头， 电线。。。）",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 179350000.0,
+   "poNo": "2026062701/RX-DTHAC",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "TT32",
+     "amount": 179350000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "补单对帐",
+   "vendor": "裕硕",
+   "item": "工具 -补单-（活动扳手，3M, 小蜜蜂扩音器。。。）",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 271899000.0,
+   "poNo": "2026070607/RX-DTHAC",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "TT33",
+     "amount": 271899000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "仓库",
+   "vendor": "华禹",
+   "item": "五金料架 （9个）",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 44175000.0,
+   "poNo": "2026070902/RX-HOAVU",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.4,
+     "term": "TT5",
+     "amount": 17670000.0,
+     "dueDate": null,
+     "paidDate": "2026-06-08",
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": 0.4,
+     "term": "TT30",
+     "amount": 17670000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.2,
+     "term": "TT60",
+     "amount": 8835000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "技术课 - 阿倫",
+   "vendor": "",
+   "item": "五金料架 （10个）",
+   "itemVi": "",
+   "path": "",
+   "steps": {},
+   "currency": "",
+   "amount": null,
+   "poNo": "",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v\n付款憑證單：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "制造-焊接",
+   "vendor": "裕硕",
+   "item": "切割機",
+   "itemVi": "Máy cắt",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 9354000.0,
+   "poNo": "2026070608/RX-DTHAC",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 9354000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "制造-组装",
+   "vendor": "XINGHAN",
+   "item": "皮带流水线",
+   "itemVi": "Dây chuyền băng tải",
+   "path": "A",
+   "steps": {},
+   "currency": "VND",
+   "amount": 300135000.0,
+   "poNo": "",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "制造-组装",
+   "vendor": "HPJ",
+   "item": "木板台车",
+   "itemVi": "Xe đẩy sàn gỗ",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 41000000.0,
+   "poNo": "2026071802RX-HPJVN",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.4,
+     "term": "TT15",
+     "amount": 16400000.0,
+     "dueDate": null,
+     "paidDate": "2026-08-27",
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": 0.4,
+     "term": "TT30",
+     "amount": 16400000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.2,
+     "term": "TT30",
+     "amount": 8200000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "技术课 - 阿倫",
+   "vendor": "新锋",
+   "item": "工具（鑽頭組， 鈷鋼長刃粗銑刀，45度殼形面銑刀，刀桿。。。）补单",
+   "itemVi": "",
+   "path": "",
+   "steps": {},
+   "currency": "",
+   "amount": null,
+   "poNo": "",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "技术课 - 阿倫",
+   "vendor": "新锋",
+   "item": "工具（4刃立銑刀，切斷刀架，外徑車刀架。。。）补单",
+   "itemVi": "",
+   "path": "",
+   "steps": {},
+   "currency": "",
+   "amount": null,
+   "poNo": "",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "技术课 - 阿倫",
+   "vendor": "新锋",
+   "item": "工具（螺旋絲攻，諾式鑽頭。。。）补单",
+   "itemVi": "",
+   "path": "",
+   "steps": {},
+   "currency": "",
+   "amount": null,
+   "poNo": "",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "制造-CNC",
+   "vendor": "新锋",
+   "item": "工具（龍捲風搪刀刀柄，搪刀頭部。。。）补单",
+   "itemVi": "",
+   "path": "",
+   "steps": {},
+   "currency": "",
+   "amount": null,
+   "poNo": "",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "制造-CNC",
+   "vendor": "新锋",
+   "item": "工具（內孔倒角刀刀片，Ø9.5鎢鋼階梯鑽，ER32筒夾板手）补单",
+   "itemVi": "",
+   "path": "",
+   "steps": {},
+   "currency": "",
+   "amount": null,
+   "poNo": "",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "制造-CNC",
+   "vendor": "新锋",
+   "item": "工具（鎢鋼銑刀Ø16.0  4T ，強力銑刀夾頭， 捨棄式刀片。。。）补单",
+   "itemVi": "",
+   "path": "",
+   "steps": {},
+   "currency": "",
+   "amount": null,
+   "poNo": "",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "制造-倉庫",
+   "vendor": "",
+   "item": "5噸油壓升降月台",
+   "itemVi": "Thềm nâng thủy lực 5 tấn",
+   "path": "",
+   "steps": {},
+   "currency": "",
+   "amount": null,
+   "poNo": "",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "與吉薩洽談中",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "制造-CNC",
+   "vendor": "新锋",
+   "item": "流動鑽頭",
+   "itemVi": "Mũi khoan dòng chảy",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 17280000.0,
+   "poNo": "2026070609/RX-TPHON",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "制造-焊接",
+   "vendor": "HPJ",
+   "item": "工作桌",
+   "itemVi": "Bàn thao tác",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 151725000.0,
+   "poNo": "2026080502RX-HPJVN",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 151725000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "制造-焊接",
+   "vendor": "HPJ",
+   "item": "滑板車",
+   "itemVi": "Xe đẩy sàn",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 67020000.0,
+   "poNo": "2026072203RX-HPJVN",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.4,
+     "term": "TT15",
+     "amount": 26808000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": 0.4,
+     "term": "TT31",
+     "amount": 26808000.0,
+     "dueDate": null,
+     "paidDate": "2026-09-17",
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.2,
+     "term": "TT30",
+     "amount": 13404000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "制造",
+   "vendor": "裕硕",
+   "item": "安装设备工具(补单）",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 11527000.0,
+   "poNo": "2026070102/RX-DTHAC",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 11527000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "制造",
+   "vendor": "裕硕",
+   "item": "安装设备工具(补单）",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 17508000.0,
+   "poNo": "2026070104/RX-DTHAC",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 17508000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "制造",
+   "vendor": "华达",
+   "item": "大号手印台",
+   "itemVi": "Bàn in tay thủ công bằngthép， 刮胶70度 Lưỡi dao gạt mực",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 25500000.0,
+   "poNo": "2026070304RX-HOADA",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "TT60",
+     "amount": 25500000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": "2026-07-20",
+   "remark": "付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "技术课 - 阿倫",
+   "vendor": "裕硕",
+   "item": "工具（套筒，梅花开口两用扳手）",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 7506000.0,
+   "poNo": "2026070303/RX-DTHAC",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 7506000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "已经发邮件备货\n付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "技术课 - 阿倫",
+   "vendor": "裕硕",
+   "item": "工具（六角扳手組,金刚石半圆刀,双头开口扳手...）",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 2660000.0,
+   "poNo": "2026070301/RX-DTHAC",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 2660000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "已经发邮件备货\n付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "技术课 - 阿倫",
+   "vendor": "裕硕",
+   "item": "工具（双头梅花扳手，活动扳手，气动套简。。。）",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 26289000.0,
+   "poNo": "2026070302/RX-DTHAC",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 26289000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "已经发邮件备货\n付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "冲压",
+   "vendor": "SOCO",
+   "item": "防皺板",
+   "itemVi": "Tấm chống nhăn，芯棒 Trục lõi",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "USD",
+   "amount": 1749.0,
+   "poNo": "2026070802/RX-SOCO",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：原本TT90",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "品保",
+   "vendor": "",
+   "item": "油壓拖板車",
+   "itemVi": "Xe nâng tay thủy lực",
+   "path": "",
+   "steps": {},
+   "currency": "",
+   "amount": null,
+   "poNo": "",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "技术课 - 阿倫",
+   "vendor": "裕硕",
+   "item": "零件櫃",
+   "itemVi": "Tủ linh kiện",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 12833000.0,
+   "poNo": "2026070401/RX-DTHAC",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 12833000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：V",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "品保",
+   "vendor": "A-TECH",
+   "item": "重訓產品多功能測試機",
+   "itemVi": "",
+   "path": "",
+   "steps": {},
+   "currency": "",
+   "amount": null,
+   "poNo": "",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "技术课 - 阿倫",
+   "vendor": "AQIN",
+   "item": "工具（十字銷, 導柱, 優利膠)",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 3304800.0,
+   "poNo": "2026070702/RX-ANQIN",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 3304800.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "贝克立",
+   "item": "升降机构",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 11500000.0,
+   "poNo": "2026072202RX-BKRL",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.5,
+     "term": "TT14",
+     "amount": 5750000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 5750000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "技术课 - 阿倫",
+   "vendor": "裕硕",
+   "item": "切管机锯片",
+   "itemVi": "Lưỡi cưa",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 11790000.0,
+   "poNo": "2026071806RX-DTHAC",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 11790000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "技术课 - 阿倫",
+   "vendor": "恒丰",
+   "item": "Vít lục giác chìm 内六角螺丝",
+   "itemVi": "Đai ốc 螺母",
+   "path": "B",
+   "steps": {},
+   "currency": "VND",
+   "amount": 2944000.0,
+   "poNo": "",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 2944000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "技术课 - 阿倫",
+   "vendor": "",
+   "item": "高速刻磨机",
+   "itemVi": "Máy mài hơi cầm tay 封箱钉 Đinh ghim thùng carton",
+   "path": "B",
+   "steps": {},
+   "currency": "VND",
+   "amount": 8544000.0,
+   "poNo": "",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "技术课 - 阿倫",
+   "vendor": "",
+   "item": "气动封箱机",
+   "itemVi": "Máy bấm ghim thùng carton",
+   "path": "B",
+   "steps": {},
+   "currency": "VND",
+   "amount": 45000000.0,
+   "poNo": "",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "制造-组装",
+   "vendor": "HPJ",
+   "item": "TM25VS",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 210464000.0,
+   "poNo": "2026080403RX-HPJVN",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 210464000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "制造-组装",
+   "vendor": "海丰",
+   "item": "E25VS",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 242300000.0,
+   "poNo": "2026080601RX-HPVN",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 242300000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "制造-组装",
+   "vendor": "海丰",
+   "item": "E25VS1",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 40000000.0,
+   "poNo": "2026080602RX-HPVN",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 40000000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "SHINI",
+   "item": "经常性采购合约",
+   "itemVi": "",
+   "path": "",
+   "steps": {},
+   "currency": "",
+   "amount": null,
+   "poNo": "",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "ANQIN",
+   "item": "经常性采购合约",
+   "itemVi": "",
+   "path": "",
+   "steps": {},
+   "currency": "",
+   "amount": null,
+   "poNo": "",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "HPJ",
+   "item": "经常性采购合约",
+   "itemVi": "",
+   "path": "",
+   "steps": {},
+   "currency": "",
+   "amount": null,
+   "poNo": "",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "恒丰",
+   "item": "经常性采购合约",
+   "itemVi": "",
+   "path": "",
+   "steps": {},
+   "currency": "",
+   "amount": null,
+   "poNo": "",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "NAMVIET",
+   "item": "经常性采购合约",
+   "itemVi": "",
+   "path": "",
+   "steps": {},
+   "currency": "",
+   "amount": null,
+   "poNo": "",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "还没完整",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "製造-焊接",
+   "vendor": "",
+   "item": "電源綫，R型端子， 。。。",
+   "itemVi": "",
+   "path": "",
+   "steps": {},
+   "currency": "",
+   "amount": null,
+   "poNo": "",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "製造- 組裝",
+   "vendor": "",
+   "item": "快速接頭，白鐵東，。。。",
+   "itemVi": "",
+   "path": "",
+   "steps": {},
+   "currency": "",
+   "amount": null,
+   "poNo": "",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "製造-噴漆",
+   "vendor": "",
+   "item": "1,2米LED燈管，25綫管固定夾",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "",
+   "amount": null,
+   "poNo": "thiếu quy cách",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "阿伦",
+   "vendor": "裕硕",
+   "item": "标准型工具车",
+   "itemVi": "Tủ đựng dụng cụ 5 ngăn",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 28574000.0,
+   "poNo": "2026063001/RX-DTHAC",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "阿伦",
+   "vendor": "HPJ",
+   "item": "FA005BYT大皮帶輪壓心軸治具V",
+   "itemVi": "Đồ gá trục ép tâm bánh đai lớn loại V – mã FA005BYT",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 17000000.0,
+   "poNo": "2026071602/RX-HPJVN",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 8500000.0,
+     "dueDate": null,
+     "paidDate": "2026-09-10",
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 8500000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "SOCO",
+   "item": "3- 和和-订货契约单-維修费用彎管機",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "",
+   "amount": null,
+   "poNo": "2026071604RX-SOCO",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "恆豐",
+   "item": "内六角螺絲 M10",
+   "itemVi": "",
+   "path": "",
+   "steps": {},
+   "currency": "",
+   "amount": null,
+   "poNo": "",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "华禹",
+   "item": "Kệ hàng nặng tải độc lập",
+   "itemVi": "重型貨架 主架",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 80100000.0,
+   "poNo": "请购单",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "等付款条件变更",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "华禹",
+   "item": "Kệ khuôn",
+   "itemVi": "抽屜式",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 24600000.0,
+   "poNo": "请购单",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "等付款条件变更",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "裕硕",
+   "item": "25-裕硕-訂貨契約單-工具车",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 16986000.0,
+   "poNo": "2026071605RX-DTHAC",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 16986000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "裕硕",
+   "item": "26-裕硕-訂貨契約單-气动封箱机",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 45000000.0,
+   "poNo": "2026071804RX-DTHAC",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 45000000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "裕硕",
+   "item": "27-裕硕-訂貨契約單-高速刻磨机 ,封箱钉, 抛光火石仔",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 8284000.0,
+   "poNo": "2026072007RX-DTHAC",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 8284000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "裕硕",
+   "item": "28-裕硕-訂貨契約單-快速接頭,304德式喉箍,插頭,LED光控投光灯",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 5860000.0,
+   "poNo": "2026072006RX-DTHAC",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 5860000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "裕硕",
+   "item": "29- 裕硕-訂貨契約單-切管机锯片",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 11790000.0,
+   "poNo": "2026071806RX-DTHAC",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 11790000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "盛戈",
+   "item": "盛戈-訂貨契約單-变压器",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 24600000.0,
+   "poNo": "2026072501/RX-TQUA",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 12300000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 12300000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "盛戈",
+   "item": "盛戈-訂貨契約單-气动压力桶",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 32400000.0,
+   "poNo": "2026072502/RX-TQUA",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 16200000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 16200000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "裕硕",
+   "item": "裕硕-訂貨契約單-套筒, 套筒转换头, 批头",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 21640000.0,
+   "poNo": "2026072402/RX-DTHAC",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 21640000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "裕硕",
+   "item": "裕硕-訂貨契約單-直槽丝攻, T型絲攻扳手, 转接套筒",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 19710000.0,
+   "poNo": "2026072401/RX-DTHAC",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 19710000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "贝克立",
+   "item": "貝克立- 訂貨契約單-防尘隔间",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 25840000.0,
+   "poNo": "2026072503/RX-BKRL",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v(TW)",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "冲压",
+   "vendor": "SOCO",
+   "item": "防皺板",
+   "itemVi": "Tấm chống nhăn",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "USD",
+   "amount": 1972.0,
+   "poNo": "2026081001RX-SOCO",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "TT90",
+     "amount": 1972.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "供应商",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "冲压",
+   "vendor": "SOCO",
+   "item": "定位專用料夾",
+   "itemVi": "Đồ gá định vị chuyên dụng.",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "USD",
+   "amount": 394.0,
+   "poNo": "7/8 gửi ông Vương",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "供应商",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "工具室",
+   "vendor": "华禹",
+   "item": "工具物料架",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 44175000.0,
+   "poNo": "2026070902RX-HOAVU",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.4,
+     "term": "TT15",
+     "amount": 17670000.0,
+     "dueDate": null,
+     "paidDate": "2026-08-06",
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": 0.4,
+     "term": "TT30",
+     "amount": 17670000.0,
+     "dueDate": null,
+     "paidDate": "2029-09-10",
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.2,
+     "term": "TT60",
+     "amount": 8835000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "裕硕",
+   "item": "30- 裕硕-订货契约单 （ 补单对账7月份）-",
+   "itemVi": "",
+   "path": "B",
+   "steps": {},
+   "currency": "VND",
+   "amount": 9464000.0,
+   "poNo": "",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 9464000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "裕硕",
+   "item": "31- 裕硕-订货契约单 ( 补单对账7月份)-(2)",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 313474000.0,
+   "poNo": "2026072701RX-DTHAC",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 313474000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "HPJ",
+   "item": "4- HPJ 訂貨契約單-焊接摸具",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 7900000.0,
+   "poNo": "2026072302RX-HPJVN",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 7900000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：V",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "贝克立",
+   "item": "\"不锈钢挂具",
+   "itemVi": "Móc inox\" \"挂具 Móc treo\"",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 43200000.0,
+   "poNo": "2026072801/RX-BKRL",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.5,
+     "term": "TT15",
+     "amount": 21600000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 21600000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：V",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "盛戈",
+   "item": "变压器",
+   "itemVi": "5000W PRO",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 24600000.0,
+   "poNo": "2026072501/RX-TQUA",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 12300000.0,
+     "dueDate": null,
+     "paidDate": "2026-09-03",
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 12300000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：V",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "盛戈",
+   "item": "气动压力桶",
+   "itemVi": "WM-40LZ MÁY KHUẤY TRỘN SƠN",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 32400000.0,
+   "poNo": "2026072502/RX-TQUA",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 16200000.0,
+     "dueDate": null,
+     "paidDate": "2026-09-17",
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 16200000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：V",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "开发 - Quyền",
+   "vendor": "HPJ",
+   "item": "FP0054FR",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 75000000.0,
+   "poNo": "7/8 gửi ông Vương",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "等些有效益分析表8.22",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "开发 - Quyền",
+   "vendor": "HPJ",
+   "item": "FF005F3Y, FF005F6L",
+   "itemVi": "FF005F3Y, FF005F6L",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 14269000.0,
+   "poNo": "Chị Huyền xin làm lại",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "PMC",
+   "vendor": "DOHEA",
+   "item": "條碼印機",
+   "itemVi": "Máy in mã vạch 扫码机 Máy quét",
+   "path": "B",
+   "steps": {},
+   "currency": "VND",
+   "amount": 27050000.0,
+   "poNo": "",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "仓库",
+   "vendor": "",
+   "item": "半自動拉伸纏繞果包機+坡道",
+   "itemVi": "",
+   "path": "",
+   "steps": {},
+   "currency": "",
+   "amount": null,
+   "poNo": "",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "还给仓库发台湾签",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "冲床",
+   "vendor": "SOCO",
+   "item": "保护镜，陶瓷環，噴嘴",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "USD",
+   "amount": 950.0,
+   "poNo": "2026081203/RX-SOCO",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "TT90",
+     "amount": 950.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "供应商",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "技術課",
+   "vendor": "HPJ",
+   "item": "FWO05ATM-027",
+   "itemVi": "",
+   "path": "B",
+   "steps": {},
+   "currency": "VND",
+   "amount": 1875000.0,
+   "poNo": "",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "技術課",
+   "vendor": "贝克立",
+   "item": "Móc treo L1, Móc treo L2",
+   "itemVi": "挂具",
+   "path": "B",
+   "steps": {},
+   "currency": "VND",
+   "amount": 38877000.0,
+   "poNo": "",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 19438500.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 19438500.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "wangzong",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "技術課",
+   "vendor": "贝克立",
+   "item": "Móc treo sấy L1, Móc treo sấy L2",
+   "itemVi": "挂具 H533*W53,H533*W127",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 16199000.0,
+   "poNo": "2026081205RX-BKRL",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 8099500.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 8099500.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "越火",
+   "item": "LPG 管路增設調節閥工程",
+   "itemVi": "Công trình lắp đặt bổ sung van điều chỉnh cho đường ống LPG",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 62000000.0,
+   "poNo": "2026080603RX-LUAVI",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.6,
+     "term": "TT15",
+     "amount": 37200000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.4,
+     "term": "TT30",
+     "amount": 24800000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "供应商\n付款條件變更：V",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "HPJ",
+   "item": "技術課車架 Khung xe của bộ phận kỹ thuật",
+   "itemVi": "焊接翻轉台 Đệm máy hàn 4 trục",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 20520000.0,
+   "poNo": "2026081902RX-HPJVN",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "供应商",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "HPJ",
+   "item": "BR25VS座背墊架組穿線擱架",
+   "itemVi": "Giá đỡ lắp ráp khung tựa lưng ghế, kệ luồn dây BR25VS座墊滑座組扭力測試擱架 Giá đỡ kiểm tra mô-men xoắn của cụm trượt đệm ghế",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 18891000.0,
+   "poNo": "2026081901RX-HPJVN",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "供应商",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "裕硕",
+   "item": "電動起子",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 673252000.0,
+   "poNo": "2026073001RX-DTHAC",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 100.0,
+     "term": "月结30天",
+     "amount": 673252000.0,
+     "dueDate": null,
+     "paidDate": "2026-10-25",
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "鑫富",
+   "item": "动力升降台加滚筒式 自动输送机",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 84550000.0,
+   "poNo": "7/8 gửi ông Vương",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "等付款条件变更",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "鑫富",
+   "item": "自动打包机+包袋机侧推设备+气压缸",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 753300000.0,
+   "poNo": "7/8 gửi ông Vương",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "等效益分析表",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "华达",
+   "item": "铝框",
+   "itemVi": "完成拉网的印刷",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 22494000.0,
+   "poNo": "2026081103/RX-HOADA",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "华达",
+   "item": "铝框",
+   "itemVi": "完成拉网的印刷",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 3114000.0,
+   "poNo": "2026081302/RX-HOADA",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "P130",
+   "vendor": "华达",
+   "item": "铝框",
+   "itemVi": "完成拉网的印刷",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 16760000.0,
+   "poNo": "2026081810RX-HOADA",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "供应商",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "华达",
+   "item": "铝框",
+   "itemVi": "完成拉网的印刷",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 3114000.0,
+   "poNo": "2026080504RX-HOADA",
+   "payments": [],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "焊接",
+   "vendor": "裕硕",
+   "item": "激光除锈机",
+   "itemVi": "MÁY TẨY GỈ LAZE",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 100000000.0,
+   "poNo": "请购单",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 100000000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "等台湾签",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "品保",
+   "vendor": "ATECH",
+   "item": "2- A TECH 订货契约单- 测試機",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 225000000.0,
+   "poNo": "2026081207RX-ATECH",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.3,
+     "term": "TT15",
+     "amount": 67500000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 112500000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.2,
+     "term": "TT30",
+     "amount": 45000000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：V",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "ATECH",
+   "item": "修改伺服壓機喉深設計",
+   "itemVi": "Sửa máy đột dập",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 19000000.0,
+   "poNo": "2026081301/RX-ATECH",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.3,
+     "term": "TT15",
+     "amount": 5700000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 9500000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.2,
+     "term": "TT30",
+     "amount": 3800000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：V",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "贝克立",
+   "item": "FRP格栅板",
+   "itemVi": "Tấm sàn grating composite FRP",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 20400000.0,
+   "poNo": "2026081303/RX-BKRL",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 10200000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 10200000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：V",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "天山",
+   "item": "堆高機貨叉",
+   "itemVi": "Áo càng xe nâng",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 16500000.0,
+   "poNo": "2026072506/RX-TSON",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 8250000.0,
+     "dueDate": null,
+     "paidDate": "2026-09-17",
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 8250000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "技术课",
+   "vendor": "海丰",
+   "item": "加工柱子费用",
+   "itemVi": "Phí gia công thanh trụ",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 4900000.0,
+   "poNo": "2026081808RX-HPVN",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月結30天",
+     "amount": 4900000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "供应商\n付款條件變更：v",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "开发 - Quyền",
+   "vendor": "HPJ",
+   "item": "工作柜，装配模具治具",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 27360000.0,
+   "poNo": "2026082102RX-HPJVN",
+   "payments": [
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月結30天",
+     "amount": 27360000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "王总",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "组装",
+   "vendor": "盛戈",
+   "item": "手动L型封切包装机",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 7200000.0,
+   "poNo": "2026082503RX-TQUA",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 3600000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 3600000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "财务8.26",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "组装",
+   "vendor": "华达",
+   "item": "网版-F005C3Y",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 3114000.0,
+   "poNo": "2026082201RX-HOADA",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 3114000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "王总",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "",
+   "vendor": "贝克立",
+   "item": "烤漆炉处理系统取样平台",
+   "itemVi": "粉末涂装室除尘系统取样平台 塑料浸渍烘烤炉处理系统取样平台",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 75563000.0,
+   "poNo": ": 2026082101/RX-BKRL",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 37781500.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.5,
+     "term": "TT30",
+     "amount": 37781500.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "财务",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "技术课",
+   "vendor": "HPJ",
+   "item": "放刀具架",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 6175000.0,
+   "poNo": "2026082203RX-HPJVN",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 6175000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "王总",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "焊接",
+   "vendor": "裕硕",
+   "item": "LED",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 104053000.0,
+   "poNo": "2026081804/RX-DTAC",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 104053000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "供应商\n月結付款：X\n付款條件變更：V",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "阿志",
+   "vendor": "恒丰",
+   "item": "縫袋機,縫袋機線",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 3500000.0,
+   "poNo": "请购单",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 3500000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "制造",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "工具室",
+   "vendor": "恒丰",
+   "item": "折叠推车",
+   "itemVi": "",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 1300000.0,
+   "poNo": "2026080102RX-HPHON",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 1300000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "工具室",
+   "vendor": "恒丰",
+   "item": "冲头",
+   "itemVi": "Đầu đột",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 1000000.0,
+   "poNo": "2026080301/RX-HPHON",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 1000000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "工具室",
+   "vendor": "恒丰",
+   "item": "内六角螺丝",
+   "itemVi": "bu lông lục giác chìm 6 cạnh",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "USD",
+   "amount": 560000.0,
+   "poNo": "2026072104/RX-HPHON",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 560000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "工具室",
+   "vendor": "恒丰",
+   "item": "扁鑿鑽頭（混凝土用）／混凝土扁鑿",
+   "itemVi": "Mũi đục bê tông dẹt， 螺旋絲攻 Mũi taro xoắn，砂紙 Giấy nhám(giấy ráp)，。。。",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 27424000.0,
+   "poNo": "2026072009/RX-HPHON",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 27424000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "工具室",
+   "vendor": "恒丰",
+   "item": "HSS圓棒",
+   "itemVi": "Thanh tròn thép gió HSS Ø1.9 HSS圓棒 Thanh tròn thép gió HSS Ø8.4 HSS圓棒 Thanh tròn thép gió HSS Ø1.9",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "USD",
+   "amount": 730000.0,
+   "poNo": ":2026072005/RX-HPHON",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 730000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "工具室",
+   "vendor": "恒丰",
+   "item": "电源線",
+   "itemVi": "Dây nguồn R型端子 Đầu cốt chữ R 風管 Ống khí(màu cam) 快速接頭(公) Đầu nối nhanh 快速接頭(母) Đầu nối nhanh",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 39265000.0,
+   "poNo": "2026071805/RX-HPHON",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 39265000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "工具室",
+   "vendor": "恒丰",
+   "item": "手提電鑽",
+   "itemVi": "Máy khoan điện cầm tay(附電池、充電座Kèm pin và đế sạc) 電刻筆 Bút khắc điện",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 3100000.0,
+   "poNo": "2026072001/RX-HPHON",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 3100000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "工具室",
+   "vendor": "恒丰",
+   "item": "双梅花扳手",
+   "itemVi": "Cờ lê vòng hai đầu 一字螺丝刀 Tua vít 2 cạnh (dẹt) 十字螺丝刀 Tua vít  4 cạnh 6件十字精密螺丝刀套装 Bộ tua vít chính xác 6 chi tiết 4 cạnh,..",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 5635700.0,
+   "poNo": "2026071403/RX-HPHON",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 5635700.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "工具室",
+   "vendor": "恒丰",
+   "item": "焊接模具零件",
+   "itemVi": "Linh kiện (chi tiết) khuôn hàn",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 15900000.0,
+   "poNo": "2026080505-RX-HPHON",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 15900000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "工具室",
+   "vendor": "恒丰",
+   "item": "扭力扳手连搂件",
+   "itemVi": "Cờ lê cân lực",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 4500000.0,
+   "poNo": "2026080401RX-HPHON",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 4500000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "工具室",
+   "vendor": "恒丰",
+   "item": "内六角螺丝",
+   "itemVi": "Vít Lục Giác Chìm 螺母 Đai Ôc 垫片 Vòng Đệm",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 2944000.0,
+   "poNo": "2026071502/RX-HPHON",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 2944000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "工具室",
+   "vendor": "恒丰",
+   "item": "六角承窝螺絲",
+   "itemVi": "Bu lông lục giác chìm 六角螺母 Đai ốc lục giác",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 1925000.0,
+   "poNo": "2026070405/RX-HPHON",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "月结30天",
+     "amount": 1925000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "工具室",
+   "vendor": "恒丰",
+   "item": "圓棒(鐵)Than thép tròn",
+   "itemVi": "POM(方形)Thép",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "done"
+    }
+   },
+   "currency": "VND",
+   "amount": 1780000.0,
+   "poNo": "2026070404/RX-HPHON",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 1.0,
+     "term": "",
+     "amount": 1780000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "加工课",
+   "vendor": "贝克立",
+   "item": "Xe đẩy dùng cho công đoạn tạo bọt TM25VS",
+   "itemVi": "TM25VS發泡台車",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "VND",
+   "amount": 800000000.0,
+   "poNo": "请购单",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": 0.4,
+     "term": "TT30",
+     "amount": 320000000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": 0.4,
+     "term": "TT30",
+     "amount": 320000000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": 0.2,
+     "term": "TT30",
+     "amount": 160000000.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "跑流程",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "加工课",
+   "vendor": "",
+   "item": "Giá để khuôn dạng ngăn kéo 3 tầng",
+   "itemVi": "三層抽屜式模具架",
+   "path": "B",
+   "steps": {
+    "1": {
+     "state": "done"
+    },
+    "2": {
+     "state": "done"
+    },
+    "B1": {
+     "state": "done"
+    },
+    "B2": {
+     "state": "done"
+    },
+    "B3": {
+     "state": "done"
+    },
+    "B4": {
+     "state": "doing"
+    }
+   },
+   "currency": "",
+   "amount": null,
+   "poNo": "请购单",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "询价",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  }
+ ],
+ "unitRawCounts": {
+  "技术课 - 阿倫": 18,
+  "工具室": 14,
+  "制造-组装": 5,
+  "制造-CNC": 4,
+  "仓库": 3,
+  "制造-焊接": 3,
+  "制造": 3,
+  "冲压": 3,
+  "品保": 3,
+  "开发 - Quyền": 3,
+  "技術課": 3,
+  "阿伦": 2,
+  "焊接": 2,
+  "技术课": 2,
+  "组装": 2,
+  "加工课": 2,
+  "製造 - 组装": 1,
+  "技术课 -xiaochen": 1,
+  "补单对帐": 1,
+  "制造-倉庫": 1,
+  "製造-焊接": 1,
+  "製造- 組裝": 1,
+  "製造-噴漆": 1,
+  "PMC": 1,
+  "冲床": 1,
+  "P130": 1,
+  "阿志": 1
+ },
+ "unitMapSuggested": {
+  "技术课 - 阿倫": "生技課",
+  "工具室": "工具室",
+  "制造-组装": "",
+  "制造-CNC": "",
+  "仓库": "",
+  "制造-焊接": "",
+  "制造": "",
+  "冲压": "",
+  "品保": "品保課",
+  "开发 - Quyền": "",
+  "技術課": "生技課",
+  "阿伦": "",
+  "焊接": "",
+  "技术课": "生技課",
+  "组装": "",
+  "加工课": "",
+  "製造 - 组装": "",
+  "技术课 -xiaochen": "生技課",
+  "补单对帐": "",
+  "制造-倉庫": "",
+  "製造-焊接": "",
+  "製造- 組裝": "",
+  "製造-噴漆": "",
+  "PMC": "",
+  "冲床": "",
+  "P130": "",
+  "阿志": ""
+ }
+}

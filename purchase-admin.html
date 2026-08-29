@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>採購系統主檔管理 / Quản trị hệ thống mua hàng</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f5f6fa; --surface: #fff; --border: #e2e5ed; --text: #1a1d23; --text-soft: #6b7280;
+    --accent: #2563eb; --danger: #dc2626; --warn: #d97706; --ok: #16a34a;
+    --warn-bg: #fffbeb; --danger-bg: #fef2f2; --ok-bg: #f0fdf4; --muted-bg: #f1f5f9;
+    --radius: 8px; --shadow: 0 1px 4px rgba(0,0,0,.08);
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif; background: var(--bg); color: var(--text); }
+  .vi { font-size: .72em; color: var(--text-soft); font-style: italic; }
+  .topbar { background: #1e293b; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,.25); }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .topbar-logo { height: 42px; border-radius: 8px; object-fit: contain; }
+  .topbar h1 { font-size: .95rem; color: #fff; font-weight: 700; }
+  .topbar h1 .vi { display: block; font-size: .68rem; color: rgba(255,255,255,.5); }
+  .nav-link { font-size: .78rem; color: rgba(255,255,255,.8); padding: 6px 10px; border-radius: 6px;
+    border: 1px solid rgba(255,255,255,.2); text-decoration: none; display: inline-flex; flex-direction: column; align-items: center; line-height: 1.3; }
+  .nav-link:hover { background: rgba(255,255,255,.1); }
+  .main { max-width: 1360px; margin: 0 auto; padding: 18px 20px 60px; }
+  .tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--border); margin-bottom: 16px; flex-wrap: wrap; }
+  .tabs button { padding: 9px 16px; border: none; background: transparent; font-size: .86rem; font-weight: 600; color: var(--text-soft);
+    cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+  .tabs button.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 16px; }
+  .panel-head { padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 700; font-size: .88rem;
+    display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .panel-body { padding: 14px 16px; }
+  table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  th { background: var(--muted-bg); font-size: .74rem; color: var(--text-soft); font-weight: 700; white-space: nowrap; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .table-wrap { overflow-x: auto; max-height: 620px; }
+  .btn { padding: 8px 15px; border-radius: var(--radius); font-size: .84rem; font-weight: 700; cursor: pointer; border: none; white-space: nowrap; }
+  .btn-primary { background: var(--accent); color: #fff; } .btn-outline { background: var(--surface); border: 1px solid var(--border); color: var(--text); }
+  .btn-danger { background: var(--danger); color: #fff; } .btn-ok { background: var(--ok); color: #fff; }
+  .btn-sm { padding: 4px 10px; font-size: .75rem; } .btn:disabled { opacity: .45; cursor: not-allowed; }
+  input, select, textarea { padding: 7px 9px; border: 1px solid var(--border); border-radius: 6px; font-size: .84rem; font-family: inherit; background: #fff; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .note { background: var(--warn-bg); border: 1px solid #fde68a; border-radius: var(--radius); padding: 12px 16px; font-size: .82rem; line-height: 1.7; margin-bottom: 14px; }
+  .note.ok { background: var(--ok-bg); border-color: #bbf7d0; }
+  .note.bad { background: var(--danger-bg); border-color: #fecaca; color: #b91c1c; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: .7rem; font-weight: 700; }
+  .pill.a { background: #ede9fe; color: #6d28d9; } .pill.b { background: #cffafe; color: #0e7490; }
+  .pill.warn { background: #fef3c7; color: #92400e; }
+  .log { font-family: ui-monospace, Consolas, monospace; font-size: .76rem; background: #0f172a; color: #cbd5e1;
+    padding: 10px 12px; border-radius: 6px; max-height: 200px; overflow: auto; white-space: pre-wrap; display: none; }
+  .toast { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%); background: #1e293b; color: #fff;
+    padding: 10px 20px; border-radius: 8px; font-size: .85rem; z-index: 900; opacity: 0; pointer-events: none; transition: opacity .2s; }
+  .toast.on { opacity: 1; }
+  .deny { max-width: 640px; margin: 60px auto; text-align: center; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 40px 30px; }
+</style>
+</head>
+<body>
+<script type="module" src="auth-guard.js?v=2"></script>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <img src="Rexon%20logo.png" alt="REXON VN" class="topbar-logo">
+    <h1>採購系統主檔管理<span class="vi">Quản trị hệ thống mua hàng</span></h1>
+  </div>
+  <div class="row">
+    <a class="nav-link" href="purchase.html">📋 回追蹤系統</a>
+    <a class="nav-link" href="index.html">🏠 首頁</a>
+  </div>
+</div>
+
+<div class="main" id="main" hidden>
+  <div class="tabs" id="tabs">
+    <button data-tab="units" class="active">🏭 採購單位</button>
+    <button data-tab="vendors">🤝 廠商主檔</button>
+    <button data-tab="config">⚙️ 參數設定</button>
+    <button data-tab="import">📥 Excel 資料匯入</button>
+  </div>
+
+  <!-- 採購單位 -->
+  <section id="tab-units">
+    <div class="note">案件的「採購單位」由此維護。新增總務課之類的新單位直接在這裡加，追蹤系統的篩選器會立刻出現。
+      <span class="vi">Bộ phận mua hàng được quản lý tại đây; thêm mới sẽ hiện ngay trong bộ lọc.</span></div>
+    <div class="panel">
+      <div class="panel-head">採購單位清單 <span class="vi">Danh sách bộ phận</span></div>
+      <div class="panel-body">
+        <div class="row" style="margin-bottom:12px">
+          <input id="uName" placeholder="單位名稱（中文）" style="min-width:180px">
+          <input id="uNameVi" placeholder="Tên bộ phận (tiếng Việt)" style="min-width:200px">
+          <input id="uOrder" type="number" placeholder="排序" style="width:90px">
+          <button class="btn btn-primary" id="uAdd">＋ 新增單位</button>
+        </div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>排序</th><th>單位名稱</th><th>Tên tiếng Việt</th><th>使用中案件</th><th></th></tr></thead>
+          <tbody id="uBody"></tbody>
+        </table></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 廠商 -->
+  <section id="tab-vendors" hidden>
+    <div class="panel">
+      <div class="panel-head">廠商主檔 <span class="vi">Danh mục nhà cung cấp</span><span id="vCount"></span></div>
+      <div class="panel-body">
+        <div class="row" style="margin-bottom:12px">
+          <input id="vName" placeholder="廠商名稱（中文）" style="min-width:180px">
+          <input id="vNameVi" placeholder="Tên NCC (tiếng Việt)" style="min-width:200px">
+          <button class="btn btn-primary" id="vAdd">＋ 新增廠商</button>
+          <input id="vSearch" placeholder="搜尋…" style="min-width:140px">
+        </div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>廠商名稱</th><th>Tên tiếng Việt</th><th>案件數</th><th></th></tr></thead>
+          <tbody id="vBody"></tbody>
+        </table></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 參數 -->
+  <section id="tab-config" hidden>
+    <div class="note">匯率只用於「依金額建議走 A 或 B 流程」的粗略換算，不會影響任何金額統計或現金流數字。
+      <span class="vi">Tỷ giá chỉ dùng để gợi ý quy trình A/B, không ảnh hưởng số liệu tiền.</span></div>
+    <div class="panel">
+      <div class="panel-head">流程判斷匯率（換算為台幣） <span class="vi">Tỷ giá quy đổi sang NTD</span></div>
+      <div class="panel-body">
+        <div class="row">
+          <label>1 USD = <input id="fxUSD" type="number" step="any" style="width:110px"> TWD</label>
+          <label>1 VND = <input id="fxVND" type="number" step="any" style="width:130px"> TWD</label>
+          <button class="btn btn-primary" id="fxSave">儲存</button>
+        </div>
+        <p class="vi" style="margin-top:10px">門檻：預付款 &lt; 300,000 TWD 且 總價 &lt; 1,000,000 TWD → B 流程，否則 A 流程。</p>
+      </div>
+    </div>
+
+    <div class="note">付款條件在案件表單裡分成「類型 + 天數」兩欄。類型清單由這裡維護，改完追蹤系統立刻生效。<br>
+      <b>需填天數</b>：勾選後該類型才會啟用天數欄（TT、月結要勾；現金、預付不用）。<br>
+      <b>月結制</b>：勾選後應付日的推估方式改為「預計完成日當月月底 + 天數」，未勾選則是「預計完成日 + 天數」。
+      <span class="vi">Điều kiện thanh toán gồm loại + số ngày; danh sách loại được quản lý tại đây.</span></div>
+    <div class="panel">
+      <div class="panel-head">付款條件主檔 <span class="vi">Danh mục điều kiện thanh toán</span>
+        <div class="row">
+          <button class="btn btn-outline btn-sm" id="ptAdd">＋ 新增一列</button>
+          <button class="btn btn-outline btn-sm" id="ptReset">還原預設</button>
+          <button class="btn btn-primary btn-sm" id="ptSave">儲存</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="table-wrap"><table>
+          <thead><tr><th>代碼<span class="vi">Mã</span></th><th>顯示名稱<span class="vi">Tên</span></th>
+            <th>越南文<span class="vi">Tiếng Việt</span></th><th style="text-align:center">需填天數<span class="vi">Có số ngày</span></th>
+            <th style="text-align:center">月結制<span class="vi">Cuối tháng</span></th><th>使用中<span class="vi">Đang dùng</span></th><th></th></tr></thead>
+          <tbody id="ptBody"></tbody>
+        </table></div>
+        <p style="margin-top:10px;font-size:.76rem;color:var(--text-soft)">
+          代碼是實際存進案件資料的值（例如 <code>TT</code> + 30 天會顯示成 <code>TT30</code>）。
+          已被案件使用中的代碼請勿隨意更名，否則舊資料的條件會對不上主檔（系統仍會保留原值並標示「未在主檔」）。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 匯入 -->
+  <section id="tab-import" hidden>
+    <div class="note">
+      <b>匯入來源：</b>專案資料夾裡的 purchase_seed.json（由「品保設備採購進度追蹤_最終版.xlsx」與「订单情况- TÌNH TRẠNG ĐƠN HÀNG.xlsx」轉出）。<br>
+      <b>兩批資料：</b>品保設備追蹤表的案件步驟完整、可直接匯入；訂貨契約單 158 筆的「請購單位」原文有 27 種寫法、且原表無幣別欄位，需在下方先做對應再匯入。<br>
+      <b>重複保護：</b>已存在相同「廠商＋採購項目」或相同單號（PO/CON）的案件會自動略過，可重複執行不會產生重複資料。
+      <span class="vi">Dữ liệu trùng nhà cung cấp + hạng mục hoặc trùng số PO sẽ được bỏ qua tự động.</span>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">① 載入種子檔 <span class="vi">Tải tệp dữ liệu</span></div>
+      <div class="panel-body">
+        <div class="row">
+          <input type="file" id="fileInput" accept=".json">
+          <button class="btn btn-outline" id="loadServer">改從網站載入</button>
+        </div>
+        <p style="margin-top:8px;font-size:.78rem;color:var(--text-soft)">
+          請選擇專案資料夾裡的 <b>purchase_seed.json</b>。此檔含廠商、金額與付款條件，
+          <b>刻意未上傳到網站</b>（Hosting 的靜態檔案任何人都能下載），所以請用選檔的方式匯入。
+          <span class="vi">Tệp chứa giá và điều kiện thanh toán nên không tải lên web; vui lòng chọn tệp từ máy.</span>
+        </p>
+        <p id="loadState" class="vi" style="margin-top:8px">尚未載入。</p>
+      </div>
+    </div>
+
+    <div class="panel" id="mapPanel" hidden>
+      <div class="panel-head">② 請購單位對應 <span class="vi">Ánh xạ bộ phận</span>
+        <span class="vi">把原表的寫法對應到正式單位；選「略過」的案件不會匯入</span></div>
+      <div class="panel-body"><div class="table-wrap"><table>
+        <thead><tr><th>原表寫法</th><th>筆數</th><th>對應到採購單位</th></tr></thead>
+        <tbody id="mapBody"></tbody>
+      </table></div></div>
+    </div>
+
+    <div class="panel" id="prevPanel" hidden>
+      <div class="panel-head">③ 匯入預覽 <span class="vi">Xem trước</span>
+        <div class="row">
+          <label class="vi" style="font-style:normal"><input type="checkbox" id="chkCases" checked> 品保設備案件</label>
+          <label class="vi" style="font-style:normal"><input type="checkbox" id="chkOrders" checked> 訂貨契約單</label>
+          <button class="btn btn-ok" id="doImport">✓ 確認匯入</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <p id="prevSum" style="margin-bottom:10px;font-size:.85rem"></p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>來源</th><th>採購單位</th><th>廠商</th><th>採購項目</th><th>流程</th><th>幣別</th><th>金額</th><th>單號</th><th>步驟</th><th>狀態</th></tr></thead>
+          <tbody id="prevBody"></tbody>
+        </table></div>
+        <div class="log" id="log"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">危險操作 <span class="vi">Thao tác nguy hiểm</span></div>
+      <div class="panel-body">
+        <button class="btn btn-danger" id="wipe">🗑 刪除所有「匯入」案件</button>
+        <span class="vi">只刪除 imported=true 的案件，手動建立的不受影響。</span>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="deny" id="deny" hidden>
+  <h2 style="font-size:1.1rem;margin-bottom:10px">⛔ 僅限系統管理員</h2>
+  <p style="font-size:.88rem;color:var(--text-soft)">此頁需要 admin 角色。<br><span class="vi">Trang này chỉ dành cho quản trị viên.</span></p>
+  <p style="margin-top:16px"><a class="btn btn-outline" href="purchase.html">回追蹤系統</a></p>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore, collection, doc, addDoc, setDoc, updateDoc, deleteDoc,
+  onSnapshot, writeBatch, runTransaction, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { mivAuthReady } from "./auth-guard.js?v=2";
+import { DEFAULT_FX_TO_TWD, DEFAULT_PAY_TERMS } from "./purchase-flow.js?v=2";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs",
+  authDomain: "miv-1426c.firebaseapp.com",
+  projectId: "miv-1426c",
+  storageBucket: "miv-1426c.firebasestorage.app",
+  messagingSenderId: "398934341623",
+  appId: "1:398934341623:web:4af46c057d2e202855a0f2"
+};
+const db = getFirestore(initializeApp(firebaseConfig));
+const caseCol = collection(db, "purchase_cases");
+const unitCol = collection(db, "purchase_units");
+const vendorCol = collection(db, "purchase_vendors");
+const configRef = doc(db, "purchase_meta", "config");
+const counterRef = doc(db, "purchase_meta", "counter");
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const toast = m => { const t = $("toast"); t.textContent = m; t.classList.add("on"); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("on"), 2400); };
+const log = m => { const el = $("log"); el.style.display = "block"; el.textContent += m + "\n"; el.scrollTop = el.scrollHeight; };
+
+let me = null, units = [], vendors = [], cases = [], seed = null, unitMap = {}, payTerms = [];
+
+me = await mivAuthReady;
+if (me.role !== "admin") { $("deny").hidden = false; throw new Error("not admin"); }
+$("main").hidden = false;
+
+onSnapshot(unitCol, s => { units = s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.order ?? 99) - (b.order ?? 99)); renderUnits(); renderMap(); });
+onSnapshot(vendorCol, s => { vendors = s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => String(a.name).localeCompare(String(b.name))); renderVendors(); });
+onSnapshot(caseCol, s => { cases = s.docs.map(d => ({ id: d.id, ...d.data() })); renderUnits(); renderVendors(); renderPayTerms(); renderPreview(); });
+onSnapshot(configRef, s => {
+  const d = s.exists() ? s.data() : {};
+  const fx = { ...DEFAULT_FX_TO_TWD, ...(d.fxToTWD || {}) };
+  $("fxUSD").value = fx.USD; $("fxVND").value = fx.VND;
+  payTerms = JSON.parse(JSON.stringify(d.payTerms && d.payTerms.length ? d.payTerms : DEFAULT_PAY_TERMS));
+  renderPayTerms();
+});
+
+// ── 分頁 ─────────────────────────────────────────────────────
+$("tabs").addEventListener("click", e => {
+  const b = e.target.closest("button[data-tab]"); if (!b) return;
+  $("tabs").querySelectorAll("button").forEach(x => x.classList.toggle("active", x === b));
+  ["units", "vendors", "config", "import"].forEach(t => $("tab-" + t).hidden = t !== b.dataset.tab);
+});
+
+// ── 採購單位 ─────────────────────────────────────────────────
+function renderUnits() {
+  $("uBody").innerHTML = units.map(u => {
+    const n = cases.filter(c => c.unit === u.name).length;
+    return `<tr data-id="${u.id}">
+      <td class="num">${u.order ?? ""}</td>
+      <td><b>${esc(u.name)}</b></td>
+      <td>${esc(u.nameVi || "")}</td>
+      <td class="num">${n}</td>
+      <td><button class="btn btn-outline btn-sm u-edit">改名</button>
+          <button class="btn btn-danger btn-sm u-del" ${n ? "disabled title='仍有案件使用中，無法刪除'" : ""}>刪除</button></td>
+    </tr>`;
+  }).join("") || `<tr><td colspan="5" style="text-align:center;color:var(--text-soft);padding:24px">尚無單位，請先新增。</td></tr>`;
+  $("uBody").querySelectorAll(".u-edit").forEach(b => b.addEventListener("click", async () => {
+    const id = b.closest("tr").dataset.id, u = units.find(x => x.id === id);
+    const name = prompt("單位名稱（中文）", u.name); if (name === null) return;
+    const nameVi = prompt("Tên tiếng Việt", u.nameVi || ""); if (nameVi === null) return;
+    const used = cases.filter(c => c.unit === u.name);
+    await updateDoc(doc(db, "purchase_units", id), { name: name.trim(), nameVi: nameVi.trim() });
+    // 單位改名時同步既有案件，避免篩選對不上
+    if (name.trim() !== u.name && used.length) {
+      const batch = writeBatch(db);
+      used.forEach(c => batch.update(doc(db, "purchase_cases", c.id), { unit: name.trim() }));
+      await batch.commit();
+    }
+    toast("已更新" + (used.length ? `，同步 ${used.length} 筆案件` : ""));
+  }));
+  $("uBody").querySelectorAll(".u-del").forEach(b => b.addEventListener("click", async () => {
+    const id = b.closest("tr").dataset.id, u = units.find(x => x.id === id);
+    if (!confirm(`刪除單位「${u.name}」？`)) return;
+    await deleteDoc(doc(db, "purchase_units", id)); toast("已刪除");
+  }));
+}
+
+$("uAdd").addEventListener("click", async () => {
+  const name = $("uName").value.trim(); if (!name) return alert("請輸入單位名稱");
+  if (units.some(u => u.name === name)) return alert("此單位已存在");
+  await addDoc(unitCol, { name, nameVi: $("uNameVi").value.trim(), order: Number($("uOrder").value) || units.length + 1 });
+  $("uName").value = $("uNameVi").value = $("uOrder").value = ""; toast("已新增");
+});
+
+// ── 廠商 ─────────────────────────────────────────────────────
+function renderVendors() {
+  const q = $("vSearch").value.trim().toLowerCase();
+  const list = vendors.filter(v => !q || (v.name + " " + (v.nameVi || "")).toLowerCase().includes(q));
+  $("vCount").innerHTML = `<span class="vi">共 ${vendors.length} 家</span>`;
+  $("vBody").innerHTML = list.map(v => {
+    const n = cases.filter(c => c.vendor === v.name).length;
+    return `<tr data-id="${v.id}"><td><b>${esc(v.name)}</b></td><td>${esc(v.nameVi || "")}</td><td class="num">${n}</td>
+      <td><button class="btn btn-outline btn-sm v-edit">編輯</button>
+          <button class="btn btn-danger btn-sm v-del">刪除</button></td></tr>`;
+  }).join("") || `<tr><td colspan="4" style="text-align:center;color:var(--text-soft);padding:24px">無資料</td></tr>`;
+  $("vBody").querySelectorAll(".v-edit").forEach(b => b.addEventListener("click", async () => {
+    const id = b.closest("tr").dataset.id, v = vendors.find(x => x.id === id);
+    const name = prompt("廠商名稱（中文）", v.name); if (name === null) return;
+    const nameVi = prompt("Tên tiếng Việt", v.nameVi || ""); if (nameVi === null) return;
+    await updateDoc(doc(db, "purchase_vendors", id), { name: name.trim(), nameVi: nameVi.trim() }); toast("已更新");
+  }));
+  $("vBody").querySelectorAll(".v-del").forEach(b => b.addEventListener("click", async () => {
+    const id = b.closest("tr").dataset.id, v = vendors.find(x => x.id === id);
+    if (!confirm(`刪除廠商「${v.name}」？（不影響既有案件）`)) return;
+    await deleteDoc(doc(db, "purchase_vendors", id)); toast("已刪除");
+  }));
+}
+$("vSearch").addEventListener("input", renderVendors);
+$("vAdd").addEventListener("click", async () => {
+  const name = $("vName").value.trim(); if (!name) return alert("請輸入廠商名稱");
+  if (vendors.some(v => v.name === name)) return alert("此廠商已存在");
+  await addDoc(vendorCol, { name, nameVi: $("vNameVi").value.trim() });
+  $("vName").value = $("vNameVi").value = ""; toast("已新增");
+});
+
+// ── 參數 ─────────────────────────────────────────────────────
+$("fxSave").addEventListener("click", async () => {
+  await setDoc(configRef, { fxToTWD: { TWD: 1, USD: Number($("fxUSD").value) || DEFAULT_FX_TO_TWD.USD, VND: Number($("fxVND").value) || DEFAULT_FX_TO_TWD.VND } }, { merge: true });
+  toast("已儲存匯率");
+});
+
+// ── 付款條件主檔 ─────────────────────────────────────────────
+function renderPayTerms() {
+  // 統計每個代碼被幾期付款用到，避免誤刪仍在使用的條件
+  const used = {};
+  cases.forEach(c => (c.payments || []).forEach(pay => {
+    const t = pay.termType || String(pay.term || "").replace(/[\d\s天]/g, "");
+    if (t) used[t] = (used[t] || 0) + 1;
+  }));
+  $("ptBody").innerHTML = payTerms.map((t, i) => `
+    <tr data-i="${i}">
+      <td><input class="t-code" value="${esc(t.code || "")}" style="width:90px"></td>
+      <td><input class="t-label" value="${esc(t.label || "")}" style="width:140px"></td>
+      <td><input class="t-vi" value="${esc(t.labelVi || "")}" style="width:180px"></td>
+      <td style="text-align:center"><input class="t-days" type="checkbox" ${t.days ? "checked" : ""}></td>
+      <td style="text-align:center"><input class="t-me" type="checkbox" ${t.monthEnd ? "checked" : ""}></td>
+      <td class="num">${used[t.code] ? `<span class="pill" style="background:#dbeafe;color:#1d4ed8">${used[t.code]} 期</span>` : "—"}</td>
+      <td><button class="btn btn-danger btn-sm t-del">刪除</button></td>
+    </tr>`).join("") || `<tr><td colspan="7" style="text-align:center;color:var(--text-soft);padding:24px">尚無付款條件，請新增或按「還原預設」。</td></tr>`;
+  $("ptBody").querySelectorAll("tr[data-i]").forEach(row => {
+    const i = Number(row.dataset.i);
+    const sync = () => {
+      payTerms[i] = {
+        code: row.querySelector(".t-code").value.trim(),
+        label: row.querySelector(".t-label").value.trim(),
+        labelVi: row.querySelector(".t-vi").value.trim(),
+        days: row.querySelector(".t-days").checked,
+        monthEnd: row.querySelector(".t-me").checked,
+      };
+    };
+    row.querySelectorAll("input").forEach(el => el.addEventListener("change", sync));
+    row.querySelector(".t-del").addEventListener("click", () => {
+      const t = payTerms[i];
+      if (used[t.code] && !confirm(`「${t.code}」目前有 ${used[t.code]} 期付款正在使用，刪除後那些資料會標示為「未在主檔」。確定刪除？`)) return;
+      payTerms.splice(i, 1); renderPayTerms();
+    });
+  });
+}
+
+$("ptAdd").addEventListener("click", () => {
+  payTerms.push({ code: "", label: "", labelVi: "", days: true, monthEnd: false });
+  renderPayTerms();
+});
+$("ptReset").addEventListener("click", () => {
+  if (!confirm("還原成出廠預設的付款條件（TT／月結／預付／現金）？尚未儲存的修改會遺失。")) return;
+  payTerms = JSON.parse(JSON.stringify(DEFAULT_PAY_TERMS)); renderPayTerms();
+});
+$("ptSave").addEventListener("click", async () => {
+  const bad = payTerms.find(t => !t.code || !t.label);
+  if (bad) return alert("代碼與顯示名稱都不能留空。");
+  const codes = payTerms.map(t => t.code);
+  if (new Set(codes).size !== codes.length) return alert("代碼不可重複。");
+  await setDoc(configRef, { payTerms }, { merge: true });
+  toast("已儲存付款條件");
+});
+
+// ── 匯入 ─────────────────────────────────────────────────────
+async function loadSeed(text, from) {
+  try {
+    seed = JSON.parse(text);
+  } catch (e) { $("loadState").textContent = "JSON 解析失敗：" + e.message; return; }
+  $("loadState").innerHTML = `已載入（${esc(from)}）：單位 ${seed.units?.length || 0}、廠商 ${seed.vendors?.length || 0}、品保案件 ${seed.cases?.length || 0}、訂貨契約單 ${seed.orders?.length || 0}　產生日期 ${esc(seed.generatedAt || "—")}`;
+  // 種子檔內的單位／廠商主檔若尚未建立就先補上
+  const batch = writeBatch(db);
+  let added = 0;
+  (seed.units || []).forEach(u => { if (!units.some(x => x.name === u.name)) { batch.set(doc(unitCol), u); added++; } });
+  (seed.vendors || []).forEach(v => { if (!vendors.some(x => x.name === v.name)) { batch.set(doc(vendorCol), v); added++; } });
+  if (added) { await batch.commit(); toast(`已補建 ${added} 筆單位／廠商主檔`); }
+  unitMap = { ...(seed.unitMapSuggested || {}) };
+  $("mapPanel").hidden = false; $("prevPanel").hidden = false;
+  renderMap(); renderPreview();
+}
+
+$("loadServer").addEventListener("click", async () => {
+  $("loadState").textContent = "載入中…";
+  try {
+    const r = await fetch("purchase_seed.json?t=" + Date.now());
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    await loadSeed(await r.text(), "網站檔案");
+  } catch (e) { $("loadState").textContent = "載入失敗：" + e.message + "（可改用下方選檔）"; }
+});
+$("fileInput").addEventListener("change", async e => {
+  const f = e.target.files[0]; if (!f) return;
+  await loadSeed(await f.text(), f.name);
+});
+
+function renderMap() {
+  if (!seed) return;
+  const counts = seed.unitRawCounts || {};
+  const keys = Object.keys(counts);
+  const opts = u => `<option value="">— 略過此批 —</option>` +
+    units.map(x => `<option value="${esc(x.name)}"${unitMap[u] === x.name ? " selected" : ""}>${esc(x.name)}</option>`).join("");
+  const noUnit = (seed.orders || []).filter(o => !String(o.unitRaw || "").trim()).length;
+  const sug = seed.unitMapSuggested || {};
+  $("mapBody").innerHTML =
+    keys.map(k => `<tr><td><b>${esc(k)}</b>${sug[k] ? ` <span class="pill" style="background:#dbeafe;color:#1d4ed8">已建議</span>` : ` <span class="pill warn">待決定</span>`}</td><td class="num">${counts[k]}</td>
+      <td><select class="map-sel" data-raw="${esc(k)}">${opts(k)}</select></td></tr>`).join("") +
+    (noUnit ? `<tr><td><i>（原表未填單位）</i></td><td class="num">${noUnit}</td>
+      <td><select class="map-sel" data-raw="">${opts("")}</select></td></tr>` : "");
+  $("mapBody").querySelectorAll(".map-sel").forEach(s => s.addEventListener("change", () => {
+    unitMap[s.dataset.raw] = s.value; renderPreview();
+  }));
+}
+
+// 既有案件的去重鍵：單號優先，其次「廠商｜項目」
+const keysOf = c => [c.poNo ? "po:" + String(c.poNo).trim() : "", "vi:" + String(c.vendor || "").trim() + "|" + String(c.item || "").trim()].filter(Boolean);
+
+function buildRows() {
+  if (!seed) return [];
+  const rows = [];
+  if ($("chkCases").checked) (seed.cases || []).forEach(c => rows.push({ ...c, _kind: "品保設備" }));
+  if ($("chkOrders").checked) (seed.orders || []).forEach(o => {
+    const raw = String(o.unitRaw || "").trim();
+    const unit = unitMap[raw] ?? "";
+    rows.push({ ...o, unit, _kind: "訂貨契約單", _raw: raw });
+  });
+  const existing = new Set(cases.flatMap(keysOf));
+  const seen = new Set();
+  rows.forEach(r => {
+    const ks = keysOf(r);
+    r._dup = ks.some(k => existing.has(k)) || ks.some(k => seen.has(k));
+    ks.forEach(k => seen.add(k));
+    r._skip = r._dup || !r.unit;
+    r._reason = r._dup ? "已存在" : !r.unit ? "未指定單位" : "";
+  });
+  return rows;
+}
+
+function renderPreview() {
+  if (!seed) return;
+  const rows = buildRows();
+  const ok = rows.filter(r => !r._skip);
+  $("prevSum").innerHTML =
+    `將匯入 <b style="color:var(--ok)">${ok.length}</b> 筆　｜　略過 <b>${rows.length - ok.length}</b> 筆` +
+    `（已存在 ${rows.filter(r => r._dup).length}、未指定單位 ${rows.filter(r => !r._dup && !r.unit).length}）`;
+  $("doImport").disabled = !ok.length;
+  $("prevBody").innerHTML = rows.slice(0, 400).map(r => `
+    <tr style="${r._skip ? "opacity:.45" : ""}">
+      <td>${esc(r._kind)}</td>
+      <td>${r.unit ? esc(r.unit) : `<span class="pill warn">${esc(r._raw || "未填")}</span>`}</td>
+      <td>${esc(r.vendor || "")}</td>
+      <td>${esc(r.item || "")}</td>
+      <td>${r.path ? `<span class="pill ${r.path.toLowerCase()}">${esc(r.path)}</span>` : "—"}</td>
+      <td>${esc(r.currency || "—")}</td>
+      <td class="num">${r.amount != null ? Number(r.amount).toLocaleString() : "—"}</td>
+      <td>${esc(r.poNo || "—")}</td>
+      <td class="num">${Object.keys(r.steps || {}).length}</td>
+      <td>${r._skip ? `<span class="pill warn">略過：${esc(r._reason)}</span>` : `<span class="pill" style="background:var(--ok-bg);color:#15803d">匯入</span>`}</td>
+    </tr>`).join("");
+  if (rows.length > 400) $("prevBody").insertAdjacentHTML("beforeend",
+    `<tr><td colspan="10" style="text-align:center;color:var(--text-soft)">… 另有 ${rows.length - 400} 筆未顯示</td></tr>`);
+}
+["chkCases", "chkOrders"].forEach(id => $(id).addEventListener("change", renderPreview));
+
+// 一次向流水號預約 n 個號碼，避免逐筆交易
+async function reserveNos(n) {
+  const d = new Date();
+  const period = String(d.getFullYear()).slice(2) + String(d.getMonth() + 1).padStart(2, "0");
+  const start = await runTransaction(db, async tx => {
+    const snap = await tx.get(counterRef);
+    const cur = snap.exists() ? snap.data() : {};
+    const base = cur.period === period ? (cur.seq || 0) : 0;
+    tx.set(counterRef, { period, seq: base + n });
+    return base;
+  });
+  return Array.from({ length: n }, (_, i) => `PC-${period}-${String(start + i + 1).padStart(3, "0")}`);
+}
+
+$("doImport").addEventListener("click", async () => {
+  const rows = buildRows().filter(r => !r._skip);
+  if (!rows.length) return;
+  if (!confirm(`確定匯入 ${rows.length} 筆案件？`)) return;
+  $("doImport").disabled = true; $("log").textContent = "";
+  try {
+    log(`預約單號 ${rows.length} 個…`);
+    const nos = await reserveNos(rows.length);
+    let done = 0;
+    for (let i = 0; i < rows.length; i += 400) {
+      const chunk = rows.slice(i, i + 400);
+      const batch = writeBatch(db);
+      chunk.forEach((r, j) => {
+        batch.set(doc(caseCol), {
+          no: nos[i + j],
+          unit: r.unit, vendor: r.vendor || "", item: r.item || "", itemVi: r.itemVi || "",
+          path: r.path || "A", steps: r.steps || {},
+          currency: r.currency || "", amount: r.amount ?? null, payments: r.payments || [],
+          poNo: r.poNo || "", requiredDate: r.requiredDate || null, etaDate: r.etaDate || null,
+          remark: r.remark || "", status: r.status || "open",
+          imported: true, importSource: r.source || "", needsReview: !!r.needsReview,
+          createdAt: serverTimestamp(), createdBy: me.name || me.employeeId,
+          updatedAt: serverTimestamp(), updatedBy: me.name || me.employeeId,
+        });
+      });
+      await batch.commit();
+      done += chunk.length;
+      log(`已寫入 ${done}/${rows.length}`);
+    }
+    log("完成。");
+    toast(`匯入完成，共 ${rows.length} 筆`);
+  } catch (e) {
+    log("失敗：" + e.message);
+    alert("匯入失敗：" + e.message);
+  } finally { $("doImport").disabled = false; }
+});
+
+$("wipe").addEventListener("click", async () => {
+  const target = cases.filter(c => c.imported);
+  if (!target.length) return alert("目前沒有匯入的案件。");
+  if (!confirm(`確定刪除 ${target.length} 筆匯入案件？此動作無法復原。`)) return;
+  if (prompt(`請輸入 DELETE 以確認刪除 ${target.length} 筆`) !== "DELETE") return;
+  for (let i = 0; i < target.length; i += 400) {
+    const batch = writeBatch(db);
+    target.slice(i, i + 400).forEach(c => batch.delete(doc(db, "purchase_cases", c.id)));
+    await batch.commit();
+  }
+  toast(`已刪除 ${target.length} 筆`);
+});
+</script>
+</body>
+</html>

@@ -13,7 +13,8 @@
       ".claude/**",
       ".firebase/**",
       "_preview-*",
-      "purchase_seed.json"
+      "purchase_seed.json",
+      "tools/**"
     ],
     "headers": [
       {

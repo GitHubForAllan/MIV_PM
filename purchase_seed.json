@@ -1812,30 +1812,11 @@
    "vendor": "贝克立",
    "item": "側蓋放置台車, 檢驗放置台車,檢驗放置台車,牛奶箱台車,蝴蝶籠台車...",
    "itemVi": "",
-   "path": "B",
-   "steps": {
-    "1": {
-     "state": "done"
-    },
-    "2": {
-     "state": "done"
-    },
-    "B1": {
-     "state": "done"
-    },
-    "B2": {
-     "state": "done"
-    },
-    "B3": {
-     "state": "done"
-    },
-    "B4": {
-     "state": "done"
-    }
-   },
+   "path": "A",
+   "steps": {},
    "currency": "VND",
    "amount": 1469656000.0,
-   "poNo": "合约",
+   "poNo": "",
    "payments": [
     {
      "seq": 1,
@@ -1867,7 +1848,7 @@
    ],
    "requiredDate": null,
    "etaDate": null,
-   "remark": "付款條件變更：v",
+   "remark": "付款條件變更：v\n編碼欄原文：合约",
    "status": "open",
    "imported": true,
    "needsReview": true
@@ -2394,34 +2375,15 @@
    "vendor": "喬山",
    "item": "粘膠吊具",
    "itemVi": "Gá treo nhúng keo",
-   "path": "B",
-   "steps": {
-    "1": {
-     "state": "done"
-    },
-    "2": {
-     "state": "done"
-    },
-    "B1": {
-     "state": "done"
-    },
-    "B2": {
-     "state": "done"
-    },
-    "B3": {
-     "state": "done"
-    },
-    "B4": {
-     "state": "doing"
-    }
-   },
+   "path": "",
+   "steps": {},
    "currency": "",
    "amount": null,
-   "poNo": "採購處理",
+   "poNo": "",
    "payments": [],
    "requiredDate": null,
    "etaDate": null,
-   "remark": "",
+   "remark": "編碼欄原文：採購處理",
    "status": "open",
    "imported": true,
    "needsReview": true
@@ -4624,34 +4586,15 @@
    "vendor": "",
    "item": "1,2米LED燈管，25綫管固定夾",
    "itemVi": "",
-   "path": "B",
-   "steps": {
-    "1": {
-     "state": "done"
-    },
-    "2": {
-     "state": "done"
-    },
-    "B1": {
-     "state": "done"
-    },
-    "B2": {
-     "state": "done"
-    },
-    "B3": {
-     "state": "done"
-    },
-    "B4": {
-     "state": "doing"
-    }
-   },
+   "path": "",
+   "steps": {},
    "currency": "",
    "amount": null,
-   "poNo": "thiếu quy cách",
+   "poNo": "",
    "payments": [],
    "requiredDate": null,
    "etaDate": null,
-   "remark": "",
+   "remark": "編碼欄原文：thiếu quy cách",
    "status": "open",
    "imported": true,
    "needsReview": true
@@ -4820,33 +4763,14 @@
    "item": "Kệ hàng nặng tải độc lập",
    "itemVi": "重型貨架 主架",
    "path": "B",
-   "steps": {
-    "1": {
-     "state": "done"
-    },
-    "2": {
-     "state": "done"
-    },
-    "B1": {
-     "state": "done"
-    },
-    "B2": {
-     "state": "done"
-    },
-    "B3": {
-     "state": "done"
-    },
-    "B4": {
-     "state": "doing"
-    }
-   },
+   "steps": {},
    "currency": "VND",
    "amount": 80100000.0,
-   "poNo": "请购单",
+   "poNo": "",
    "payments": [],
    "requiredDate": null,
    "etaDate": null,
-   "remark": "等付款条件变更",
+   "remark": "等付款条件变更\n編碼欄原文：请购单",
    "status": "open",
    "imported": true,
    "needsReview": true
@@ -4859,33 +4783,14 @@
    "item": "Kệ khuôn",
    "itemVi": "抽屜式",
    "path": "B",
-   "steps": {
-    "1": {
-     "state": "done"
-    },
-    "2": {
-     "state": "done"
-    },
-    "B1": {
-     "state": "done"
-    },
-    "B2": {
-     "state": "done"
-    },
-    "B3": {
-     "state": "done"
-    },
-    "B4": {
-     "state": "doing"
-    }
-   },
+   "steps": {},
    "currency": "VND",
    "amount": 24600000.0,
-   "poNo": "请购单",
+   "poNo": "",
    "payments": [],
    "requiredDate": null,
    "etaDate": null,
-   "remark": "等付款条件变更",
+   "remark": "等付款条件变更\n編碼欄原文：请购单",
    "status": "open",
    "imported": true,
    "needsReview": true
@@ -5445,33 +5350,14 @@
    "item": "定位專用料夾",
    "itemVi": "Đồ gá định vị chuyên dụng.",
    "path": "B",
-   "steps": {
-    "1": {
-     "state": "done"
-    },
-    "2": {
-     "state": "done"
-    },
-    "B1": {
-     "state": "done"
-    },
-    "B2": {
-     "state": "done"
-    },
-    "B3": {
-     "state": "done"
-    },
-    "B4": {
-     "state": "doing"
-    }
-   },
+   "steps": {},
    "currency": "USD",
    "amount": 394.0,
-   "poNo": "7/8 gửi ông Vương",
+   "poNo": "",
    "payments": [],
    "requiredDate": null,
    "etaDate": null,
-   "remark": "供应商",
+   "remark": "供应商\n編碼欄原文：7/8 gửi ông Vương",
    "status": "open",
    "imported": true,
    "needsReview": true
@@ -5853,33 +5739,14 @@
    "item": "FP0054FR",
    "itemVi": "",
    "path": "B",
-   "steps": {
-    "1": {
-     "state": "done"
-    },
-    "2": {
-     "state": "done"
-    },
-    "B1": {
-     "state": "done"
-    },
-    "B2": {
-     "state": "done"
-    },
-    "B3": {
-     "state": "done"
-    },
-    "B4": {
-     "state": "doing"
-    }
-   },
+   "steps": {},
    "currency": "VND",
    "amount": 75000000.0,
-   "poNo": "7/8 gửi ông Vương",
+   "poNo": "",
    "payments": [],
    "requiredDate": null,
    "etaDate": null,
-   "remark": "等些有效益分析表8.22",
+   "remark": "等些有效益分析表8.22\n編碼欄原文：7/8 gửi ông Vương",
    "status": "open",
    "imported": true,
    "needsReview": true
@@ -5892,33 +5759,14 @@
    "item": "FF005F3Y, FF005F6L",
    "itemVi": "FF005F3Y, FF005F6L",
    "path": "B",
-   "steps": {
-    "1": {
-     "state": "done"
-    },
-    "2": {
-     "state": "done"
-    },
-    "B1": {
-     "state": "done"
-    },
-    "B2": {
-     "state": "done"
-    },
-    "B3": {
-     "state": "done"
-    },
-    "B4": {
-     "state": "doing"
-    }
-   },
+   "steps": {},
    "currency": "VND",
    "amount": 14269000.0,
-   "poNo": "Chị Huyền xin làm lại",
+   "poNo": "",
    "payments": [],
    "requiredDate": null,
    "etaDate": null,
-   "remark": "",
+   "remark": "編碼欄原文：Chị Huyền xin làm lại",
    "status": "open",
    "imported": true,
    "needsReview": true
@@ -6322,33 +6170,14 @@
    "item": "动力升降台加滚筒式 自动输送机",
    "itemVi": "",
    "path": "B",
-   "steps": {
-    "1": {
-     "state": "done"
-    },
-    "2": {
-     "state": "done"
-    },
-    "B1": {
-     "state": "done"
-    },
-    "B2": {
-     "state": "done"
-    },
-    "B3": {
-     "state": "done"
-    },
-    "B4": {
-     "state": "doing"
-    }
-   },
+   "steps": {},
    "currency": "VND",
    "amount": 84550000.0,
-   "poNo": "7/8 gửi ông Vương",
+   "poNo": "",
    "payments": [],
    "requiredDate": null,
    "etaDate": null,
-   "remark": "等付款条件变更",
+   "remark": "等付款条件变更\n編碼欄原文：7/8 gửi ông Vương",
    "status": "open",
    "imported": true,
    "needsReview": true
@@ -6360,34 +6189,15 @@
    "vendor": "鑫富",
    "item": "自动打包机+包袋机侧推设备+气压缸",
    "itemVi": "",
-   "path": "B",
-   "steps": {
-    "1": {
-     "state": "done"
-    },
-    "2": {
-     "state": "done"
-    },
-    "B1": {
-     "state": "done"
-    },
-    "B2": {
-     "state": "done"
-    },
-    "B3": {
-     "state": "done"
-    },
-    "B4": {
-     "state": "doing"
-    }
-   },
+   "path": "A",
+   "steps": {},
    "currency": "VND",
    "amount": 753300000.0,
-   "poNo": "7/8 gửi ông Vương",
+   "poNo": "",
    "payments": [],
    "requiredDate": null,
    "etaDate": null,
-   "remark": "等效益分析表",
+   "remark": "等效益分析表\n編碼欄原文：7/8 gửi ông Vương",
    "status": "open",
    "imported": true,
    "needsReview": true
@@ -6556,29 +6366,10 @@
    "item": "激光除锈机",
    "itemVi": "MÁY TẨY GỈ LAZE",
    "path": "B",
-   "steps": {
-    "1": {
-     "state": "done"
-    },
-    "2": {
-     "state": "done"
-    },
-    "B1": {
-     "state": "done"
-    },
-    "B2": {
-     "state": "done"
-    },
-    "B3": {
-     "state": "done"
-    },
-    "B4": {
-     "state": "doing"
-    }
-   },
+   "steps": {},
    "currency": "VND",
    "amount": 100000000.0,
-   "poNo": "请购单",
+   "poNo": "",
    "payments": [
     {
      "seq": 3,
@@ -6592,7 +6383,7 @@
    ],
    "requiredDate": null,
    "etaDate": null,
-   "remark": "等台湾签",
+   "remark": "等台湾签\n編碼欄原文：请购单",
    "status": "open",
    "imported": true,
    "needsReview": true
@@ -7279,29 +7070,10 @@
    "item": "縫袋機,縫袋機線",
    "itemVi": "",
    "path": "B",
-   "steps": {
-    "1": {
-     "state": "done"
-    },
-    "2": {
-     "state": "done"
-    },
-    "B1": {
-     "state": "done"
-    },
-    "B2": {
-     "state": "done"
-    },
-    "B3": {
-     "state": "done"
-    },
-    "B4": {
-     "state": "doing"
-    }
-   },
+   "steps": {},
    "currency": "VND",
    "amount": 3500000.0,
-   "poNo": "请购单",
+   "poNo": "",
    "payments": [
     {
      "seq": 1,
@@ -7333,7 +7105,7 @@
    ],
    "requiredDate": null,
    "etaDate": null,
-   "remark": "制造",
+   "remark": "制造\n編碼欄原文：请购单",
    "status": "open",
    "imported": true,
    "needsReview": true
@@ -8216,30 +7988,11 @@
    "vendor": "贝克立",
    "item": "Xe đẩy dùng cho công đoạn tạo bọt TM25VS",
    "itemVi": "TM25VS發泡台車",
-   "path": "B",
-   "steps": {
-    "1": {
-     "state": "done"
-    },
-    "2": {
-     "state": "done"
-    },
-    "B1": {
-     "state": "done"
-    },
-    "B2": {
-     "state": "done"
-    },
-    "B3": {
-     "state": "done"
-    },
-    "B4": {
-     "state": "doing"
-    }
-   },
+   "path": "A",
+   "steps": {},
    "currency": "VND",
    "amount": 800000000.0,
-   "poNo": "请购单",
+   "poNo": "",
    "payments": [
     {
      "seq": 1,
@@ -8271,7 +8024,7 @@
    ],
    "requiredDate": null,
    "etaDate": null,
-   "remark": "跑流程",
+   "remark": "跑流程\n編碼欄原文：请购单",
    "status": "open",
    "imported": true,
    "needsReview": true
@@ -8283,33 +8036,32 @@
    "vendor": "",
    "item": "Giá để khuôn dạng ngăn kéo 3 tầng",
    "itemVi": "三層抽屜式模具架",
-   "path": "B",
-   "steps": {
-    "1": {
-     "state": "done"
-    },
-    "2": {
-     "state": "done"
-    },
-    "B1": {
-     "state": "done"
-    },
-    "B2": {
-     "state": "done"
-    },
-    "B3": {
-     "state": "done"
-    },
-    "B4": {
-     "state": "doing"
-    }
-   },
+   "path": "",
+   "steps": {},
    "currency": "",
    "amount": null,
-   "poNo": "请购单",
+   "poNo": "",
    "payments": [
     {
      "seq": 1,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
      "pct": null,
      "term": "",
      "amount": 0.0,
@@ -8320,7 +8072,103 @@
    ],
    "requiredDate": null,
    "etaDate": null,
-   "remark": "询价",
+   "remark": "询价\n編碼欄原文：请购单",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "焊接",
+   "vendor": "HPJ",
+   "item": "鈑金拉拔焊機用 拉拔槌(黑色) Búa giựt dùng cho máy hàn rút tôn(đen)",
+   "itemVi": "",
+   "path": "B",
+   "steps": {},
+   "currency": "VND",
+   "amount": 14744000.0,
+   "poNo": "",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "跑流程\n編碼欄原文：请购单",
+   "status": "open",
+   "imported": true,
+   "needsReview": true
+  },
+  {
+   "source": "跟踪订货契约单",
+   "unit": "",
+   "unitRaw": "冲床",
+   "vendor": "HPJ",
+   "item": "E25VS 速接片了",
+   "itemVi": "",
+   "path": "A",
+   "steps": {},
+   "currency": "USD",
+   "amount": 760000.0,
+   "poNo": "",
+   "payments": [
+    {
+     "seq": 1,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 2,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    },
+    {
+     "seq": 3,
+     "pct": null,
+     "term": "",
+     "amount": 0.0,
+     "dueDate": null,
+     "paidDate": null,
+     "note": ""
+    }
+   ],
+   "requiredDate": null,
+   "etaDate": null,
+   "remark": "編碼欄原文：请购单",
    "status": "open",
    "imported": true,
    "needsReview": true
@@ -8338,8 +8186,9 @@
   "品保": 3,
   "开发 - Quyền": 3,
   "技術課": 3,
+  "焊接": 3,
   "阿伦": 2,
-  "焊接": 2,
+  "冲床": 2,
   "技术课": 2,
   "组装": 2,
   "加工课": 2,
@@ -8351,7 +8200,6 @@
   "製造- 組裝": 1,
   "製造-噴漆": 1,
   "PMC": 1,
-  "冲床": 1,
   "P130": 1,
   "阿志": 1
  },
@@ -8367,8 +8215,9 @@
   "品保": "品保課",
   "开发 - Quyền": "",
   "技術課": "生技課",
-  "阿伦": "",
   "焊接": "",
+  "阿伦": "",
+  "冲床": "",
   "技术课": "生技課",
   "组装": "",
   "加工课": "",
@@ -8380,7 +8229,6 @@
   "製造- 組裝": "",
   "製造-噴漆": "",
   "PMC": "",
-  "冲床": "",
   "P130": "",
   "阿志": ""
  }

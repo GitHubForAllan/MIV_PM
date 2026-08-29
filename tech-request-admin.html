@@ -54,7 +54,7 @@
 
 <div id="denied" class="hidden">
   <p style="font-size:1.1rem;font-weight:700;color:var(--text)">權限不足</p>
-  <p>此頁僅限管理員（admin）使用，請聯絡系統管理員指派權限。</p>
+  <p>此頁需要「技術課委託管理」的管理權限，請聯絡系統管理員於「使用者權限管理」勾選。</p>
   <p><a href="index.html">← 返回首頁</a></p>
 </div>
 
@@ -134,7 +134,7 @@
 </div>
 
 <script type="module">
-import { mivAuthReady } from "./auth-guard.js?v=2";
+import { mivAuthReady } from "./auth-guard.js?v=3";
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot
@@ -171,7 +171,7 @@ const authTimer = setTimeout(() => {
 mivAuthReady.then(user => {
   clearTimeout(authTimer);
   document.getElementById("loading").classList.add("hidden");
-  if (user.role !== "admin") {
+  if (!user.canManage("techreq")) {
     document.getElementById("denied").classList.remove("hidden");
     return;
   }

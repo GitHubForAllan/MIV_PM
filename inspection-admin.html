@@ -106,7 +106,7 @@
 </style>
 </head>
 <body>
-<script type="module" src="auth-guard.js?v=2"></script>
+<script type="module" src="auth-guard.js?v=3"></script>
 
 <header class="topbar">
   <div class="topbar-left">
@@ -184,7 +184,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import {
   getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, addDoc, getDocs, onSnapshot, query, where
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { mivAuthReady } from "./auth-guard.js?v=2";
+import { mivAuthReady } from "./auth-guard.js?v=3";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs", authDomain: "miv-1426c.firebaseapp.com",
@@ -196,8 +196,8 @@ const areasCol = collection(db, "pi_areas");
 const templatesCol = collection(db, "pi_checklist_templates");
 
 const piUser = await mivAuthReady;
-// 巡檢後台管理：僅管理員（站點與表單範本的維護權限）
-if (piUser.role !== "admin") {
+// 巡檢後台管理（站點與表單範本維護）：需要「製程巡檢 → 管理」
+if (!piUser.canManage("inspection")) {
   document.getElementById("no-access").style.display = "";
 } else {
   document.getElementById("admin-main").style.display = "";

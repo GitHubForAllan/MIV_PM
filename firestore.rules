@@ -2,9 +2,20 @@ rules_version = '2';
 
 // 越南力山工業 廠務系統 — Firestore 安全規則
 //
-// 原則：預設全部拒絕，依「角色」逐一開放。
-// 角色來自 users/{uid}.role：viewer / production / toolroom / quality / admin
-// ※ 沒有 users 文件或沒有角色的帳號 = 沒有任何權限（安燈看板與問題反映除外）。
+// 原則：預設全部拒絕，依「每個系統的使用／管理權限」逐一開放。
+// 權限來自 users/{uid}：
+//   role: "admin"               系統管理員，等於所有系統都有使用＋管理權
+//   useApps:    ["andon", …]    可「使用」的系統代碼
+//   manageApps: ["toolroom", …] 可「管理」的系統代碼（有管理必然有使用）
+// 系統代碼與 auth-guard.js 的 MIV_APPS 一致：
+//   andon / toolroom / issue / calibration / inspection / container / techreq / purchase
+// 權限在 admin-users.html 以勾選方式維護。
+//
+// ※ 向下相容：帳號還沒被 admin-users.html 轉存成新格式（文件裡沒有
+//   useApps／manageApps）之前，會退回用舊的單一 role
+//   （viewer / production / toolroom / quality）判斷，對照表與
+//   auth-guard.js 的 LEGACY_USE / LEGACY_MANAGE 相同。全部帳號轉換完成後，
+//   可以把每個 canUse()／canManage() 的第二個參數與 legacy 分支一併移除。
 //
 // 免登入例外（配合現場使用方式）：
 //   - andon/config  安燈看板（andon.html）在產線電視牆上唯讀顯示
@@ -13,31 +24,46 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ── 角色判斷 ────────────────────────────────────────────────
+    // ── 權限判斷 ────────────────────────────────────────────────
     function signedIn() {
       return request.auth != null;
+    }
+    function hasUserDoc() {
+      return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
     }
     function userDoc() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
-    function hasRole(roles) {
-      return signedIn()
-        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
-        && userDoc().role in roles;
+    function isAdmin() {
+      return hasUserDoc() && userDoc().get('role', '') == 'admin';
     }
-    function isAdmin()    { return hasRole(['admin']); }
-    // 任何已指派角色的員工
-    function anyStaff()   { return hasRole(['viewer', 'production', 'toolroom', 'quality', 'admin']); }
-    // 排除工具室：校驗與巡檢相關資料
-    function nonToolroom(){ return hasRole(['viewer', 'production', 'quality', 'admin']); }
-    function isQuality()  { return hasRole(['quality', 'admin']); }
-    function isToolroom() { return hasRole(['toolroom', 'admin']); }
-    // 排除純檢視者：可實際編輯資料的角色
-    function nonViewer()  { return hasRole(['production', 'toolroom', 'quality', 'admin']); }
+    // 這個帳號是否已經轉存成「勾選」格式
+    function useNewPerms() {
+      return hasUserDoc() && userDoc().keys().hasAny(['useApps', 'manageApps']);
+    }
+    // app：系統代碼；legacy：尚未轉換的帳號要放行的舊角色清單
+    function canUse(app, legacy) {
+      return isAdmin() || (hasUserDoc() && (useNewPerms()
+        ? (userDoc().get('useApps', []).hasAny([app]) || userDoc().get('manageApps', []).hasAny([app]))
+        : (userDoc().get('role', '') in legacy)));
+    }
+    function canManage(app, legacy) {
+      return isAdmin() || (hasUserDoc() && (useNewPerms()
+        ? userDoc().get('manageApps', []).hasAny([app])
+        : (userDoc().get('role', '') in legacy)));
+    }
 
-    // ── 使用者角色表 ────────────────────────────────────────────
-    // 每個人都要能讀自己的角色（auth-guard 判斷可用功能）；
-    // 列出全部使用者僅限管理員；異動角色僅限管理員。
+    // 舊角色對照（僅供尚未轉換的帳號）
+    function allRoles()      { return ['viewer', 'production', 'toolroom', 'quality', 'admin']; }
+    function nonToolroom()   { return ['viewer', 'production', 'quality', 'admin']; }
+    function qualityRoles()  { return ['quality', 'admin']; }
+    function toolroomRoles() { return ['toolroom', 'admin']; }
+    function adminOnly()     { return ['admin']; }
+    function nonViewer()     { return ['production', 'toolroom', 'quality', 'admin']; }
+
+    // ── 使用者權限表 ────────────────────────────────────────────
+    // 每個人都要能讀自己的權限（auth-guard 判斷可用功能）；
+    // 列出全部使用者與異動權限僅限系統管理員。
     match /users/{uid} {
       allow get:   if isAdmin() || (signedIn() && request.auth.uid == uid);
       allow list:  if isAdmin();
@@ -46,182 +72,199 @@ service cloud.firestore {
 
     // ── 安燈系統 ────────────────────────────────────────────────
     // andon/config：電視牆看板需免登入唯讀。
-    // 產線操作（觸發／解除異常）會改 lines.{id}.alert，開放所有角色；
-    // 但新增或刪除產線僅限管理員，因此非管理員寫入時產線清單必須維持不變。
+    // 產線操作（觸發／解除異常）會改 lines.{id}.alert，開放有使用權者；
+    // 但新增或刪除產線屬管理權，因此非管理者寫入時產線清單必須維持不變。
     match /andon/config {
       allow read: if true;
-      allow write: if isAdmin()
-        || (anyStaff()
+      allow write: if canManage('andon', adminOnly())
+        || (canUse('andon', allRoles())
             && resource.data.lines is map
             && request.resource.data.lines is map
             && request.resource.data.lines.keys().hasOnly(resource.data.lines.keys())
             && resource.data.lines.keys().hasOnly(request.resource.data.lines.keys()));
     }
-    // PIN 碼（andon/auth）與棟別設定（andon/buildings）：僅管理員可讀寫
+    // PIN 碼（andon/auth）與棟別設定（andon/buildings）：僅安燈管理者可讀寫
     match /andon/{docId} {
-      allow read:  if isAdmin();
-      allow write: if isAdmin();
+      allow read:  if canManage('andon', adminOnly());
+      allow write: if canManage('andon', adminOnly());
     }
-    // 安燈異常紀錄：產線操作時建立與更新，所有角色皆可
+    // 安燈異常紀錄：產線操作時建立與更新，有使用權即可；刪除屬管理權
     match /andon-logs/{logId} {
-      allow read:   if anyStaff();
-      allow create: if anyStaff();
-      allow update: if anyStaff();
-      allow delete: if isAdmin();
+      allow read:   if canUse('andon', allRoles());
+      allow create: if canUse('andon', allRoles());
+      allow update: if canUse('andon', allRoles());
+      allow delete: if canManage('andon', adminOnly());
     }
 
     // ── 問題反映系統 ────────────────────────────────────────────
     // issue-report.html 為免登入現場回報，維持原行為。
+    // （「問題反映」的使用權目前只用來決定首頁是否顯示入口。）
     match /issues/{issueId} {
       allow read, write: if true;
     }
 
     // ── 工具室系統 ──────────────────────────────────────────────
-    // 庫存品項：所有人可檢視；新增／編輯／刪除／入出庫僅工具室與管理員
+    // 庫存品項：有使用權可檢視；新增／編輯／刪除／入出庫需管理權
     match /toolroom_items/{itemId} {
-      allow read:  if anyStaff();
-      allow write: if isToolroom();
+      allow read:  if canUse('toolroom', allRoles());
+      allow write: if canManage('toolroom', toolroomRoles());
     }
-    // 領用申請：所有人可檢視並提出申請；審核、修改、刪除僅工具室與管理員
+    // 領用申請：有使用權可檢視並提出申請；審核、修改、刪除需管理權
     match /toolroom_requisitions/{reqId} {
-      allow read:   if anyStaff();
-      allow create: if anyStaff();
-      allow update: if isToolroom();
-      allow delete: if isToolroom();
+      allow read:   if canUse('toolroom', allRoles());
+      allow create: if canUse('toolroom', allRoles());
+      allow update: if canManage('toolroom', toolroomRoles());
+      allow delete: if canManage('toolroom', toolroomRoles());
     }
 
     // ── 校驗管理 ────────────────────────────────────────────────
-    // 檢視不含工具室；新增／編輯／刪除／匯入僅品保與管理員
+    // 設備主檔：有使用權可檢視；新增／編輯／刪除／匯入需管理權。
+    // 例外：新增校驗紀錄屬日常操作，因此有使用權者可以只更新「最近校驗日／
+    // 下次到期日」這兩個欄位（其餘欄位一律要管理權）。
     match /calibration_assets/{assetId} {
-      allow read:  if nonToolroom();
-      allow write: if isQuality();
+      allow read:  if canUse('calibration', nonToolroom());
+      allow write: if canManage('calibration', qualityRoles());
+      allow update: if canUse('calibration', nonToolroom())
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['lastCalibDate', 'nextDueDate', 'updatedAt']);
+    }
+    // 校驗紀錄子集合：有使用權者可檢視與新增；修改與刪除需管理權
+    match /calibration_assets/{assetId}/records/{recordId} {
+      allow read:   if canUse('calibration', nonToolroom());
+      allow create: if canUse('calibration', nonToolroom());
+      allow update: if canManage('calibration', qualityRoles());
+      allow delete: if canManage('calibration', qualityRoles());
     }
 
     // ── 製程巡檢系統 ────────────────────────────────────────────
-    // 站點：紀錄查詢與異常追蹤都需要讀；維護僅管理員（巡檢後台管理）
+    // 站點：紀錄查詢與異常追蹤都需要讀；維護需管理權（巡檢後台）
     match /pi_areas/{areaId} {
-      allow read:  if nonToolroom();
-      allow write: if isAdmin();
+      allow read:  if canUse('inspection', nonToolroom());
+      allow write: if canManage('inspection', adminOnly());
     }
-    // 巡檢表單範本：僅巡檢作業會用到；維護僅管理員
+    // 巡檢表單範本：只有實際執行巡檢作業會用到，讀寫都需管理權
     match /pi_checklist_templates/{templateId} {
-      allow read:  if isQuality();
-      allow write: if isAdmin();
+      allow read:  if canManage('inspection', qualityRoles());
+      allow write: if canManage('inspection', adminOnly());
     }
-    // 巡檢紀錄：紀錄查詢可讀（不含工具室）；建立與修改僅品保與管理員
+    // 巡檢紀錄：有使用權可查詢；建立與修改需管理權（＝可執行巡檢作業者）
     //
     // ※ 「統計報表」與「紀錄查詢」讀的是同一批資料，規則無法分辨是哪一頁
     //    發出的請求，因此資料庫層放行兩者的聯集，報表頁的限制維持在畫面層。
     match /pi_inspection_records/{recordId} {
-      allow read:  if nonToolroom();
-      allow write: if isQuality();
+      allow read:  if canUse('inspection', nonToolroom());
+      allow write: if canManage('inspection', qualityRoles());
     }
     // 巡檢異常單
     match /pi_issues/{issueId} {
-      allow read:   if nonToolroom();
+      allow read:   if canUse('inspection', nonToolroom());
       // 異常單由巡檢作業產生
-      allow create: if isQuality();
-      allow delete: if isAdmin();
-      // 品保與管理員可完整更新（含簽核結案／退回）；
-      // 其他角色只能填負責人與改善對策，且不得將狀態改為已結案。
-      allow update: if isQuality()
-        || (nonToolroom()
+      allow create: if canManage('inspection', qualityRoles());
+      allow delete: if canManage('inspection', adminOnly());
+      // 有管理權者可完整更新（含簽核結案／退回）；
+      // 只有使用權者只能填負責人與改善對策，且不得將狀態改為已結案。
+      allow update: if canManage('inspection', qualityRoles())
+        || (canUse('inspection', nonToolroom())
             && request.resource.data.diff(resource.data).affectedKeys()
                  .hasOnly(['assignedTo', 'countermeasure', 'resolutionPhotoUrls', 'status'])
             && request.resource.data.status in ['待處理', '改善中', '待複檢（待主管簽核）']);
     }
 
     // ── 裝櫃計算工具 ────────────────────────────────────────────
+    // 機種主檔：有使用權可檢視（試算要對照）；建檔／匯入／刪除需管理權
     match /containerModels/{modelId} {
-      allow read, write: if anyStaff();
+      allow read:  if canUse('container', allRoles());
+      allow write: if canManage('container', adminOnly());
     }
 
     // ── 技術課委託管理系統 ──────────────────────────────────────
-    // 委託單位與簽核主管對照表：所有人可讀（送單要選單位），僅管理員可維護
+    // 委託單位與簽核主管對照表：有使用權可讀（送單要選單位），維護需管理權
     match /treq_departments/{deptId} {
-      allow read:  if anyStaff();
-      allow write: if isAdmin();
+      allow read:  if canUse('techreq', allRoles());
+      allow write: if canManage('techreq', adminOnly());
     }
 
-    // 委託類別：所有人可讀（填單要選類別），僅管理員可維護
+    // 委託類別：有使用權可讀（填單要選類別），維護需管理權
     match /treq_categories/{catId} {
-      allow read:  if anyStaff();
-      allow write: if isAdmin();
+      allow read:  if canUse('techreq', allRoles());
+      allow write: if canManage('techreq', adminOnly());
     }
 
-    // 工時單價與技術課受理人員：所有人可讀（前台要用單價算成本），僅管理員可改
+    // 工時單價與技術課受理人員：有使用權可讀（前台要用單價算成本），維護需管理權
     match /treq_meta/config {
-      allow read:  if anyStaff();
-      allow write: if isAdmin();
+      allow read:  if canUse('techreq', allRoles());
+      allow write: if canManage('techreq', adminOnly());
     }
 
-    // 單號流水號：每位委託人送單時都要遞增，因此所有角色皆可寫，
+    // 單號流水號：每位委託人送單時都要遞增，因此有使用權即可寫，
     // 但限制只能有 period（年月，如 2608）與 seq 兩個欄位，避免被塞入其他資料。
     match /treq_meta/counter {
-      allow read: if anyStaff();
-      allow write: if anyStaff()
+      allow read: if canUse('techreq', allRoles());
+      allow write: if canUse('techreq', allRoles())
         && request.resource.data.keys().hasOnly(['period', 'seq'])
         && request.resource.data.period is string
         && request.resource.data.seq is number;
     }
 
-    // 委託單：所有角色皆可檢視與送出；後續流程依身分（主管／技術課／本人）而非角色
+    // 委託單：有使用權者皆可檢視與送出；後續流程依身分（主管／技術課／本人）而非權限
     match /treq_requests/{reqId} {
-      allow read: if anyStaff();
+      allow read: if canUse('techreq', allRoles());
 
       // 只能以自己的名義建單，且必須從「待主管簽核」開始
-      allow create: if anyStaff()
+      allow create: if canUse('techreq', allRoles())
         && request.resource.data.requesterUid == request.auth.uid
         && request.resource.data.status == 'pending_approval';
 
       // 單號與委託人不可被竄改
-      allow update: if anyStaff()
+      allow update: if canUse('techreq', allRoles())
         && request.resource.data.no == resource.data.no
         && request.resource.data.requesterUid == resource.data.requesterUid;
 
-      // 撤回：限本人且尚未簽核／已被退回；管理員可刪
-      allow delete: if isAdmin()
-        || (anyStaff()
+      // 撤回：限本人且尚未簽核／已被退回；有管理權者可刪
+      allow delete: if canManage('techreq', adminOnly())
+        || (canUse('techreq', allRoles())
             && resource.data.requesterUid == request.auth.uid
             && resource.data.status in ['pending_approval', 'rejected']);
     }
+
     // ── 採購流程進度追蹤系統 ───────────────────────
-    // 採購單位主檔：所有人可讀（建案時要選單位、清單要做篩選），僅管理員可維護
+    // 採購單位主檔：有使用權可讀（建案時要選單位、清單要做篩選），維護需管理權
     match /purchase_units/{unitId} {
-      allow read:  if anyStaff();
-      allow write: if isAdmin();
+      allow read:  if canUse('purchase', allRoles());
+      allow write: if canManage('purchase', adminOnly());
     }
 
-    // 廠商主檔：所有人可讀（建案時輸入廠商會帶出建議），僅管理員可維護
+    // 廠商主檔：有使用權可讀（建案時輸入廠商會帶出建議），維護需管理權
     match /purchase_vendors/{vendorId} {
-      allow read:  if anyStaff();
-      allow write: if isAdmin();
+      allow read:  if canUse('purchase', allRoles());
+      allow write: if canManage('purchase', adminOnly());
     }
 
-    // 流程判斷匯率等參數：所有人可讀（前台要用來建議走 A 或 B 流程），僅管理員可改
+    // 流程判斷匯率等參數：有使用權可讀（前台要用來建議走 A 或 B 流程），維護需管理權
     match /purchase_meta/config {
-      allow read:  if anyStaff();
-      allow write: if isAdmin();
+      allow read:  if canUse('purchase', allRoles());
+      allow write: if canManage('purchase', adminOnly());
     }
 
-    // 案件流水號：每次建案都要遞增，因此可編輯的角色皆可寫，
+    // 案件流水號：每次建案都要遞增，因此可建案的人（管理權）皆可寫，
     // 但限制只能有 period（年月，如 2608）與 seq 兩個欄位，避免被塞入其他資料。
     match /purchase_meta/counter {
-      allow read: if anyStaff();
-      allow write: if nonViewer()
+      allow read: if canUse('purchase', allRoles());
+      allow write: if canManage('purchase', nonViewer())
         && request.resource.data.keys().hasOnly(['period', 'seq'])
         && request.resource.data.period is string
         && request.resource.data.seq is number;
     }
 
-    // 採購案件：採購單位是篩選維度而非權限牆，因此全員可讀、viewer 以外皆可維護。
+    // 採購案件：採購單位是篩選維度而非權限牆，因此有使用權者全部可讀，
+    // 建立／編輯／刪除需管理權。
     // 若日後要讓各單位只能改自己的案件，把 update 條件改成比對 userDoc().unit 即可。
     match /purchase_cases/{caseId} {
-      allow read:   if anyStaff();
-      allow create: if nonViewer() && request.resource.data.no is string;
+      allow read:   if canUse('purchase', allRoles());
+      allow create: if canManage('purchase', nonViewer()) && request.resource.data.no is string;
       // 案件單號不可被竄改
-      allow update: if nonViewer() && request.resource.data.no == resource.data.no;
-      allow delete: if isAdmin();
+      allow update: if canManage('purchase', nonViewer()) && request.resource.data.no == resource.data.no;
+      allow delete: if canManage('purchase', adminOnly());
     }
   }
 }

@@ -128,7 +128,7 @@
 </style>
 </head>
 <body>
-<script type="module" src="auth-guard.js?v=2"></script>
+<script type="module" src="auth-guard.js?v=3"></script>
 
 <header class="topbar">
   <div class="topbar-left">
@@ -229,7 +229,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, doc, getDoc, updateDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { mivAuthReady } from "./auth-guard.js?v=2";
+import { mivAuthReady, mivDenyScreen } from "./auth-guard.js?v=3";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs", authDomain: "miv-1426c.firebaseapp.com",
@@ -243,32 +243,25 @@ const recordsCol = collection(db, "pi_inspection_records");
 
 const piUser = await mivAuthReady;
 
-// 異常追蹤：viewer／production／quality／admin 可看，工具室不可
-if (!["viewer", "production", "quality", "admin"].includes(piUser.role)) {
-  document.body.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:center;min-height:80vh;flex-direction:column;gap:10px;color:#374151;text-align:center;padding:24px">
-      <p style="font-size:1.2rem;font-weight:700">權限不足</p>
-      <p style="color:#64748b">您的角色無權檢視巡檢異常追蹤，請聯絡系統管理員指派權限。<br>
-        <span style="font-style:italic;font-size:.9em">Vai trò của bạn không có quyền xem theo dõi bất thường, vui lòng liên hệ quản trị viên.</span></p>
-      <a href="index.html" style="color:#2563eb">← 返回首頁 / Trang chủ</a>
-      <button onclick="window.mivLogout()" style="margin-top:6px;padding:6px 16px;border:1px solid #cbd5e1;background:transparent;border-radius:8px;color:#64748b;cursor:pointer">登出 / Đăng xuất</button>
-    </div>`;
+// 異常追蹤：需要「製程巡檢 → 使用」才能檢視（權限在 admin-users.html 勾選）
+if (!piUser.can("inspection")) {
+  mivDenyScreen("inspection", "use");
   throw new Error("insufficient permission for inspection-issues.html");
 }
 
 function renderNav() {
   // 可執行巡檢作業者才顯示「返回巡檢」與「統計報表」，其他角色點進去會被擋
-  const canInspect = piUser.role === "quality" || piUser.role === "admin";
+  const canInspect = piUser.canManage("inspection");
   const links = [canInspect
     ? `<a class="nav-link" href="inspection.html"><span>← 返回巡檢</span><span class="vi">Quay lại kiểm tra</span></a>`
     : `<a class="nav-link" href="index.html"><span>← 返回首頁</span><span class="vi">Trang chủ</span></a>`];
   links.push(`<a class="nav-link" href="inspection-records.html"><span>📑 紀錄查詢</span><span class="vi">Tra cứu hồ sơ</span></a>`);
   if (canInspect) links.push(`<a class="nav-link" href="inspection-dashboard.html"><span>📊 統計報表</span><span class="vi">Báo cáo</span></a>`);
-  if (piUser.role === "admin") links.push(`<a class="nav-link" href="inspection-admin.html"><span>⚙ 後台管理</span><span class="vi">Quản trị</span></a>`);
+  if (canInspect) links.push(`<a class="nav-link" href="inspection-admin.html"><span>⚙ 後台管理</span><span class="vi">Quản trị</span></a>`);
   document.getElementById("nav-links").innerHTML = links.join("");
 }
 function esc(s){ return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
-function canManage(){ return piUser.role === "quality" || piUser.role === "admin"; }
+function canManage(){ return piUser.canManage("inspection"); }
 
 let issues = {}, areas = {}, currentView = "kanban";
 const recordCache = {}; // recordId -> {modelName, partOrModelNo} | null

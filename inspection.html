@@ -141,7 +141,7 @@
 </style>
 </head>
 <body>
-<script type="module" src="auth-guard.js?v=2"></script>
+<script type="module" src="auth-guard.js?v=3"></script>
 
 <header class="topbar">
   <div class="topbar-left">
@@ -200,7 +200,7 @@ import {
   getFirestore, collection, doc, setDoc, updateDoc, addDoc, getDocs, onSnapshot,
   query, where, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { mivAuthReady } from "./auth-guard.js?v=2";
+import { mivAuthReady, mivDenyScreen } from "./auth-guard.js?v=3";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs",
@@ -217,23 +217,17 @@ const templatesCol = collection(db, "pi_checklist_templates");
 const recordsCol = collection(db, "pi_inspection_records");
 const issuesCol = collection(db, "pi_issues");
 
-// ── 登入檢查（共用工號登入，角色來自 users 集合）──
+// ── 權限檢查（權限在 admin-users.html 勾選）──
+// 巡檢作業本身需要「製程巡檢 → 管理」；只有「使用」的人可以看紀錄查詢與
+// 異常追蹤，而首頁的巡檢入口指向本頁，直接擋掉會讓他們沒有路徑進入巡檢
+// 系統，因此改為導向他們有權限的頁面。
 const piUser = await mivAuthReady;
-if (piUser.role !== "quality" && piUser.role !== "admin") {
-  // 巡檢作業限品保／管理員。但 viewer 與 production 有紀錄查詢與異常追蹤的權限，
-  // 而首頁的巡檢入口指向本頁，直接擋掉會讓他們沒有任何路徑進入巡檢系統，
-  // 因此改為導向他們有權限的頁面。
-  if (piUser.role === "viewer" || piUser.role === "production") {
+if (!piUser.canManage("inspection")) {
+  if (piUser.can("inspection")) {
     location.replace("inspection-records.html");
     throw new Error("redirecting to inspection-records.html");
   }
-  document.body.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:center;min-height:80vh;flex-direction:column;gap:10px;color:#374151;text-align:center;padding:24px">
-      <p style="font-size:1.2rem;font-weight:700">權限不足</p>
-      <p style="color:#64748b">製程巡檢僅限品保（quality）或管理員（admin）角色使用，請聯絡系統管理員指派權限。</p>
-      <a href="index.html" style="color:#2563eb">← 返回首頁</a>
-      <button onclick="window.mivLogout()" style="margin-top:6px;padding:6px 16px;border:1px solid #cbd5e1;background:transparent;border-radius:8px;color:#64748b;cursor:pointer">登出</button>
-    </div>`;
+  mivDenyScreen("inspection", "manage");
   throw new Error("insufficient permission for inspection.html");
 }
 
@@ -242,7 +236,7 @@ function renderNav() {
   links.push(`<a class="nav-link" href="inspection-issues.html"><span>📋 異常追蹤</span><span class="vi"> Theo dõi bất thường</span></a>`);
   links.push(`<a class="nav-link" href="inspection-records.html"><span>📑 紀錄查詢</span><span class="vi"> Tra cứu hồ sơ</span></a>`);
   links.push(`<a class="nav-link" href="inspection-dashboard.html"><span>📊 統計報表</span><span class="vi"> Báo cáo</span></a>`);
-  if (piUser.role === "admin") {
+  if (piUser.canManage("inspection")) {
     links.push(`<a class="nav-link" href="inspection-admin.html"><span>⚙ 後台管理</span><span class="vi"> Quản trị</span></a>`);
   }
   document.getElementById("nav-links").innerHTML = links.join("");

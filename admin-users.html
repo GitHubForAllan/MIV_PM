@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="zh-Hant" data-page-key="admin-users">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>使用者權限管理</title>
+<link rel="stylesheet" href="styles.css?v=21">
+<style>
+  :root { color-scheme: light; }
+  body { padding: 24px; }
+  .wrap { width: min(1500px, 100%); margin: 0 auto; }
+  .page-title { font-size: 1.5rem; font-weight: 800; margin: 0 0 4px; }
+  .page-sub { color: var(--muted); font-size: .88rem; margin: 0 0 20px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 20px; margin-bottom: 20px; box-shadow: var(--shadow);
+  }
+  .card h2 { font-size: 1.05rem; margin: 0 0 14px; display: flex; align-items: center; gap: 10px; }
+  .add-grid { display: grid; grid-template-columns: repeat(3, 1fr) auto; gap: 10px; align-items: end; }
+  .field label { display: block; font-size: .78rem; color: var(--muted); margin-bottom: 5px; }
+  .field input {
+    width: 100%; padding: 9px 10px; border: 1px solid var(--line-strong); border-radius: 7px;
+    font-size: .88rem; background: #fff; color: var(--text);
+  }
+  .btn { padding: 9px 18px; border: 0; border-radius: 7px; font-size: .88rem; font-weight: 700; cursor: pointer; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn-primary { background: var(--blue); color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: var(--blue-dark); }
+  .btn-ghost { background: #edf3f7; color: var(--text); }
+  .btn-ghost:hover:not(:disabled) { background: #dfe9f0; }
+  .btn-danger { background: #fee9e9; color: #ad2727; }
+  .btn-sm { padding: 5px 11px; font-size: .76rem; }
+
+  /* ── 權限矩陣 ─────────────────────────────── */
+  .matrix-tools { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; }
+  .matrix-tools input[type=search] {
+    padding: 7px 11px; border: 1px solid var(--line-strong); border-radius: 7px;
+    font-size: .85rem; min-width: 200px; background: #fff; color: var(--text);
+  }
+  .spacer { flex: 1; }
+  .dirty-note { font-size: .82rem; font-weight: 700; color: #b45309; }
+  /* 表格自己吃掉捲動（橫向看系統、縱向看人），標題列才凍結得住：
+     若只給 overflow-x，sticky 的參考對象會是這個沒有高度上限的框，
+     捲動整頁時標題列就跟著跑掉了。 */
+  .table-scroll {
+    overflow: auto; border: 1px solid var(--line); border-radius: 10px;
+    max-height: calc(100vh - 120px);
+  }
+  table.matrix { border-collapse: separate; border-spacing: 0; font-size: .85rem; width: 100%; }
+  table.matrix th, table.matrix td { padding: 7px 8px; border-bottom: 1px solid var(--line); text-align: center; }
+  table.matrix thead th {
+    background: #f4f8fb; color: var(--muted); font-size: .74rem; font-weight: 700;
+    position: sticky; z-index: 3; border-bottom: 1px solid var(--line-strong);
+  }
+  /* 標題有兩列（系統名 / 使用·管理），第二列要往下讓出第一列的高度，
+     否則兩列會疊在一起。實際高度由 renderHead() 量完寫進 --head-row1-h。 */
+  table.matrix thead tr:first-child th { top: 0; border-bottom: 1px solid var(--line); }
+  table.matrix thead tr:nth-child(2) th { top: var(--head-row1-h, 36px); }
+  th.app-group { border-left: 1px solid var(--line-strong); }
+  th.app-group button {
+    background: none; border: 0; padding: 0; cursor: pointer; font: inherit; color: var(--text);
+    font-weight: 800; font-size: .8rem; line-height: 1.25; white-space: nowrap;
+  }
+  th.app-group button:hover { color: var(--blue); text-decoration: underline; }
+  th.app-group .vi { display: block; font-weight: 500; font-size: .66rem; color: var(--muted); }
+  th.lvl { font-size: .7rem; font-weight: 700; cursor: pointer; user-select: none; }
+  th.lvl:hover { color: var(--blue); }
+  th.lvl.use { border-left: 1px solid var(--line-strong); }
+  td.use { border-left: 1px solid var(--line-strong); }
+  th.stick, td.stick { position: sticky; left: 0; background: var(--panel); z-index: 2; text-align: left; }
+  thead th.stick { background: #f4f8fb; z-index: 4; }
+  th.stick2, td.stick2 { position: sticky; left: 96px; background: var(--panel); z-index: 2; text-align: left; }
+  thead th.stick2 { background: #f4f8fb; z-index: 4; }
+  tr.row-dirty td { background: #fffbeb; }
+  tr.row-dirty td.stick, tr.row-dirty td.stick2 { background: #fffbeb; }
+  tr.row-legacy td.stick { box-shadow: inset 3px 0 0 #f59e0b; }
+  .cell-in { width: 84px; padding: 5px 7px; border: 1px solid var(--line-strong); border-radius: 5px; font-size: .82rem; }
+  .cell-in.wide { width: 104px; }
+  input[type=checkbox].pm { width: 17px; height: 17px; cursor: pointer; accent-color: var(--blue); margin: 0; }
+  input[type=checkbox].pm.mg { accent-color: #b45309; }
+  input[type=checkbox].pm:disabled { cursor: not-allowed; opacity: .5; }
+  td.na { color: var(--line-strong); }
+  td.admin-span {
+    background: #eef5ff; color: #1d4ed8; font-size: .78rem; font-weight: 700; letter-spacing: .3px;
+  }
+  tr.row-dirty td.admin-span { background: #fef6e0; color: #92400e; }
+  .uid-cell { font-family: monospace; font-size: .68rem; color: var(--muted); word-break: break-all; max-width: 150px; }
+  .row-actions { display: flex; gap: 5px; justify-content: flex-end; white-space: nowrap; }
+  .badge-admin {
+    display: inline-block; background: #e0edff; color: #1d4ed8; border-radius: 999px;
+    padding: 1px 8px; font-size: .68rem; font-weight: 700; margin-left: 5px;
+  }
+  .empty-state { text-align: center; color: var(--muted); padding: 30px 0; }
+
+  /* ── 說明與提示 ───────────────────────────── */
+  .notice {
+    border-radius: 10px; padding: 12px 15px; font-size: .84rem; line-height: 1.6; margin-bottom: 18px;
+  }
+  .notice-warn { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+  details.legend summary { cursor: pointer; font-size: .85rem; font-weight: 700; color: var(--blue); }
+  .legend-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; margin-top: 12px; }
+  .legend-item { border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px; font-size: .8rem; }
+  .legend-item b { display: block; margin-bottom: 3px; }
+  .legend-item span { display: block; color: var(--muted); line-height: 1.55; }
+  .legend-item .k-use::before { content: "☑ 使用："; color: var(--blue); font-weight: 700; }
+  .legend-item .k-mg::before { content: "☑ 管理："; color: #b45309; font-weight: 700; }
+
+  .row-msg { font-size: .78rem; margin-top: 6px; min-height: 1em; }
+  #denied, #loading { text-align: center; padding: 80px 20px; color: var(--muted); }
+  .hidden { display: none !important; }
+  #toast {
+    position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(14px);
+    background: #1f2937; color: #f1f5f9; padding: 9px 20px; border-radius: 999px; font-size: .85rem;
+    opacity: 0; pointer-events: none; transition: .2s; z-index: 9999;
+  }
+  #toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
+</head>
+<body>
+
+<div id="loading">載入中…</div>
+
+<div id="denied" class="hidden">
+  <p style="font-size:1.1rem;font-weight:700;color:var(--text)">權限不足</p>
+  <p>此頁僅限系統管理員使用，請聯絡系統管理員指派權限。</p>
+  <p><a href="index.html">← 返回首頁</a></p>
+</div>
+
+<div class="wrap hidden" id="app">
+  <p class="page-title">使用者權限管理</p>
+  <p class="page-sub">
+    帳號本身（工號 / 密碼）請在 Firebase 主控台的 Authentication 建立，此頁管理帳號在各系統的權限。
+    勾選後要按該列的「儲存」或右上角「儲存全部變更」才會生效。
+  </p>
+
+  <div class="notice notice-warn hidden" id="legacy-note"></div>
+
+  <div class="card">
+    <h2>新增使用者</h2>
+    <div class="add-grid">
+      <div class="field">
+        <label>UID（於 Firebase 主控台 Authentication 複製）</label>
+        <input id="add-uid" placeholder="例：Ab12Cd34...">
+      </div>
+      <div class="field">
+        <label>工號</label>
+        <input id="add-empid" placeholder="例：A1234">
+      </div>
+      <div class="field">
+        <label>姓名</label>
+        <input id="add-name" placeholder="例：王小明">
+      </div>
+      <button class="btn btn-primary" id="btn-add">新增</button>
+    </div>
+    <p class="row-msg" id="add-msg">新增後預設沒有任何系統權限，請在下方表格勾選後儲存。</p>
+  </div>
+
+  <div class="card">
+    <h2>權限矩陣</h2>
+
+    <details class="legend">
+      <summary>各系統「使用 / 管理」分別代表什麼？</summary>
+      <div class="legend-grid" id="legend-grid"></div>
+      <p style="font-size:.8rem;color:var(--muted);margin:12px 0 0">
+        勾「管理」會自動含「使用」。勾「系統管理員」等於所有系統的使用＋管理權，並可進入本頁。
+      </p>
+    </details>
+
+    <div class="matrix-tools" style="margin-top:14px">
+      <input type="search" id="search" placeholder="搜尋工號或姓名…">
+      <span class="dirty-note hidden" id="dirty-note"></span>
+      <span class="spacer"></span>
+      <button class="btn btn-ghost btn-sm" id="btn-reset" disabled>放棄變更</button>
+      <button class="btn btn-primary btn-sm" id="btn-save-all" disabled>儲存全部變更</button>
+    </div>
+
+    <div class="table-scroll">
+      <table class="matrix">
+        <thead id="matrix-head"></thead>
+        <tbody id="user-rows"></tbody>
+      </table>
+    </div>
+    <div class="empty-state hidden" id="user-empty">尚無任何使用者。</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script type="module">
+import { mivAuthReady, MIV_APPS, MIV_APP_KEYS, mivResolvePerms } from "./auth-guard.js?v=3";
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs",
+  authDomain: "miv-1426c.firebaseapp.com",
+  projectId: "miv-1426c",
+  storageBucket: "miv-1426c.firebasestorage.app",
+  messagingSenderId: "398934341623",
+  appId: "1:398934341623:web:4af46c057d2e202855a0f2"
+};
+const fbApp = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+const db = getFirestore(fbApp);
+const usersCol = collection(db, "users");
+
+const esc = s => String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const $ = id => document.getElementById(id);
+function toast(msg) {
+  const t = $("toast"); t.textContent = msg; t.classList.add("on");
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("on"), 2400);
+}
+// 沒有「管理」概念的系統（問題反映頁本身免登入，只用使用權控制首頁入口）
+const hasManage = app => !!app.manageHint;
+
+let me = null;
+
+mivAuthReady.then(user => {
+  me = user;
+  $("loading").classList.add("hidden");
+  if (!user.isAdmin) { $("denied").classList.remove("hidden"); return; }
+  $("app").classList.remove("hidden");
+  initPage();
+});
+
+function initPage() {
+  // users[uid] = { uid, employeeId, name, raw }          Firestore 上的原始資料
+  // draft[uid] = { employeeId, name, isAdmin, use:Set, manage:Set }  畫面上的編輯狀態
+  let users = {};
+  const draft = {};
+  let filter = "";
+
+  renderLegend();
+  renderHead();
+
+  // ── 讀取 ─────────────────────────────────────────────
+  onSnapshot(usersCol, snap => {
+    snap.docChanges().forEach(c => {
+      if (c.type === "removed") { delete users[c.doc.id]; delete draft[c.doc.id]; return; }
+      const data = c.doc.data();
+      users[c.doc.id] = { uid: c.doc.id, raw: data, ...data };
+      // 已經在編輯（有未存變更）的列不要被遠端快照蓋掉
+      if (!draft[c.doc.id] || !isDirty(c.doc.id)) draft[c.doc.id] = draftFrom(c.doc.id);
+    });
+    render();
+  }, err => toast("讀取使用者失敗：" + err.message));
+
+  function draftFrom(uid) {
+    const u = users[uid] || {};
+    const p = mivResolvePerms(u.raw);
+    return {
+      employeeId: u.employeeId || "",
+      name: u.name || "",
+      isAdmin: p.isAdmin,
+      // 管理員的權限是隱含的，取消勾選後不該整排都變成已勾；因此非 admin 才帶入實際集合
+      use: new Set(p.isAdmin ? (Array.isArray(u.raw?.useApps) ? u.raw.useApps : MIV_APP_KEYS) : p.use),
+      manage: new Set(p.isAdmin ? (Array.isArray(u.raw?.manageApps) ? u.raw.manageApps : MIV_APP_KEYS.filter(k => hasManage(MIV_APPS.find(a => a.key === k)))) : p.manage),
+    };
+  }
+
+  const sortedKeys = set => MIV_APP_KEYS.filter(k => set.has(k));
+
+  function isDirty(uid) {
+    const d = draft[uid], u = users[uid];
+    if (!d || !u) return false;
+    // 尚未轉存成新格式的舊帳號一律視為待儲存，提醒管理員確認勾選後轉換
+    if (!mivResolvePerms(u.raw).migrated) return true;
+    const s = draftFrom(uid);   // Firestore 上目前的狀態
+    return d.employeeId !== s.employeeId || d.name !== s.name || d.isAdmin !== s.isAdmin
+        || sortedKeys(d.use).join(",") !== sortedKeys(s.use).join(",")
+        || sortedKeys(d.manage).join(",") !== sortedKeys(s.manage).join(",");
+  }
+
+  // ── 表頭（兩層：系統名 + 使用/管理）────────────────────
+  function renderHead() {
+    const groups = MIV_APPS.map(a =>
+      `<th class="app-group" colspan="${hasManage(a) ? 2 : 1}">
+         <button type="button" data-col-app="${a.key}" title="點一下切換整欄（全部給／全部收）">${esc(a.short)}<span class="vi">${esc(a.sub)}</span></button>
+       </th>`).join("");
+    const levels = MIV_APPS.map(a => hasManage(a)
+      ? `<th class="lvl use" data-col="${a.key}:use" title="切換整欄：${esc(a.useHint)}">使用</th>
+         <th class="lvl" data-col="${a.key}:manage" title="切換整欄：${esc(a.manageHint)}">管理</th>`
+      : `<th class="lvl use" data-col="${a.key}:use" title="切換整欄：${esc(a.useHint)}">使用</th>`).join("");
+
+    $("matrix-head").innerHTML = `
+      <tr>
+        <th class="stick" rowspan="2" style="min-width:96px">工號</th>
+        <th class="stick2" rowspan="2" style="min-width:110px">姓名</th>
+        <th class="app-group" rowspan="2" style="min-width:74px">
+          <button type="button" data-col="admin" title="切換整欄">系統<br>管理員</button>
+        </th>
+        ${groups}
+        <th class="app-group" rowspan="2" style="min-width:150px">UID</th>
+        <th rowspan="2" style="min-width:130px"></th>
+      </tr>
+      <tr>${levels}</tr>`;
+
+    // 點系統名稱 → 整欄使用＋管理一起切換
+    $("matrix-head").querySelectorAll("[data-col-app]").forEach(btn => {
+      btn.addEventListener("click", () => toggleColumn(btn.dataset.colApp, "both"));
+    });
+    $("matrix-head").querySelectorAll("[data-col]").forEach(el => {
+      el.addEventListener("click", () => {
+        const v = el.dataset.col;
+        if (v === "admin") return toggleColumn(null, "admin");
+        const [key, lvl] = v.split(":");
+        toggleColumn(key, lvl);
+      });
+    });
+
+    syncHeadOffset();
+  }
+
+  // 量第一列標題的實際高度，讓第二列（使用／管理）剛好黏在它下面。
+  // 字級或視窗寬度變了高度會跟著變，所以縮放視窗時重量一次。
+  function syncHeadOffset() {
+    const head = $("matrix-head");
+    const apply = () => {
+      const h = head.rows[0] ? head.rows[0].offsetHeight : 0;
+      if (h) head.style.setProperty("--head-row1-h", h + "px");
+    };
+    requestAnimationFrame(apply);
+    if (!syncHeadOffset._bound) {
+      syncHeadOffset._bound = true;
+      window.addEventListener("resize", apply);
+    }
+  }
+
+  // 整欄切換：若還有人沒勾就全部勾起來，否則全部取消
+  function toggleColumn(appKey, mode) {
+    const list = visibleUsers();
+    if (!list.length) return;
+    // 自己的管理員勾不動；系統管理員的各系統勾選是隱含的，整欄切換時跳過
+    const editable = list.filter(u => mode === "admin"
+      ? u.uid !== me.uid
+      : !draft[u.uid].isAdmin);
+    const on = editable.some(u => {
+      const d = draft[u.uid];
+      if (mode === "admin") return !d.isAdmin;
+      if (mode === "manage") return !d.manage.has(appKey);
+      if (mode === "both") return !d.use.has(appKey) || !d.manage.has(appKey);
+      return !d.use.has(appKey);
+    });
+    editable.forEach(u => {
+      const d = draft[u.uid];
+      if (mode === "admin") { d.isAdmin = on; return; }
+      const app = MIV_APPS.find(a => a.key === appKey);
+      if (mode === "use") {
+        if (on) d.use.add(appKey);
+        else { d.use.delete(appKey); d.manage.delete(appKey); }
+      } else {
+        // 管理必然含使用
+        if (on) { if (hasManage(app)) d.manage.add(appKey); d.use.add(appKey); }
+        else { d.manage.delete(appKey); if (mode === "both") d.use.delete(appKey); }
+      }
+    });
+    render();
+  }
+
+  // ── 表身 ─────────────────────────────────────────────
+  function visibleUsers() {
+    const q = filter.trim().toLowerCase();
+    return Object.values(users)
+      .filter(u => !q || (u.employeeId || "").toLowerCase().includes(q) || (u.name || "").toLowerCase().includes(q))
+      .sort((a, b) => (a.employeeId || "").localeCompare(b.employeeId || ""));
+  }
+
+  // 權限欄位總數（8 個系統，其中 7 個有「管理」層級）
+  const PERM_COLS = MIV_APPS.reduce((n, a) => n + (hasManage(a) ? 2 : 1), 0);
+
+  function permCell(uid, app, lvl) {
+    const d = draft[uid];
+    const isMg = lvl === "manage";
+    if (isMg && !hasManage(app)) return `<td class="na" title="此系統沒有管理功能">—</td>`;
+    const checked = isMg ? d.manage.has(app.key) : d.use.has(app.key);
+    const title = isMg ? app.manageHint : app.useHint;
+    return `<td class="${lvl === "use" ? "use" : ""}">
+      <input type="checkbox" class="pm ${isMg ? "mg" : ""}" data-app="${app.key}" data-lvl="${lvl}"
+        ${checked ? "checked" : ""} title="${esc(title)}">
+    </td>`;
+  }
+
+  // 系統管理員本來就擁有全部權限，逐格顯示 16 個反灰勾勾反而看不出來，
+  // 因此整列改用一句話帶過；取消「系統管理員」後才會回到逐格勾選。
+  function adminSpanCell() {
+    return `<td class="use admin-span" colspan="${PERM_COLS}">系統管理員：所有系統的使用與管理權限</td>`;
+  }
+
+  function render() {
+    const list = visibleUsers();
+    $("user-empty").classList.toggle("hidden", list.length > 0);
+
+    $("user-rows").innerHTML = list.map(u => {
+      const d = draft[u.uid];
+      const dirty = isDirty(u.uid);
+      const legacy = !mivResolvePerms(u.raw).migrated;
+      return `<tr data-uid="${esc(u.uid)}" class="${dirty ? "row-dirty" : ""} ${legacy ? "row-legacy" : ""}">
+        <td class="stick"><input class="cell-in f-empid" value="${esc(d.employeeId)}"></td>
+        <td class="stick2"><input class="cell-in wide f-name" value="${esc(d.name)}"></td>
+        <td><input type="checkbox" class="pm f-admin" ${d.isAdmin ? "checked" : ""}
+              title="${u.uid === me.uid ? "不能取消自己的管理員權限" : "所有系統的使用與管理權限，並可進入本頁"}"></td>
+        ${d.isAdmin ? adminSpanCell()
+          : MIV_APPS.map(a => permCell(u.uid, a, "use") + (hasManage(a) ? permCell(u.uid, a, "manage") : "")).join("")}
+        <td class="uid-cell">${esc(u.uid)}</td>
+        <td>
+          <div class="row-actions">
+            <button class="btn btn-ghost btn-sm btn-none" title="清除此人所有權限">清空</button>
+            <button class="btn btn-primary btn-sm btn-save" ${dirty ? "" : "disabled"}>儲存</button>
+            <button class="btn btn-danger btn-sm btn-del">刪除</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join("");
+
+    bindRows();
+    updateToolbar();
+  }
+
+  function bindRows() {
+    $("user-rows").querySelectorAll("tr[data-uid]").forEach(tr => {
+      const uid = tr.dataset.uid;
+      const d = draft[uid];
+
+      tr.querySelector(".f-empid").addEventListener("input", e => { d.employeeId = e.target.value; markDirty(tr, uid); });
+      tr.querySelector(".f-name").addEventListener("input", e => { d.name = e.target.value; markDirty(tr, uid); });
+
+      tr.querySelector(".f-admin").addEventListener("change", e => {
+        // 防呆：把自己降級會當場失去這一頁的存取權
+        if (uid === me.uid && !e.target.checked) {
+          e.target.checked = true;
+          toast("不能取消自己的管理員權限");
+          return;
+        }
+        d.isAdmin = e.target.checked;
+        render();
+      });
+
+      tr.querySelectorAll(".pm[data-app]").forEach(cb => {
+        cb.addEventListener("change", () => {
+          const key = cb.dataset.app;
+          if (cb.dataset.lvl === "manage") {
+            if (cb.checked) { d.manage.add(key); d.use.add(key); }   // 管理必然含使用
+            else d.manage.delete(key);
+          } else {
+            if (cb.checked) d.use.add(key);
+            else { d.use.delete(key); d.manage.delete(key); }         // 收回使用等於一併收回管理
+          }
+          render();
+        });
+      });
+
+      tr.querySelector(".btn-none").addEventListener("click", () => {
+        d.isAdmin = uid === me.uid;   // 不允許把自己的管理員權限清掉
+        d.use.clear(); d.manage.clear();
+        render();
+      });
+      tr.querySelector(".btn-save").addEventListener("click", () => saveRow(uid));
+      tr.querySelector(".btn-del").addEventListener("click", () => delRow(uid));
+    });
+  }
+
+  function markDirty(tr, uid) {
+    const dirty = isDirty(uid);
+    tr.classList.toggle("row-dirty", dirty);
+    tr.querySelector(".btn-save").disabled = !dirty;
+    updateToolbar();
+  }
+
+  // ── 儲存 ─────────────────────────────────────────────
+  function payload(uid) {
+    const d = draft[uid];
+    return {
+      employeeId: d.employeeId.trim(),
+      name: d.name.trim(),
+      role: d.isAdmin ? "admin" : "",
+      useApps: sortedKeys(d.use),
+      manageApps: sortedKeys(d.manage),
+    };
+  }
+
+  async function saveRow(uid) {
+    const body = payload(uid);
+    if (!body.employeeId) { toast("工號不可為空"); return; }
+    try {
+      await setDoc(doc(db, "users", uid), body, { merge: true });
+      toast(`✓ 已儲存 ${body.employeeId}`);
+    } catch (e) {
+      toast("儲存失敗：" + e.message);
+    }
+  }
+
+  async function delRow(uid) {
+    if (uid === me.uid) { toast("不能刪除自己的帳號權限"); return; }
+    const label = users[uid]?.employeeId || uid;
+    if (!confirm(`確定要刪除 ${label} 的所有系統權限嗎？\n（不會刪除 Firebase 帳號本身，該員將無法使用任何系統）`)) return;
+    try { await deleteDoc(doc(db, "users", uid)); toast(`已刪除 ${label}`); }
+    catch (e) { toast("刪除失敗：" + e.message); }
+  }
+
+  $("btn-save-all").addEventListener("click", async () => {
+    const targets = Object.keys(users).filter(isDirty);
+    const bad = targets.find(uid => !draft[uid].employeeId.trim());
+    if (bad) { toast("有列的工號是空的，請先補齊"); return; }
+    const btn = $("btn-save-all"); btn.disabled = true;
+    let ok = 0, fail = 0;
+    for (const uid of targets) {
+      try { await setDoc(doc(db, "users", uid), payload(uid), { merge: true }); ok++; }
+      catch (e) { fail++; console.error("儲存失敗", uid, e); }
+    }
+    toast(fail ? `已儲存 ${ok} 筆，${fail} 筆失敗（見主控台）` : `✓ 已儲存 ${ok} 筆`);
+  });
+
+  $("btn-reset").addEventListener("click", () => {
+    if (!confirm("放棄所有尚未儲存的勾選變更？")) return;
+    Object.keys(users).forEach(uid => draft[uid] = draftFrom(uid));
+    render();
+  });
+
+  $("search").addEventListener("input", e => { filter = e.target.value; render(); });
+
+  function updateToolbar() {
+    const n = Object.keys(users).filter(isDirty).length;
+    $("dirty-note").textContent = n ? `有 ${n} 筆未儲存的變更` : "";
+    $("dirty-note").classList.toggle("hidden", !n);
+    $("btn-save-all").disabled = !n;
+    $("btn-reset").disabled = !n;
+
+    const legacyCount = Object.values(users).filter(u => !mivResolvePerms(u.raw).migrated).length;
+    const note = $("legacy-note");
+    note.classList.toggle("hidden", !legacyCount);
+    if (legacyCount) {
+      note.innerHTML = `⚠️ 有 <b>${legacyCount}</b> 個帳號仍是舊的單一角色格式（左側有橘色標記）。`
+        + `表格中已依舊角色<b>預先勾選</b>等效權限，這些帳號在儲存前仍照舊角色運作；`
+        + `確認勾選無誤後按「儲存全部變更」即完成轉換。`;
+    }
+  }
+
+  // ── 新增使用者 ───────────────────────────────────────
+  $("btn-add").addEventListener("click", async () => {
+    const uid = $("add-uid").value.trim();
+    const employeeId = $("add-empid").value.trim();
+    const name = $("add-name").value.trim();
+    const msg = $("add-msg");
+    if (!uid || !employeeId) { msg.style.color = "#ad2727"; msg.textContent = "請填寫 UID 與工號"; return; }
+
+    const btn = $("btn-add"); btn.disabled = true;
+    try {
+      await setDoc(doc(db, "users", uid), { employeeId, name, role: "", useApps: [], manageApps: [] }, { merge: true });
+      msg.style.color = "#20a66a";
+      msg.textContent = "✓ 已新增，請在下方表格勾選權限後儲存";
+      $("add-uid").value = ""; $("add-empid").value = ""; $("add-name").value = "";
+      $("search").value = employeeId; filter = employeeId; render();
+    } catch (e) {
+      msg.style.color = "#ad2727"; msg.textContent = "新增失敗：" + e.message;
+    } finally { btn.disabled = false; }
+  });
+
+  function renderLegend() {
+    $("legend-grid").innerHTML = MIV_APPS.map(a => `
+      <div class="legend-item">
+        <b>${esc(a.name)} <span style="font-weight:400;color:var(--muted);font-size:.9em">${esc(a.sub)}</span></b>
+        <span class="k-use">${esc(a.useHint)}</span>
+        ${a.manageHint ? `<span class="k-mg">${esc(a.manageHint)}</span>` : `<span style="color:var(--line-strong)">（無管理層級）</span>`}
+      </div>`).join("");
+  }
+}
+</script>
+</body>
+</html>

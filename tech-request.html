@@ -137,7 +137,7 @@
 </style>
 </head>
 <body>
-<script type="module" src="auth-guard.js?v=2"></script>
+<script type="module" src="auth-guard.js?v=3"></script>
 
 <header class="topbar">
   <div class="topbar-left">
@@ -332,7 +332,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, doc, updateDoc, addDoc, deleteDoc, onSnapshot, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { mivAuthReady } from "./auth-guard.js?v=2";
+import { mivAuthReady, mivDenyScreen } from "./auth-guard.js?v=3";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs", authDomain: "miv-1426c.firebaseapp.com",
@@ -361,10 +361,15 @@ const authTimer = setTimeout(() => showFatal(
 ), 8000);
 const trUser = await mivAuthReady;
 clearTimeout(authTimer);
+// 進入本頁需「技術課委託管理 → 使用」（權限在 admin-users.html 勾選）
+if (!trUser.can("techreq")) {
+  mivDenyScreen("techreq", "use");
+  throw new Error("insufficient permission for tech-request.html");
+}
 
 function renderNav() {
   const links = [`<a class="nav-link" href="index.html"><span>🏠 首頁</span><span class="vi">Trang chủ</span></a>`];
-  if (trUser.role === "admin") links.push(`<a class="nav-link" href="tech-request-admin.html"><span>⚙ 後台管理</span><span class="vi">Quản trị</span></a>`);
+  if (trUser.canManage("techreq")) links.push(`<a class="nav-link" href="tech-request-admin.html"><span>⚙ 後台管理</span><span class="vi">Quản trị</span></a>`);
   document.getElementById("nav-links").innerHTML = links.join("");
 }
 function esc(s){ return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
@@ -383,8 +388,8 @@ function categoryColor(name) {
   return i < 0 ? "var(--muted)" : CAT_COLORS[i % CAT_COLORS.length];
 }
 
-function isTechStaff() { return trUser.role === "admin" || (config.techStaff||[]).some(t => t.uid === trUser.uid); }
-function isMySupervision(r) { return trUser.role === "admin" || r.supervisorUid === trUser.uid; }
+function isTechStaff() { return trUser.canManage("techreq") || (config.techStaff||[]).some(t => t.uid === trUser.uid); }
+function isMySupervision(r) { return trUser.canManage("techreq") || r.supervisorUid === trUser.uid; }
 
 const onDbError = err => showFatal("⚠️ 讀取資料失敗 / Lỗi tải dữ liệu：" + err.message);
 
@@ -643,7 +648,7 @@ window.openDetail = function(id) {
   document.getElementById("f-desiredDate").value = r.desiredDate || "";
   document.getElementById("f-detail").value = r.detail || "";
 
-  const canEditBase = (r.status === "pending_approval" || r.status === "rejected") && (trUser.uid === r.requesterUid || trUser.role === "admin");
+  const canEditBase = (r.status === "pending_approval" || r.status === "rejected") && (trUser.uid === r.requesterUid || trUser.canManage("techreq"));
   setFieldsDisabled(true);
   document.getElementById("d-photo-edit-row").style.display = "none";
   document.getElementById("d-photo-view-row").style.display = "";
@@ -777,7 +782,7 @@ function renderActions(r, canEditBase) {
     actions.push(`<button class="btn btn-ok" onclick="confirmSignoff()">確認簽收 <span class="vi">Xác nhận</span></button>`);
   }
 
-  if (trUser.role === "admin") {
+  if (trUser.canManage("techreq")) {
     actions.push(`<button class="btn btn-danger" onclick="deleteRequest()">刪除 <span class="vi">Xóa</span></button>`);
   }
 

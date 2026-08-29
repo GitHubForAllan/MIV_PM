@@ -187,7 +187,7 @@
 </div>
 
 <script type="module">
-import { mivAuthReady } from "./auth-guard.js?v=2";
+import { mivRequireApp } from "./auth-guard.js?v=3";
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot
@@ -217,11 +217,24 @@ function num(v) {
   return Number.isFinite(n) ? n : null;
 }
 
-mivAuthReady.then(() => {
+// 進入本頁需「裝櫃計算工具 → 使用」；機種主檔（新增／匯入／刪除）
+// 另需「裝櫃計算工具 → 管理」。權限在 admin-users.html 勾選。
+let canManageModels = false;
+mivRequireApp("container").then(user => {
+  canManageModels = user.canManage("container");
   document.getElementById("loading").classList.add("hidden");
   document.getElementById("app").classList.remove("hidden");
+  // 沒有管理權就收起主檔的維護控制項，機種清單仍看得到（試算要對照）；
+  // 規則層另有把關，畫面只是不給誤按。
+  if (!canManageModels) {
+    ["btn-toggle-bulk", "btn-seed-demo", "bulk-import"].forEach(id => {
+      const el = document.getElementById(id); if (el) el.style.display = "none";
+    });
+    document.querySelector("#master-card .add-grid")?.style.setProperty("display", "none");
+    document.getElementById("model-msg").textContent = "（唯讀）您沒有機種主檔的管理權限，僅能檢視清單。";
+  }
   initPage();
-});
+}).catch(() => {});   // 權限不足時 mivRequireApp 已顯示提示畫面
 
 /* ============ 貨櫃類型預設 ============ */
 const TYPE_PRESETS = {
@@ -668,13 +681,14 @@ function initPage() {
         <td>${m.stackable ? "是" : "否"}</td>
         <td class="num">${m.stackable ? (m.maxLayers ?? "不限") : "-"}</td>
         <td>${esc(m.note || "")}</td>
-        <td class="col-actions">
+        <td class="col-actions">${canManageModels ? `
           <button class="btn btn-ghost btn-sm btn-edit-model">編輯</button>
-          <button class="btn btn-danger btn-sm btn-del-model">刪除</button>
+          <button class="btn btn-danger btn-sm btn-del-model">刪除</button>` : ""}
         </td>
       </tr>
     `).join("");
 
+    if (!canManageModels) return;
     tbody.querySelectorAll("tr[data-id]").forEach(tr => {
       const id = tr.dataset.id;
       tr.querySelector(".btn-edit-model").addEventListener("click", () => {

@@ -110,7 +110,7 @@
 </style>
 </head>
 <body>
-<script type="module" src="auth-guard.js?v=2"></script>
+<script type="module" src="auth-guard.js?v=3"></script>
 
 <header class="topbar">
   <div class="topbar-left">
@@ -191,7 +191,7 @@ import {
   getFirestore, collection, doc, getDoc, getDocs, deleteDoc, updateDoc, addDoc,
   query, where, Timestamp, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { mivAuthReady } from "./auth-guard.js?v=2";
+import { mivAuthReady } from "./auth-guard.js?v=3";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs", authDomain: "miv-1426c.firebaseapp.com",
@@ -204,11 +204,10 @@ const recordsCol = collection(db, "pi_inspection_records");
 const issuesCol = collection(db, "pi_issues");
 
 const piUser = await mivAuthReady;
-// 紀錄查詢：viewer／production／quality／admin 可看，工具室不可
-const CAN_VIEW_ROLES = ["viewer", "production", "quality", "admin"];
-const canView = CAN_VIEW_ROLES.includes(piUser.role);
-// 可執行巡檢作業者才顯示「返回巡檢」與「統計報表」
-const canInspect = piUser.role === "quality" || piUser.role === "admin";
+// 紀錄查詢：有「製程巡檢 → 使用」即可檢視
+const canView = piUser.can("inspection");
+// 可執行巡檢作業者（管理權）才顯示「返回巡檢」與「統計報表」
+const canInspect = piUser.canManage("inspection");
 if (!canView) {
   document.getElementById("no-access").style.display = "";
 } else {
@@ -230,7 +229,7 @@ function renderNav() {
   ];
   // 統計報表僅品保／管理員可用，其他角色不顯示連結避免點進去被擋
   if (canInspect) links.push(`<a class="nav-link" href="inspection-dashboard.html"><span>📊 統計報表</span><span class="vi">Báo cáo</span></a>`);
-  if (piUser.role === "admin") links.push(`<a class="nav-link" href="inspection-admin.html"><span>⚙ 後台管理</span><span class="vi">Quản trị</span></a>`);
+  if (canInspect) links.push(`<a class="nav-link" href="inspection-admin.html"><span>⚙ 後台管理</span><span class="vi">Quản trị</span></a>`);
   document.getElementById("nav-links").innerHTML = links.join("");
 }
 function esc(s){ return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }

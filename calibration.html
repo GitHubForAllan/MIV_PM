@@ -205,7 +205,7 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
 </head>
 <body>
-<script type="module" src="auth-guard.js?v=2"></script>
+<script type="module" src="auth-guard.js?v=3"></script>
 
 <header class="topbar">
   <div class="topbar-left">
@@ -578,7 +578,7 @@
 <div class="lightbox hidden" id="lightbox" onclick="this.classList.add('hidden')"><img id="lightbox-img" src="" alt=""></div>
 
 <script type="module">
-import { mivAuthReady } from "./auth-guard.js?v=2";
+import { mivRequireApp } from "./auth-guard.js?v=3";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getFirestore, collection, doc,
@@ -605,27 +605,16 @@ const CYCLE_BY_PREFIX = { '40':12,'41':12,'42':12,'43':24,'44':24,'45':12,'46':1
 let assets = {};
 let statusFilterOverride = null;
 
-// 資產管理權限（新增/編輯/刪除設備、批次匯入）：僅 admin 與 quality（品保）
-// 一般日常操作（查詢、匯出、新增校驗紀錄）不受此限制
+// 進入本頁需「校驗管理 → 使用」（查詢、匯出、新增校驗紀錄）；
+// 資產管理（新增/編輯/刪除設備、批次匯入）另需「校驗管理 → 管理」。
+// 權限在 admin-users.html 勾選。
 let canManage = false;
-mivAuthReady.then(user => {
-  // 檢視權限：viewer／production／quality／admin，工具室不可
-  if (!["viewer", "production", "quality", "admin"].includes(user.role)) {
-    document.body.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:center;min-height:80vh;flex-direction:column;gap:10px;color:#374151;text-align:center;padding:24px">
-        <p style="font-size:1.2rem;font-weight:700">權限不足</p>
-        <p style="color:#64748b">您的角色無權檢視校驗管理，請聯絡系統管理員指派權限。<br>
-          <span style="font-style:italic;font-size:.9em">Vai trò của bạn không có quyền xem quản lý hiệu chuẩn, vui lòng liên hệ quản trị viên.</span></p>
-        <a href="index.html" style="color:#2563eb">← 返回首頁 / Trang chủ</a>
-        <button onclick="window.mivLogout()" style="margin-top:6px;padding:6px 16px;border:1px solid #cbd5e1;background:transparent;border-radius:8px;color:#64748b;cursor:pointer">登出 / Đăng xuất</button>
-      </div>`;
-    return;
-  }
-  canManage = user.role === "admin" || user.role === "quality";
+mivRequireApp("calibration").then(user => {
+  canManage = user.canManage("calibration");
   document.getElementById("btn-import").classList.toggle("hidden", !canManage);
   document.getElementById("btn-add-asset").classList.toggle("hidden", !canManage);
   renderTable();
-});
+}).catch(() => {});   // 權限不足時 mivRequireApp 已顯示提示畫面
 
 onSnapshot(assetsCol, snap => {
   snap.docChanges().forEach(c => {

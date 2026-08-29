@@ -73,7 +73,7 @@
 </style>
 </head>
 <body>
-<script type="module" src="auth-guard.js?v=2"></script>
+<script type="module" src="auth-guard.js?v=3"></script>
 
 <header class="topbar">
   <div class="topbar-left">
@@ -128,7 +128,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, getDocs, query, where, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { mivAuthReady } from "./auth-guard.js?v=2";
+import { mivAuthReady } from "./auth-guard.js?v=3";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs", authDomain: "miv-1426c.firebaseapp.com",
@@ -141,14 +141,14 @@ const recordsCol = collection(db, "pi_inspection_records");
 const issuesCol = collection(db, "pi_issues");
 
 const piUser = await mivAuthReady;
-if (piUser.role !== "admin" && piUser.role !== "quality") {
+if (!piUser.canManage("inspection")) {
   document.getElementById("no-access").style.display = "";
 } else {
   document.getElementById("dash-main").style.display = "";
 }
 function renderNav() {
   // 統計報表僅品保／管理員可用，無權者只給返回首頁
-  if (piUser.role !== "admin" && piUser.role !== "quality") {
+  if (!piUser.canManage("inspection")) {
     document.getElementById("nav-links").innerHTML =
       `<a class="nav-link" href="index.html"><span>← 返回首頁</span><span class="vi">Trang chủ</span></a>`;
     return;
@@ -158,7 +158,7 @@ function renderNav() {
     `<a class="nav-link" href="inspection-issues.html"><span>📋 異常追蹤</span><span class="vi">Theo dõi bất thường</span></a>`,
     `<a class="nav-link" href="inspection-records.html"><span>📑 紀錄查詢</span><span class="vi">Tra cứu hồ sơ</span></a>`,
   ];
-  if (piUser.role === "admin") links.push(`<a class="nav-link" href="inspection-admin.html"><span>⚙ 後台管理</span><span class="vi">Quản trị</span></a>`);
+  links.push(`<a class="nav-link" href="inspection-admin.html"><span>⚙ 後台管理</span><span class="vi">Quản trị</span></a>`);
   document.getElementById("nav-links").innerHTML = links.join("");
 }
 function esc(s){ return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
@@ -330,7 +330,7 @@ function styleHeader(sheet) {
 }
 
 renderNav();
-if (piUser.role === "admin" || piUser.role === "quality") loadData();
+if (piUser.canManage("inspection")) loadData();
 </script>
 </body>
 </html>

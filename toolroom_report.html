@@ -161,6 +161,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import {
   getFirestore, collection, getDocs, query, orderBy
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { mivRequireApp } from "./auth-guard.js?v=3";
+
+// 領用查詢讀的是工具室資料，沒有工具室使用權限時直接顯示權限不足畫面，
+// 否則會停在空白頁並在主控台丟出 Firestore 權限錯誤。
+await mivRequireApp("toolroom", "use", "toolroom.html");
 
 const app = initializeApp({
   apiKey:"AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs",

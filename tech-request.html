@@ -231,8 +231,9 @@
           <input id="f-originalDept" placeholder="若非本單位提出，填寫原需求單位">
         </div>
         <div class="detail-row">
-          <label>憑單號碼／製造編號（選填） <span class="vi">Số chứng từ / Số SX</span></label>
-          <input id="f-voucherNo">
+          <label>憑單號碼／製造編號 <span class="vi">Số chứng từ / Số SX</span></label>
+          <input id="f-voucherNo" disabled placeholder="送出後自動帶入委託單號">
+          <p class="hint">與委託單號相同，送出時自動產生 / Trùng với số đơn ủy thác, tự động tạo khi gửi</p>
         </div>
       </div>
       <div class="detail-row">
@@ -571,6 +572,10 @@ window.onPhotoSelect = async function(input) {
 window.removeEditPhoto = function(i) { editPhotos.splice(i, 1); renderEditPhotos(); };
 window.openLightbox = src => { document.getElementById("lightbox-img").src = src; document.getElementById("lightbox").classList.remove("hidden"); };
 
+window.openWorksheet = function(id) {
+  window.open("tech-request-worksheet.html?id=" + encodeURIComponent(id), "_blank", "noopener");
+};
+
 window.copyNo = async function(no) {
   try {
     await navigator.clipboard.writeText(no);
@@ -598,7 +603,7 @@ window.openCreate = function() {
   document.getElementById("f-drawingNo").value = "";
   document.getElementById("f-requesterName").value = trUser.name || trUser.employeeId;
   document.getElementById("f-originalDept").value = "";
-  document.getElementById("f-voucherNo").value = "";
+  document.getElementById("f-voucherNo").value = "";   // 送出時才取號，避免取消造成跳號
   document.getElementById("f-desiredDate").value = "";
   document.getElementById("f-detail").value = "";
   setFieldsDisabled(false);
@@ -614,7 +619,8 @@ window.openCreate = function() {
 
 function setFieldsDisabled(disabled) {
   document.querySelectorAll('#f-category input').forEach(r => r.disabled = disabled);
-  ["f-dept","f-model","f-drawingNo","f-requesterName","f-originalDept","f-voucherNo","f-desiredDate","f-detail"]
+  // f-voucherNo 不列入：它由系統帶入委託單號，一律唯讀
+  ["f-dept","f-model","f-drawingNo","f-requesterName","f-originalDept","f-desiredDate","f-detail"]
     .forEach(id => document.getElementById(id).disabled = disabled);
 }
 
@@ -644,7 +650,8 @@ window.openDetail = function(id) {
   document.getElementById("f-drawingNo").value = r.drawingNo || "";
   document.getElementById("f-requesterName").value = r.requesterName || "";
   document.getElementById("f-originalDept").value = r.originalDept || "";
-  document.getElementById("f-voucherNo").value = r.voucherNo || "";
+  // 舊資料若沒存憑單號碼，顯示委託單號（兩者本來就相同），日後編輯儲存時會一併補上
+  document.getElementById("f-voucherNo").value = r.voucherNo || r.no || "";
   document.getElementById("f-desiredDate").value = r.desiredDate || "";
   document.getElementById("f-detail").value = r.detail || "";
 
@@ -755,6 +762,11 @@ window.recalcCost = recalcCost;
 function renderActions(r, canEditBase) {
   const actions = [`<button class="btn btn-outline" onclick="closeDetail()">關閉 <span class="vi">Đóng</span></button>`];
 
+  // 報工單：委託單開立後即可產生，供現場填寫工時成本或直接列印（已退回的單除外）
+  if (r.status !== "rejected") {
+    actions.push(`<button class="btn btn-outline" onclick="openWorksheet('${r.id}')">🖨 報工單 <span class="vi">Phiếu báo công</span></button>`);
+  }
+
   if (canEditBase) {
     actions.push(`<button class="btn btn-outline" onclick="enableBaseEdit()">編輯內容 <span class="vi">Sửa</span></button>`);
     if (r.status === "pending_approval" && trUser.uid === r.requesterUid) {
@@ -851,6 +863,7 @@ window.submitNewRequest = async function() {
   const no = await nextRequestNo();
   await addDoc(reqCol, {
     no, ...f,
+    voucherNo: no,   // 憑單號碼與委託單號一致
     // requesterName 來自 f（可自行填寫）；requesterUid 固定為登入帳號，權限一律以它為準
     requesterUid: trUser.uid, requesterEmpId: trUser.employeeId,
     supervisorUid: dept.supervisorUid, supervisorName: dept.supervisorName || "",

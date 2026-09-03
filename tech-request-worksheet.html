@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>報工單 / Phiếu Báo Công</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f5f6fa; --surface: #ffffff; --border: #e2e5ed;
+    --text: #1a1d23; --text-soft: #6b7280; --accent: #2563eb; --danger: #dc2626; --ok: #16a34a;
+    --radius: 8px;
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+         background: var(--bg); color: var(--text); min-height: 100vh; }
+  .vi { font-size: .74em; color: var(--text-soft); font-style: italic; font-weight: 400; }
+
+  /* ── 螢幕上的工具列（列印時隱藏）───────────────────────── */
+  .toolbar { background: #1e293b; padding: 10px 20px; display: flex; align-items: center;
+             justify-content: space-between; gap: 12px; flex-wrap: wrap; position: sticky; top: 0; z-index: 10; }
+  .toolbar h1 { font-size: .95rem; font-weight: 700; color: #fff; }
+  .toolbar h1 .vi { display: block; font-size: .68rem; color: rgba(255,255,255,.5); }
+  .toolbar-right { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn { padding: 9px 16px; border-radius: var(--radius); font-size: .84rem; font-weight: 700;
+         cursor: pointer; border: none; white-space: nowrap; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-ok { background: var(--ok); color: #fff; }
+  .btn-outline { background: transparent; border: 1px solid rgba(255,255,255,.3); color: #fff; }
+
+  .hint-bar { max-width: 210mm; margin: 12px auto 0; padding: 10px 14px; border-radius: var(--radius);
+              background: #fffbeb; color: #92400e; font-size: .8rem; line-height: 1.6; }
+  .fatal { max-width: 210mm; margin: 12px auto 0; padding: 10px 14px; border-radius: var(--radius);
+           background: #fef2f2; color: #b91c1c; font-size: .84rem; white-space: pre-wrap; }
+
+  /* ── 報工單本體：以 A4 寬度排版 ─────────────────────────── */
+  .sheet { background: var(--surface); width: 210mm; min-height: 290mm; margin: 16px auto;
+           padding: 14mm 14mm 12mm; box-shadow: 0 2px 12px rgba(0,0,0,.12); }
+  .sheet-head { display: flex; align-items: center; gap: 14px; border-bottom: 2px solid var(--text); padding-bottom: 8px; }
+  .sheet-logo { height: 46px; object-fit: contain; }
+  .sheet-title { flex: 1; text-align: center; }
+  .sheet-title h2 { font-size: 1.5rem; letter-spacing: 8px; }
+  .sheet-title .vi { letter-spacing: 1px; }
+  .sheet-no { text-align: right; font-size: .8rem; line-height: 1.7; }
+  .sheet-no b { font-size: 1.05rem; letter-spacing: 1px; }
+
+  table.grid { width: 100%; border-collapse: collapse; margin-top: 10px; }
+  table.grid th, table.grid td { border: 1px solid #333; padding: 5px 7px; font-size: .82rem; vertical-align: middle; }
+  table.grid th { background: #f1f5f9; font-weight: 700; width: 88px; text-align: left; white-space: nowrap; }
+  table.grid th .vi { display: block; }
+  .section-title { margin-top: 12px; font-size: .9rem; font-weight: 800; border-left: 4px solid var(--accent);
+                   padding-left: 7px; }
+  .section-title .vi { margin-left: 6px; }
+  .detail-box { border: 1px solid #333; padding: 7px 9px; min-height: 22mm; font-size: .84rem;
+                white-space: pre-wrap; line-height: 1.6; margin-top: 6px; }
+  .photos { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .photos img { width: 52mm; height: 40mm; object-fit: contain; border: 1px solid #999; background: #fff; }
+
+  /* 可填寫欄位：螢幕上是輸入框，列印時變成底線 */
+  .fill { width: 100%; border: none; border-bottom: 1px solid #666; background: #fdfdf5;
+          font: inherit; font-size: .84rem; padding: 3px 4px; color: var(--text); }
+  .fill:focus { outline: none; background: #fff8d8; }
+  .fill:disabled { background: transparent; color: var(--text); }
+  .calc { font-weight: 700; }
+  .unit { font-size: .78rem; color: var(--text-soft); margin-left: 3px; }
+
+  .sign-row { display: flex; gap: 8px; margin-top: 14px; }
+  .sign-box { flex: 1; border: 1px solid #333; min-height: 24mm; padding: 5px 7px; font-size: .78rem; }
+  .sign-box span { display: block; margin-bottom: 2px; }
+  .foot-note { margin-top: 8px; font-size: .7rem; color: var(--text-soft); text-align: right; }
+
+  @media (max-width: 230mm) {
+    .sheet { width: 100%; min-height: 0; padding: 14px; }
+    .photos img { width: 45%; height: auto; }
+  }
+
+  /* ── 列印樣式 ───────────────────────────────────────────── */
+  @page { size: A4 portrait; margin: 10mm; }
+  @media print {
+    body { background: #fff; }
+    .toolbar, .hint-bar, .fatal, .no-print { display: none !important; }
+    .sheet { width: auto; min-height: 0; margin: 0; padding: 0; box-shadow: none; }
+    .fill { background: transparent; border-bottom: 1px solid #000; }
+    /* 空白欄位在紙本上留線讓現場手寫 */
+    table.grid th, table.grid td, .detail-box, .sign-box { border-color: #000; }
+    .photos img { border-color: #000; }
+    /* 紙本上不要出現數字微調鈕與日期選擇圖示 */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type=date]::-webkit-calendar-picker-indicator { display: none; }
+  }
+</style>
+</head>
+<body>
+<script type="module" src="auth-guard.js?v=3"></script>
+
+<div class="toolbar no-print">
+  <h1>報工單<span class="vi">Phiếu Báo Công</span></h1>
+  <div class="toolbar-right">
+    <a class="btn btn-outline" href="tech-request.html">← 返回委託單</a>
+    <button class="btn btn-ok" id="btn-save">💾 儲存至委託單</button>
+    <button class="btn btn-primary" id="btn-print">🖨 列印 / In</button>
+  </div>
+</div>
+
+<div class="fatal" id="fatal" style="display:none"></div>
+<div class="hint-bar no-print" id="hint">
+  填寫下方黃色欄位後可按「儲存至委託單」把工時與成本寫回系統；若要現場手寫，直接列印即可（空白欄位會印成填寫線）。
+  <span class="vi" style="display:block">Điền vào các ô màu vàng rồi lưu, hoặc in ra để ghi tay tại hiện trường.</span>
+</div>
+
+<div class="sheet" id="sheet" style="display:none">
+  <div class="sheet-head">
+    <img src="Rexon%20logo.png" alt="REXON VN" class="sheet-logo">
+    <div class="sheet-title">
+      <h2>報 工 單</h2>
+      <div class="vi">PHIẾU BÁO CÔNG — Phòng Kỹ thuật</div>
+    </div>
+    <div class="sheet-no">
+      委託單號 <span class="vi">Số đơn</span><br>
+      <b id="p-no">—</b><br>
+      <span id="p-printdate" style="color:#6b7280"></span>
+    </div>
+  </div>
+
+  <div class="section-title">委託資訊 <span class="vi">Thông tin ủy thác</span></div>
+  <table class="grid">
+    <tr>
+      <th>委託單位<span class="vi">Đơn vị</span></th><td id="p-dept">—</td>
+      <th>委託人<span class="vi">Người ủy thác</span></th><td id="p-requester">—</td>
+      <th>委託日期<span class="vi">Ngày</span></th><td id="p-date">—</td>
+    </tr>
+    <tr>
+      <th>機種<span class="vi">Model</span></th><td id="p-model">—</td>
+      <th>圖號<span class="vi">Bản vẽ</span></th><td id="p-drawing">—</td>
+      <th>委託類別<span class="vi">Loại</span></th><td id="p-category">—</td>
+    </tr>
+    <tr>
+      <th>憑單號碼<span class="vi">Số chứng từ</span></th><td id="p-voucher">—</td>
+      <th>希望完成<span class="vi">Mong muốn</span></th><td id="p-desired">—</td>
+      <th>預定完成<span class="vi">Dự kiến</span></th><td id="p-scheduled">—</td>
+    </tr>
+  </table>
+
+  <div class="section-title">委託內容 <span class="vi">Nội dung</span></div>
+  <div class="detail-box" id="p-detail"></div>
+  <div class="photos" id="p-photos"></div>
+
+  <div class="section-title">報工紀錄 <span class="vi">Ghi nhận công việc</span></div>
+  <table class="grid">
+    <tr>
+      <th>受託人<span class="vi">Người nhận việc</span></th>
+      <td colspan="3"><input class="fill" id="f-worker" placeholder="實際施作人員"></td>
+      <th>擔當者<span class="vi">Phụ trách</span></th>
+      <td><input class="fill" id="f-assignee"></td>
+    </tr>
+    <tr>
+      <th>工作人數<span class="vi">Số người</span></th>
+      <td><input class="fill" type="number" min="0" id="f-workerCount"></td>
+      <th>工作總工時<span class="vi">Tổng giờ công</span></th>
+      <td colspan="3">
+        <input class="fill" type="number" min="0" id="f-hoursH" style="width:60px;display:inline-block"><span class="unit">時 Giờ</span>
+        <input class="fill" type="number" min="0" max="59" id="f-hoursM" style="width:60px;display:inline-block;margin-left:8px"><span class="unit">分 Phút</span>
+      </td>
+    </tr>
+    <tr>
+      <th>維修次數<span class="vi">Số lần sửa</span></th>
+      <td><input class="fill" type="number" min="0" id="f-repairCount"></td>
+      <th>完成日期<span class="vi">Ngày hoàn thành</span></th>
+      <td colspan="3"><input class="fill" type="date" id="f-workDate"></td>
+    </tr>
+  </table>
+
+  <div class="section-title">成本 <span class="vi">Chi phí</span></div>
+  <table class="grid">
+    <tr>
+      <th>工時單價<span class="vi">Đơn giá</span></th>
+      <td><input class="fill" type="number" min="0" id="f-hourlyRate"></td>
+      <th>工時成本<span class="vi">CP giờ công</span></th>
+      <td class="calc" id="p-laborCost">0</td>
+      <th>材料成本<span class="vi">CP vật liệu</span></th>
+      <td><input class="fill" type="number" min="0" id="f-materialCost"></td>
+    </tr>
+    <tr>
+      <th>委外廠商<span class="vi">Nhà thầu</span></th>
+      <td colspan="3"><input class="fill" id="f-vendor"></td>
+      <th>委外費用<span class="vi">CP thuê ngoài</span></th>
+      <td><input class="fill" type="number" min="0" id="f-outsourceCost"></td>
+    </tr>
+    <tr>
+      <th>備註<span class="vi">Ghi chú</span></th>
+      <td colspan="3"><input class="fill" id="f-remarks"></td>
+      <th style="background:#fef9c3">委託總成本<span class="vi">Tổng chi phí</span></th>
+      <td class="calc" id="p-totalCost" style="background:#fef9c3;font-size:.95rem">0</td>
+    </tr>
+  </table>
+
+  <div class="sign-row">
+    <div class="sign-box"><span>受託人簽名<span class="vi">Người nhận việc ký</span></span></div>
+    <div class="sign-box"><span>技術課主管<span class="vi">Quản lý Phòng KT</span></span></div>
+    <div class="sign-box"><span>委託單位簽收<span class="vi">Đơn vị ủy thác ký nhận</span></span></div>
+  </div>
+  <p class="foot-note">工時成本 ＝ 工作總工時 × 工時單價　｜　委託總成本 ＝ 工時成本 ＋ 材料成本 ＋ 委外費用</p>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { mivAuthReady, mivDenyScreen } from "./auth-guard.js?v=3";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD-shXfvnOP-QqJsSu_QDmiO096fPQoxfs", authDomain: "miv-1426c.firebaseapp.com",
+  projectId: "miv-1426c", storageBucket: "miv-1426c.firebasestorage.app",
+  messagingSenderId: "398934341623", appId: "1:398934341623:web:4af46c057d2e202855a0f2"
+};
+const db = getFirestore(initializeApp(firebaseConfig));
+
+function showFatal(msg) {
+  const el = document.getElementById("fatal");
+  el.style.display = ""; el.textContent = msg;
+}
+const authTimer = setTimeout(() => showFatal(
+  "⚠️ 無法完成登入驗證。請確認是透過系統網址開啟此頁並已登入。\n" +
+  "Không thể xác thực đăng nhập. Vui lòng mở trang qua địa chỉ hệ thống và đăng nhập."
+), 8000);
+const trUser = await mivAuthReady;
+clearTimeout(authTimer);
+if (!trUser.can("techreq")) {
+  mivDenyScreen("techreq", "use");
+  throw new Error("insufficient permission for tech-request-worksheet.html");
+}
+
+const reqId = new URLSearchParams(location.search).get("id");
+if (!reqId) {
+  showFatal("⚠️ 網址缺少委託單編號，請從委託單列表點選「報工單」開啟。\nThiếu mã đơn ủy thác trên địa chỉ.");
+  throw new Error("missing id");
+}
+
+function esc(s){ return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function fmtTime(ts) {
+  if (!ts) return "—";
+  return ts.toDate ? ts.toDate().toLocaleDateString("zh-TW") : String(ts);
+}
+function fmtDT(v) {
+  if (!v) return "—";
+  const d = new Date(v);
+  return isNaN(d) ? String(v) : d.toLocaleString("zh-TW", { hour12: false });
+}
+
+let req = null, config = { hourlyRate: 0, techStaff: [] };
+
+try {
+  const [rSnap, cSnap] = await Promise.all([
+    getDoc(doc(db, "treq_requests", reqId)),
+    getDoc(doc(db, "treq_meta", "config")),
+  ]);
+  if (!rSnap.exists()) {
+    showFatal("⚠️ 找不到這張委託單，可能已被刪除。\nKhông tìm thấy đơn ủy thác.");
+    throw new Error("request not found");
+  }
+  req = { id: rSnap.id, ...rSnap.data() };
+  if (cSnap.exists()) config = cSnap.data();
+} catch (err) {
+  showFatal("⚠️ 讀取資料失敗：" + err.message);
+  throw err;
+}
+
+// 只有技術課受理人員（或委託系統管理權限）能把報工內容寫回委託單，
+// 其他人仍可檢視與列印，避免現場拿到的紙本被誤改。
+const canSave = trUser.canManage("techreq") || (config.techStaff || []).some(t => t.uid === trUser.uid);
+
+// ── 帶入委託單既有資料 ──
+document.getElementById("p-no").textContent = req.no || "—";
+document.getElementById("p-printdate").textContent = "列印 " + new Date().toLocaleDateString("zh-TW");
+document.getElementById("p-dept").textContent = req.deptName || "—";
+document.getElementById("p-requester").textContent = req.requesterName || "—";
+document.getElementById("p-date").textContent = fmtTime(req.createdAt);
+document.getElementById("p-model").textContent = req.model || "—";
+document.getElementById("p-drawing").textContent = req.drawingNo || "—";
+document.getElementById("p-category").textContent = req.category || "—";
+document.getElementById("p-voucher").textContent = req.voucherNo || req.no || "—";
+document.getElementById("p-desired").textContent = req.desiredDate ? fmtDT(req.desiredDate) : "—";
+document.getElementById("p-scheduled").textContent = req.scheduledCompleteAt ? fmtDT(req.scheduledCompleteAt) : "—";
+document.getElementById("p-detail").textContent = req.detail || "";
+document.getElementById("p-photos").innerHTML =
+  (req.photos || []).map(src => `<img src="${src}" alt="附圖">`).join("");
+
+// ── 可填寫欄位：已有資料就帶入 ──
+const $ = id => document.getElementById(id);
+$("f-worker").value = req.workerName || req.assignee || "";
+$("f-assignee").value = req.assignee || "";
+$("f-workerCount").value = req.workerCount ?? "";
+$("f-hoursH").value = req.hoursH ?? "";
+$("f-hoursM").value = req.hoursM ?? "";
+$("f-repairCount").value = req.repairCount ?? "";
+$("f-workDate").value = req.workDate || (req.completedAt?.toDate
+  ? req.completedAt.toDate().toISOString().slice(0, 10) : "");
+$("f-hourlyRate").value = req.hourlyRate ?? config.hourlyRate ?? "";
+$("f-materialCost").value = req.materialCost ?? "";
+$("f-vendor").value = req.vendor || "";
+$("f-outsourceCost").value = req.outsourceCost ?? "";
+$("f-remarks").value = req.remarks || "";
+
+function recalc() {
+  const h = Number($("f-hoursH").value) || 0;
+  const m = Number($("f-hoursM").value) || 0;
+  const rate = Number($("f-hourlyRate").value) || 0;
+  const mat = Number($("f-materialCost").value) || 0;
+  const out = Number($("f-outsourceCost").value) || 0;
+  const labor = Math.round((h + m / 60) * rate * 100) / 100;
+  $("p-laborCost").textContent = labor;
+  $("p-totalCost").textContent = Math.round((labor + mat + out) * 100) / 100;
+}
+["f-hoursH","f-hoursM","f-hourlyRate","f-materialCost","f-outsourceCost"]
+  .forEach(id => $(id).addEventListener("input", recalc));
+recalc();
+
+if (!canSave) {
+  document.querySelectorAll(".fill").forEach(el => el.disabled = true);
+  document.getElementById("btn-save").style.display = "none";
+  document.getElementById("hint").innerHTML =
+    "您沒有技術課受理權限，僅能檢視與列印本報工單。" +
+    "<span class='vi' style='display:block'>Bạn chỉ có thể xem và in phiếu này.</span>";
+}
+
+document.getElementById("sheet").style.display = "";
+
+document.getElementById("btn-print").addEventListener("click", () => window.print());
+
+document.getElementById("btn-save").addEventListener("click", async () => {
+  const btn = document.getElementById("btn-save");
+  const hoursH = Number($("f-hoursH").value) || 0;
+  const hoursM = Number($("f-hoursM").value) || 0;
+  const rate = Number($("f-hourlyRate").value) || 0;
+  const materialCost = Number($("f-materialCost").value) || 0;
+  const outsourceCost = Number($("f-outsourceCost").value) || 0;
+  const laborCost = Math.round((hoursH + hoursM / 60) * rate * 100) / 100;
+  btn.disabled = true; btn.textContent = "儲存中…";
+  try {
+    await updateDoc(doc(db, "treq_requests", reqId), {
+      workerName: $("f-worker").value.trim(),
+      assignee: $("f-assignee").value.trim(),
+      workerCount: Number($("f-workerCount").value) || 0,
+      hoursH, hoursM,
+      repairCount: Number($("f-repairCount").value) || 0,
+      workDate: $("f-workDate").value || null,
+      hourlyRate: rate, laborCost,
+      materialCost, outsourceCost,
+      totalCost: Math.round((laborCost + materialCost + outsourceCost) * 100) / 100,
+      vendor: $("f-vendor").value.trim(),
+      remarks: $("f-remarks").value.trim(),
+      updatedAt: serverTimestamp(),
+    });
+    btn.textContent = "✅ 已儲存";
+    setTimeout(() => { btn.textContent = "💾 儲存至委託單"; btn.disabled = false; }, 2000);
+  } catch (err) {
+    showFatal("⚠️ 儲存失敗：" + err.message);
+    btn.textContent = "💾 儲存至委託單"; btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>

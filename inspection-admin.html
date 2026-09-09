@@ -121,6 +121,7 @@
     <div class="tabs">
       <button class="tab-btn active" data-tab="areas" onclick="setTab('areas')">🏭 站點管理</button>
       <button class="tab-btn" data-tab="templates" onclick="setTab('templates')">📋 巡檢清單管理</button>
+      <button class="tab-btn" data-tab="assignees" onclick="setTab('assignees')">👤 負責人名單</button>
     </div>
     <button class="btn btn-outline" onclick="importSeed()">📥 匯入初始站點與清單</button>
     <button class="btn btn-outline" onclick="importModelSeed()">📥 匯入機種清單範本（BU25VS/BR25VS/TM25VS）</button>
@@ -144,6 +145,17 @@
       <div class="tpl-panel" id="tpl-panel">
         <div class="tpl-empty">← 請先從左側選擇站點</div>
       </div>
+    </div>
+  </div>
+
+  <!-- 負責人名單 -->
+  <div class="panel" id="panel-assignees">
+    <div class="toolbar"><div></div><button class="btn btn-primary" onclick="openAssigneeModal(null)">＋ 新增負責人</button></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>中文姓名</th><th>越文姓名</th><th>排序</th><th>狀態</th><th></th></tr></thead>
+        <tbody id="assignees-tbody"></tbody>
+      </table>
     </div>
   </div>
 
@@ -177,6 +189,25 @@
   </div>
 </div>
 
+<!-- 負責人 Modal -->
+<div class="modal-overlay hidden" id="assignee-modal">
+  <div class="modal">
+    <h2 id="assignee-modal-title">新增負責人</h2>
+    <div class="form-grid">
+      <div class="form-group full"><label>中文姓名 *</label><input id="as-name-zh" placeholder="例：卓柏楊"></div>
+      <div class="form-group full"><label>越文姓名 *</label><input id="as-name-vi" placeholder="例：Trác Bách Dương"></div>
+      <div class="form-group"><label>排序</label><input type="number" id="as-sort" value="1"></div>
+      <div class="form-group"><label style="visibility:hidden">狀態</label>
+        <div class="checkbox-row"><input type="checkbox" id="as-active" checked><label for="as-active">啟用中</label></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeAssigneeModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveAssignee()">儲存</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script type="module">
@@ -194,6 +225,7 @@ const firebaseConfig = {
 const db = getFirestore(initializeApp(firebaseConfig));
 const areasCol = collection(db, "pi_areas");
 const templatesCol = collection(db, "pi_checklist_templates");
+const assigneesCol = collection(db, "pi_assignees");
 
 const piUser = await mivAuthReady;
 // 巡檢後台管理（站點與表單範本維護）：需要「製程巡檢 → 管理」
@@ -433,6 +465,58 @@ window.saveTemplate = async function() {
   if (prev) await updateDoc(doc(db, "pi_checklist_templates", prev.id), { isActive: false });
   await addDoc(templatesCol, { ...payload, version: nextVersion, isActive: true, items: cleaned });
   showToast(`✅ 已儲存為 v${nextVersion}`);
+};
+
+// ══════════════ 負責人名單 ══════════════
+let assignees = {};
+onSnapshot(assigneesCol, snap => {
+  assignees = {};
+  snap.forEach(d => assignees[d.id] = { id: d.id, ...d.data() });
+  renderAssigneesTable();
+});
+function renderAssigneesTable() {
+  const list = Object.values(assignees).sort((a,b) => (a.sortOrder||0)-(b.sortOrder||0));
+  document.getElementById("assignees-tbody").innerHTML = list.map(a => `
+    <tr>
+      <td>${esc(a.nameZh)}</td><td>${esc(a.nameVi)}</td><td>${a.sortOrder||0}</td>
+      <td><span class="badge ${a.isActive?'badge-ok':'badge-muted'}">${a.isActive?'啟用中':'已停用'}</span></td>
+      <td style="white-space:nowrap">
+        <button class="btn-icon" title="編輯" onclick="openAssigneeModal('${a.id}')">✏️</button>
+        <button class="btn-icon" title="刪除" onclick="deleteAssignee('${a.id}')">🗑️</button>
+      </td>
+    </tr>`).join("") || `<tr><td colspan="5" style="text-align:center;color:var(--text-soft);padding:24px">尚無負責人資料</td></tr>`;
+}
+let editingAssigneeId = null;
+window.openAssigneeModal = function(id) {
+  editingAssigneeId = id;
+  const a = id ? assignees[id] : null;
+  document.getElementById("assignee-modal-title").textContent = id ? "編輯負責人" : "新增負責人";
+  document.getElementById("as-name-zh").value = a?.nameZh || "";
+  document.getElementById("as-name-vi").value = a?.nameVi || "";
+  document.getElementById("as-sort").value = a?.sortOrder ?? 1;
+  document.getElementById("as-active").checked = a ? !!a.isActive : true;
+  document.getElementById("assignee-modal").classList.remove("hidden");
+};
+window.closeAssigneeModal = () => document.getElementById("assignee-modal").classList.add("hidden");
+window.saveAssignee = async function() {
+  const nameZh = document.getElementById("as-name-zh").value.trim();
+  const nameVi = document.getElementById("as-name-vi").value.trim();
+  if (!nameZh || !nameVi) { showToast("⚠️ 請輸入中文姓名與越文姓名"); return; }
+  const data = {
+    nameZh, nameVi,
+    sortOrder: Number(document.getElementById("as-sort").value) || 0,
+    isActive: document.getElementById("as-active").checked,
+  };
+  if (editingAssigneeId) await updateDoc(doc(db, "pi_assignees", editingAssigneeId), data);
+  else await addDoc(assigneesCol, data);
+  closeAssigneeModal();
+  showToast("✅ 已儲存");
+};
+window.deleteAssignee = async function(id) {
+  const a = assignees[id];
+  if (!confirm(`確定刪除負責人「${a.nameZh}」？`)) return;
+  await deleteDoc(doc(db, "pi_assignees", id));
+  showToast("已刪除");
 };
 
 // ══════════════ 匯入初始站點與清單 ══════════════

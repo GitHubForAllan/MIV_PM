@@ -406,10 +406,14 @@ function renderKanban(list) {
           <div class="desc">${esc(i.itemName ? i.itemName + "：" : "")}${esc(i.description)}</div>
           <div class="kcard-people">
             <span title="回報人">📝 ${esc(i.reportedBy || "—")}</span>
-            <span title="負責人" class="${i.assignedTo ? "" : "unassigned"}">🔧 ${esc(i.assignedTo || "尚未指派")}</span>
+            <span title="負責人" class="${i.assignedTo ? "" : "unassigned"}">🔧 ${esc(assignedToLabel(i))}</span>
           </div>
         </div>`).join("")}
     </div>`).join("")}</div>`;
+}
+function assignedToLabel(i) {
+  if (!i.assignedTo) return "尚未指派";
+  return i.assignedToVi ? `${i.assignedTo} (${i.assignedToVi})` : i.assignedTo;
 }
 function partLabel(i) {
   if (i.modelName || i.partOrModelNo) return i.modelName || i.partOrModelNo;
@@ -425,7 +429,7 @@ function renderTable(list) {
       <td>${esc(partLabel(i) || "—")}</td>
       <td style="max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(i.itemName?i.itemName+"：":"")}${esc(i.description)}</td>
       <td>${esc(i.reportedBy || "—")}</td>
-      <td>${esc(i.assignedTo || "—")}</td>
+      <td>${esc(i.assignedTo ? assignedToLabel(i) : "—")}</td>
       <td><span class="badge-status st-${i.status}" style="padding:2px 9px;border-radius:99px;font-size:.72rem;font-weight:700">${i.status}</span></td>
       <td>${fmtTime(i.reportedAt)}</td>
     </tr>`).join("");
@@ -494,7 +498,9 @@ function renderActions(i) {
 }
 
 window.saveAssigned = async function() {
-  await updateDoc(doc(db, "pi_issues", detailId), { assignedTo: document.getElementById("d-assigned").value.trim() });
+  const val = document.getElementById("d-assigned").value.trim();
+  // 手動改指派的負責人可能跟原本巡檢單選的不是同一人，越文姓名一併清空避免對應錯誤
+  await updateDoc(doc(db, "pi_issues", detailId), { assignedTo: val, assignedToVi: null });
   showToast("✅ 已更新負責人");
 };
 

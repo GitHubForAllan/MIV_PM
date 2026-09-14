@@ -188,8 +188,9 @@
       position: relative;
     }
     .item-row.exchange-flag { border-color: var(--warn); background: var(--warn-bg); }
-    .item-row select, .item-row input { padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: .84rem; font-family: inherit; outline: none; background: #fff; }
+    .item-row select, .item-row input { padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: .84rem; font-family: inherit; outline: none; background: #fff; width: 100%; min-width: 0; }
     .item-row select:focus, .item-row input:focus { border-color: var(--accent); }
+    .item-row > * { min-width: 0; }
     .item-row .remove-row { background: none; border: none; cursor: pointer; color: #9ca3af; font-size: 1.1rem; padding: 2px 4px; }
     .item-row .remove-row:hover { color: var(--danger); }
     .exchange-warning {
@@ -788,6 +789,17 @@
           <option value="">-- 請先選大分類 --</option>
         </select>
       </div>
+      <!-- 領用目的 -->
+      <div style="grid-column:1/-1">
+        <label style="font-size:.82rem;color:var(--text-soft);display:block;margin-bottom:4px">領用目的 <span class="vi">Mục đích</span></label>
+        <select id="req-purpose" class="form-input" style="width:100%">
+          <option value="">-- 請選擇 / Chọn mục đích --</option>
+          <option value="耗材領用">耗材領用 (Tiêu hao)</option>
+          <option value="工具室領用">工具室領用 (Phòng công cụ Lãnh)</option>
+          <option value="樣品試作">樣品試作 (Nghiên cứu)</option>
+          <option value="製作治具">製作治具</option>
+        </select>
+      </div>
     </div>
 
     <!-- 品項列表 -->
@@ -815,12 +827,14 @@
     </div>
 
     <div class="modal-footer">
+      <button class="btn btn-outline" style="margin-right:auto" onclick="exportReqExcel()">📊 轉出預約需求單</button>
       <button class="btn btn-outline" onclick="closeReqModal()">取消 <span class="vi">Hủy</span></button>
       <button class="btn btn-primary" onclick="submitReq()">📨 送出申請 <span class="vi">Gửi yêu cầu</span></button>
     </div>
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script type="module">
 import { mivRequireApp } from "./auth-guard.js?v=3";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -1072,7 +1086,35 @@ window.saveItem = async function() {
     data.imageUrl = "";
   }
   if (editingId) {
+    // 比較單價與供應商是否有變動，有則追加變更紀錄
+    const old = items[editingId] || {};
+    const changes = [];
+    const newPrice = data.unitPrice;
+    const oldPrice = old.unitPrice ?? null;
+    console.log("[saveItem] editingId=", editingId, "oldPrice=", oldPrice, "newPrice=", newPrice, "oldSup=", old.supplier||"", "newSup=", data.supplier||"");
+    if (newPrice !== oldPrice) {
+      changes.push({ field: "unitPrice", label: "單價", old: oldPrice, new: newPrice });
+    }
+    const newSup = data.supplier || "";
+    const oldSup = old.supplier || "";
+    if (newSup !== oldSup) {
+      changes.push({ field: "supplier", label: "供應商", old: oldSup, new: newSup });
+    }
+    console.log("[saveItem] changes=", changes);
+    // 先儲存品項主要欄位
     await updateDoc(doc(db,"toolroom_items",editingId), data);
+    // 再追加變更紀錄（分開寫避免 FieldValue 衝突）
+    if (changes.length > 0) {
+      const who = window.mivUser;
+      const editEntry = {
+        type: "edit",
+        changes,
+        operator: (who && (who.name || who.employeeId)) || "—",
+        at: Timestamp.now(),
+      };
+      console.log("[saveItem] writing editEntry=", editEntry);
+      await updateDoc(doc(db,"toolroom_items",editingId), { txLog: arrayUnion(editEntry) });
+    }
   } else {
     const id = editingId || `item-${Date.now()}-${Math.random().toString(36).slice(2,6)}`;
     data.createdAt = serverTimestamp(); data.txLog = [];
@@ -1418,8 +1460,28 @@ window.openHistModal = function(id) {
   list.innerHTML = !log.length
     ? '<li style="padding:20px;text-align:center;color:var(--text-soft)">尚無記錄 / Chưa có lịch sử</li>'
     : log.map(tx => {
-        const sign = tx.type==="in" ? "+" : "−";
         const dt = tx.at ? new Date(tx.at.seconds*1000).toLocaleString("zh-TW") : "—";
+        if (tx.type === "edit") {
+          const fmtVal = (f, v) => {
+            if (v === null || v === undefined || v === "") return '<em style="color:#9ca3af">（空）</em>';
+            if (f === "unitPrice") return Number(v).toLocaleString("vi-VN") + "đ";
+            return esc(String(v));
+          };
+          const rows = (tx.changes||[]).map(c =>
+            `<span style="display:block;font-size:.82rem;line-height:1.8">
+              <b>${esc(c.label||c.field)}</b>：${fmtVal(c.field,c.old)} → <b style="color:var(--accent)">${fmtVal(c.field,c.new)}</b>
+            </span>`
+          ).join('');
+          return `<li class="tx-item">
+            <span class="tx-dot edit" style="background:#8b5cf6"></span>
+            <span class="tx-qty" style="color:#8b5cf6;font-size:.78rem;font-weight:700;align-self:flex-start;padding-top:2px">✏ 改</span>
+            <span class="tx-meta" style="flex:1">
+              ${rows}
+              <span style="font-size:.78rem;color:#9ca3af">${esc(tx.operator||'—')} ・ ${dt}</span>
+            </span>
+          </li>`;
+        }
+        const sign = tx.type==="in" ? "+" : "−";
         const exTag = tx.exchangeRequired ? ' <span class="badge-exchange" style="font-size:.7rem">🔄</span>' : '';
         return `<li class="tx-item">
           <span class="tx-dot ${tx.type}"></span>
@@ -1613,6 +1675,120 @@ window.submitReq = async function() {
 
   alert(`✅ 領用申請已送出！\n申請單號：${reqNo}\n\nĐã gửi phiếu yêu cầu!\nSố phiếu: ${reqNo}`);
   closeReqModal();
+};
+
+window.exportReqExcel = async function() {
+  const date    = document.getElementById('req-date').value;
+  const person  = document.getElementById('req-person').value.trim();
+  const dept1v  = document.getElementById('req-dept1').value;
+  const dept2v  = document.getElementById('req-dept2').value;
+  const purpose = document.getElementById('req-purpose').value;
+  const note    = document.getElementById('req-note').value.trim();
+
+  if (!date || !dept1v) {
+    alert('請填寫申請日期及部門\nVui lòng điền ngày và phòng ban'); return;
+  }
+
+  const rows = [...document.querySelectorAll('#req-items-body tr')];
+  const reqItems = rows.map(tr => {
+    const sel = tr.querySelector('.req-item-sel');
+    const qty = parseInt(tr.querySelector('.req-item-qty').value) || 0;
+    const it = sel.value ? items[sel.value] : null;
+    return it ? { code: it.code, name: it.name, spec: it.spec||'', unit: it.unit||'', qty, unitPrice: it.unitPrice ?? null } : null;
+  }).filter(r => r && r.qty > 0);
+
+  if (reqItems.length === 0) {
+    alert('請至少選擇一項品項\nVui lòng chọn ít nhất một mặt hàng'); return;
+  }
+  if (reqItems.length > 9) {
+    alert('每張需求單最多 9 項，請分多張開立'); return;
+  }
+
+  let arrayBuffer;
+  try {
+    const resp = await fetch('./req-template.xlsx');
+    if (!resp.ok) throw new Error('fetch failed');
+    arrayBuffer = await resp.arrayBuffer();
+  } catch(e) {
+    alert('無法載入 Excel 範本，請確認部署是否成功'); return;
+  }
+
+  const wb = XLSX.read(arrayBuffer, { type: 'array' });
+  const ws = wb.Sheets['gia công'];
+  if (!ws) { alert('範本格式異常：找不到 "gia công" 工作表'); return; }
+
+  const setV = (addr, val) => {
+    if (!ws[addr]) ws[addr] = {};
+    ws[addr].v = val;
+    ws[addr].t = typeof val === 'number' ? 'n' : 's';
+    delete ws[addr].f;
+    delete ws[addr].w;
+  };
+
+  // Dept info
+  const dept1 = DEPT_TREE.find(d => d.code === dept1v);
+  const dept2 = dept1?.subs.find(s => s.code === dept2v);
+  const deptName = dept2
+    ? `${dept1?.name}（${dept1v}）/ ${dept2.name}（${dept2v}）`
+    : `${dept1?.name}（${dept1v}）`;
+  const costCenter = dept2v || dept1v;
+
+  setV('A4', `*Đơn vị yêu cầu需求單位：${deptName}`);
+  setV('E4', `*Mã chi phí đơn vị成本中心：${costCenter}`);
+  setV('I4', `*預約日期：${date.replace(/-/g,'/')}`);
+
+  // Purpose: replace □ with ✓ for selected option in E3
+  if (ws['E3'] && purpose) {
+    const matchMap = {
+      '耗材領用':  'Tiêu hao耗材領用',
+      '樣品試作':  'Nghiên cứu樣品試作',
+      '工具室領用': 'Phòng công cụ Lãnh工具室領用',
+      '製作治具':  '製作治具',
+    };
+    let e3 = String(ws['E3'].v || '');
+    Object.entries(matchMap).forEach(([zh, substr]) => {
+      const mark = purpose === zh ? '✓' : '□';
+      e3 = e3.replace('□' + substr, mark + substr);
+      e3 = e3.replace('✓' + substr, mark + substr);
+    });
+    ws['E3'].v = e3;
+    delete ws['E3'].w;
+  }
+
+  // Item rows 6–14
+  for (let i = 0; i < 9; i++) {
+    const row = 6 + i;
+    const item = reqItems[i];
+    if (item) {
+      setV(`B${row}`, item.code);
+      setV(`C${row}`, item.name + (item.spec ? '\n' + item.spec : ''));
+      setV(`D${row}`, item.qty);
+      setV(`E${row}`, item.unit);
+      if (item.unitPrice != null) {
+        setV(`F${row}`, item.unitPrice * item.qty);
+      } else if (ws[`F${row}`]) {
+        ws[`F${row}`].v = '';
+        ws[`F${row}`].t = 's';
+        delete ws[`F${row}`].f;
+        delete ws[`F${row}`].w;
+      }
+      setV(`G${row}`, date.replace(/-/g,'/'));
+    } else {
+      ['B','C','D','E','F','G','L'].forEach(col => {
+        const addr = `${col}${row}`;
+        if (ws[addr]) { ws[addr].v = ''; ws[addr].t = 's'; delete ws[addr].f; delete ws[addr].w; }
+      });
+    }
+  }
+
+  // B20: 機種 MODEL
+  setV('B20', `機種(MODEL)：${note}`);
+
+  // K23: 承辦人 (signature row below label)
+  if (person) setV('K23', person);
+
+  const fname = `預約需求領料單_${date}_${costCenter}.xlsx`;
+  XLSX.writeFile(wb, fname);
 };
 
 // ── 領用通知角標 ─────────────────────────────

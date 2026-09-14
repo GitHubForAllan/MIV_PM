@@ -186,6 +186,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
           <option value="">-- Chọn phòng ban trước / 請先選大分類 --</option>
         </select>
       </div>
+      <div style="grid-column:1/-1">
+        <label class="form-label"><div class="bi"><span class="vi">Mục đích</span><span class="zh">領用目的</span></div></label>
+        <select id="req-purpose" class="form-input">
+          <option value="">-- Chọn mục đích / 請選擇 --</option>
+          <option value="耗材領用">耗材領用 (Tiêu hao)</option>
+          <option value="工具室領用">工具室領用 (Phòng công cụ Lãnh)</option>
+          <option value="樣品試作">樣品試作 (Nghiên cứu)</option>
+          <option value="製作治具">製作治具</option>
+        </select>
+      </div>
     </div>
     <div style="margin-bottom:12px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
@@ -214,12 +224,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
     </div>
     </div><!-- end modal-body -->
     <div class="modal-footer" style="padding:14px 28px;margin:0;border-top:1px solid #f1f5f9;flex-shrink:0">
+      <button class="btn btn-cancel" onclick="exportReqExcel()" style="padding:8px 18px;border-radius:6px;cursor:pointer;margin-right:auto">📊 <span class="bi-inline"><span class="vi">Xuất phiếu Excel</span><span class="zh">轉出預約需求單</span></span></button>
       <button class="btn btn-cancel" onclick="closeReqModal()" style="padding:8px 18px;border-radius:6px;cursor:pointer"><span class="bi-inline"><span class="vi">Hủy</span><span class="zh">取消</span></span></button>
       <button class="btn btn-submit" onclick="submitReq()" style="padding:8px 18px;border-radius:6px;cursor:pointer">📨 <span class="bi-inline"><span class="vi">Gửi yêu cầu</span><span class="zh">送出申請</span></span></button>
     </div>
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script type="module">
 import { mivRequireApp } from "./auth-guard.js?v=3";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -688,6 +700,213 @@ window.submitReq = async function() {
   });
   alert('✅ 領用申請已送出！\n申請單號：' + reqNo);
   closeReqModal();
+};
+
+window.exportReqExcel = async function() {
+  const date    = document.getElementById('req-date').value;
+  const person  = document.getElementById('req-person').value.trim();
+  const d1v     = document.getElementById('req-dept1').value;
+  const d2v     = document.getElementById('req-dept2').value;
+  const purpose = document.getElementById('req-purpose').value;
+  const note    = document.getElementById('req-note').value.trim();
+
+  if (!date || !d1v) {
+    alert('請填寫申請日期及部門\nVui lòng điền ngày và phòng ban'); return;
+  }
+
+  const rows = [...document.querySelectorAll('#req-items-body tr')];
+  const reqItems = rows.map(tr => {
+    const sel = tr.querySelector('select');
+    const qty = parseInt(tr.querySelector('input[type=number]').value) || 0;
+    const it  = sel.value ? itemsMap[sel.value] : null;
+    return it && qty > 0
+      ? { code: it.code, name: it.name, spec: it.spec||'', unit: it.unit||'', qty, unitPrice: it.unitPrice ?? null }
+      : null;
+  }).filter(Boolean);
+
+  if (reqItems.length === 0) {
+    alert('請至少選擇一項品項\nVui lòng chọn ít nhất một mặt hàng'); return;
+  }
+
+  let arrayBuffer;
+  try {
+    const resp = await fetch('./req-template.xlsx?v=2');
+    if (!resp.ok) throw new Error('fetch failed');
+    arrayBuffer = await resp.arrayBuffer();
+  } catch(e) {
+    alert('無法載入 Excel 範本，請確認部署是否成功'); return;
+  }
+
+  const zip = await JSZip.loadAsync(arrayBuffer);
+
+  // --- Find "gia công" sheet and remove any extra sheets from ZIP ---
+  let wbXml  = await zip.file('xl/workbook.xml').async('string');
+  let wbRels = await zip.file('xl/_rels/workbook.xml.rels').async('string');
+
+  const gcMatch = wbXml.match(/name="gia c[oô]ng"[^>]*?r:id="([^"]+)"/);
+  const gcRid   = gcMatch ? gcMatch[1] : 'rId1';
+  const relMatch = new RegExp(`Id="${gcRid}"[^>]*?Target="([^"]+)"`).exec(wbRels);
+  const sheetFile = relMatch ? 'xl/' + relMatch[1] : 'xl/worksheets/sheet1.xml';
+
+  const otherRids = [...wbXml.matchAll(/<sheet [^>]*?r:id="([^"]+)"[^>]*?\/>/g)]
+    .map(m => m[1]).filter(rid => rid !== gcRid);
+  let ctXml = await zip.file('[Content_Types].xml').async('string');
+  for (const rid of otherRids) {
+    const m = new RegExp(`Id="${rid}"[^>]*?Target="([^"]+)"`).exec(wbRels);
+    if (m) {
+      const target = m[1];
+      zip.remove('xl/' + target);
+      const escT = target.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      ctXml  = ctXml.replace(new RegExp(`<Override[^>]*PartName="/xl/${escT}"[^>]*/>`), '');
+      wbRels = wbRels.replace(new RegExp(`<Relationship Id="${rid}"[^/]*/>`), '');
+    }
+  }
+  const gcSheetTag = (wbXml.match(/<sheet [^>]*?name="gia c[oô]ng"[^>]*?\/>/) || [])[0]
+    || `<sheet name="gia công" sheetId="1" r:id="${gcRid}"/>`;
+  wbXml = wbXml.replace(/<sheets>[\s\S]*?<\/sheets>/, `<sheets>${gcSheetTag}</sheets>`);
+  zip.file('xl/workbook.xml', wbXml);
+  zip.file('xl/_rels/workbook.xml.rels', wbRels);
+  zip.file('[Content_Types].xml', ctXml);
+
+  // --- Normalize all fonts to Microsoft JhengHei Light ---
+  let stylesXml = await zip.file('xl/styles.xml').async('string');
+  stylesXml = stylesXml.replace(/<font>([\s\S]*?)<\/font>/g, (m, inner) => {
+    const body = inner.includes('<name val=')
+      ? inner.replace(/<name val="[^"]+"\/>/, '<name val="Microsoft JhengHei Light"/>')
+      : inner + '<name val="Microsoft JhengHei Light"/>';
+    return `<font>${body}</font>`;
+  });
+  zip.file('xl/styles.xml', stylesXml);
+
+  // --- Patch sheet XML ---
+  let sx = await zip.file(sheetFile).async('string');
+
+  const xe = v => String(v)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  const fillStr = (xml, addr, value) => {
+    const pat = new RegExp(`<c r="${addr}"([^>]*?)(?:/>|>[\\s\\S]*?</c>)`);
+    return xml.replace(pat, (m, attrs) => {
+      const sm = attrs.match(/s="(\d+)"/);
+      const s  = sm ? ` s="${sm[1]}"` : '';
+      if (value == null || value === '') return `<c r="${addr}"${s}/>`;
+      return `<c r="${addr}"${s} t="inlineStr"><is><t xml:space="preserve">${xe(value)}</t></is></c>`;
+    });
+  };
+
+  const fillNum = (xml, addr, value) => {
+    const pat = new RegExp(`<c r="${addr}"([^>]*?)(?:/>|>[\\s\\S]*?</c>)`);
+    return xml.replace(pat, (m, attrs) => {
+      const sm = attrs.match(/s="(\d+)"/);
+      const s  = sm ? ` s="${sm[1]}"` : '';
+      if (value == null) return `<c r="${addr}"${s}/>`;
+      return `<c r="${addr}"${s}><v>${value}</v></c>`;
+    });
+  };
+
+  const dept1 = DEPT_TREE.find(d => d.code === d1v);
+  const dept2 = dept1?.subs.find(sub => sub.code === d2v);
+  const deptName = dept2
+    ? `${dept1?.name}（${d1v}）/ ${dept2.name}（${d2v}）`
+    : `${dept1?.name}（${d1v}）`;
+  const costCenter = d2v || d1v;
+
+  sx = fillStr(sx, 'A4', `*Đơn vị yêu cầu需求單位：${deptName}`);
+  sx = fillStr(sx, 'E4', `*Mã chi phí đơn vị成本中心：${costCenter}`);
+  sx = fillStr(sx, 'I4', `*預約日期：${date.replace(/-/g,'/')}`);
+
+  let i3 = ' □Tiêu hao耗材領用\n□Phòng công cụ Lãnh工具室領用';
+  let l3 = '□Nghiên cứu樣品試作\n□製作治具';
+  if (purpose === '耗材領用')  i3 = ' ✓Tiêu hao耗材領用\n□Phòng công cụ Lãnh工具室領用';
+  if (purpose === '工具室領用') i3 = ' □Tiêu hao耗材領用\n✓Phòng công cụ Lãnh工具室領用';
+  if (purpose === '樣品試作')  l3 = '✓Nghiên cứu樣品試作\n□製作治具';
+  if (purpose === '製作治具')  l3 = '□Nghiên cứu樣品試作\n✓製作治具';
+  sx = fillStr(sx, 'I3', i3);
+  sx = fillStr(sx, 'L3', l3);
+
+  const N = reqItems.length;
+  const dateStr = date.replace(/-/g, '/');
+
+  // Fill or clear all 13 template item rows 6–18 (9 standard + 4 extra)
+  for (let i = 0; i < 13; i++) {
+    const r    = 6 + i;
+    const item = i < N ? reqItems[i] : null;
+    if (item) {
+      sx = fillStr(sx, `B${r}`, item.code);
+      sx = fillStr(sx, `C${r}`, item.name + (item.spec ? '\n' + item.spec : ''));
+      sx = fillNum(sx, `D${r}`, item.qty);
+      sx = fillStr(sx, `E${r}`, item.unit);
+      sx = fillNum(sx, `F${r}`, item.unitPrice != null ? Math.round(item.unitPrice * item.qty) : null);
+      sx = fillStr(sx, `G${r}`, dateStr);
+    } else {
+      sx = fillStr(sx, `B${r}`, null);
+      sx = fillStr(sx, `C${r}`, null);
+      sx = fillNum(sx, `D${r}`, null);
+      sx = fillStr(sx, `E${r}`, null);
+      sx = fillNum(sx, `F${r}`, null);
+      sx = fillStr(sx, `G${r}`, null);
+    }
+  }
+
+  // Auto-insert rows for items 14+ (row 19 onward, shifting template rows down)
+  const extraCount = Math.max(0, N - 13);
+  if (extraCount > 0) {
+    const newRows = [];
+    for (let i = 13; i < N; i++) {
+      const rn   = 19 + (i - 13);
+      const item = reqItems[i];
+      const amt  = item.unitPrice != null ? Math.round(item.unitPrice * item.qty) : null;
+      newRows.push(
+        `<row r="${rn}" spans="1:19" ht="30" customHeight="1" x14ac:dyDescent="0.3">` +
+        `<c r="A${rn}" s="38"><v>${i + 1}</v></c>` +
+        `<c r="B${rn}" s="66" t="inlineStr"><is><t>${xe(item.code)}</t></is></c>` +
+        `<c r="C${rn}" s="66" t="inlineStr"><is><t xml:space="preserve">${xe(item.name + (item.spec ? '\n' + item.spec : ''))}</t></is></c>` +
+        `<c r="D${rn}" s="67"><v>${item.qty}</v></c>` +
+        (item.unit ? `<c r="E${rn}" s="68" t="inlineStr"><is><t>${xe(item.unit)}</t></is></c>` : `<c r="E${rn}" s="68"/>`) +
+        (amt != null ? `<c r="F${rn}" s="57"><v>${amt}</v></c>` : `<c r="F${rn}" s="57"/>`) +
+        `<c r="G${rn}" s="8" t="inlineStr"><is><t>${xe(dateStr)}</t></is></c>` +
+        `<c r="H${rn}" s="9"/><c r="I${rn}" s="30"/><c r="J${rn}" s="10"/><c r="K${rn}" s="10"/><c r="L${rn}" s="9"/>` +
+        `</row>`
+      );
+    }
+
+    // Find row 19 and shift all rows >= 19 by extraCount
+    const row19Idx = sx.indexOf('<row r="19"');
+    if (row19Idx !== -1) {
+      let before = sx.slice(0, row19Idx);
+      let after  = sx.slice(row19Idx);
+      after = after
+        .replace(/<row r="(\d+)"/g, (m, n) => parseInt(n) >= 19 ? `<row r="${+n + extraCount}"` : m)
+        .replace(/<c r="([A-Z]+)(\d+)"/g, (m, c, n) => parseInt(n) >= 19 ? `<c r="${c}${+n + extraCount}"` : m)
+        .replace(/ref="([A-Z]+)(\d+):([A-Z]+)(\d+)"/g, (m, c1,r1,c2,r2) => {
+          const n1 = parseInt(r1), n2 = parseInt(r2);
+          return `ref="${c1}${n1>=19?n1+extraCount:n1}:${c2}${n2>=19?n2+extraCount:n2}"`;
+        });
+      sx = before + newRows.join('') + after;
+    }
+  }
+
+  // MODEL/備註 and 承辦人 rows shift with inserted rows
+  const modelRow  = 20 + extraCount;
+  const personRow = 23 + extraCount;
+  sx = fillStr(sx, `B${modelRow}`, '使用機種(MODEL)：' + note);
+  if (person) sx = fillStr(sx, `K${personRow}`, person);
+
+  zip.file(sheetFile, sx);
+
+  const blob = await zip.generateAsync({
+    type: 'blob',
+    mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    compression: 'DEFLATE'
+  });
+  const url = URL.createObjectURL(blob);
+  const a   = document.createElement('a');
+  a.href    = url;
+  a.download = `預約需求領料單_${date}_${costCenter}.xlsx`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 };
 </script>
 </body>

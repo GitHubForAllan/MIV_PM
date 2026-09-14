@@ -107,6 +107,9 @@
   .sev-btn[data-sev=MA].active { border-color: #a16207; background: #fef9c3; color: #a16207; }
   .sev-btn[data-sev=MI].active { border-color: var(--muted); background: var(--muted-bg); color: var(--muted); }
   .sev-btn .sub { display: block; font-size: .64rem; font-weight: 400; opacity: .8; }
+  .assignee-label { font-size: .78rem; font-weight: 600; color: var(--text-soft); margin-bottom: 6px; }
+  .assignee-label .vi { display: block; font-size: .82em; font-style: italic; opacity: .8; font-weight: 400; }
+  .assignee-select { width: 100%; padding: 9px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: .86rem; font-family: inherit; margin-bottom: 8px; background: var(--surface); }
 
   .photo-btn-row { display: flex; gap: 8px; margin-bottom: 8px; }
   .photo-btn { flex: 1; padding: 10px 6px; border: 1.5px dashed #aac; border-radius: 6px; background: var(--bg); font-size: .78rem; color: var(--text-soft); cursor: pointer; text-align: center; }
@@ -216,6 +219,7 @@ const areasCol = collection(db, "pi_areas");
 const templatesCol = collection(db, "pi_checklist_templates");
 const recordsCol = collection(db, "pi_inspection_records");
 const issuesCol = collection(db, "pi_issues");
+const assigneesCol = collection(db, "pi_assignees");
 
 // ── 權限檢查（權限在 admin-users.html 勾選）──
 // 巡檢作業本身需要「製程巡檢 → 管理」；只有「使用」的人可以看紀錄查詢與
@@ -270,6 +274,23 @@ onSnapshot(query(templatesCol, where("isActive", "==", true)), snap => {
   });
   renderStationGrid();
 });
+
+let assignees = {}; // id -> {nameZh, nameVi}
+onSnapshot(query(assigneesCol, where("isActive", "==", true)), snap => {
+  assignees = {};
+  snap.forEach(d => assignees[d.id] = { id: d.id, ...d.data() });
+  refreshAssigneeSelects();
+});
+function assigneeOptionsHtml(selectedId) {
+  const list = Object.values(assignees).sort((a,b) => (a.sortOrder||0)-(b.sortOrder||0));
+  return `<option value="">未指派 / Chưa chỉ định</option>` +
+    list.map(a => `<option value="${a.id}" ${a.id===selectedId?'selected':''}>${esc(a.nameZh)} / ${esc(a.nameVi)}</option>`).join("");
+}
+function refreshAssigneeSelects() {
+  document.querySelectorAll(".assignee-select").forEach(sel => {
+    sel.innerHTML = assigneeOptionsHtml(sel.dataset.selected || "");
+  });
+}
 
 const BUILDING_LABEL = { A: "A棟", B: "B棟", C: "C棟" };
 function renderBuildingTabs() {
@@ -376,7 +397,7 @@ window.setShift = function(s) {
 function renderItems() {
   itemStates = {};
   (currentTemplate.items || []).forEach(item => {
-    itemStates[item.itemId] = { value: null, isAbnormal: null, desc: "", severity: item.defaultSeverity || "MI", photos: [] };
+    itemStates[item.itemId] = { value: null, isAbnormal: null, desc: "", severity: item.defaultSeverity || "MI", photos: [], assigneeId: null };
   });
   const knownCats = ["製程參數", "品質抽檢", "自主檢查"];
   const byCat = {};
@@ -433,6 +454,8 @@ function abnormalPanel(item) {
       <button class="sev-btn ${def==='MI'?'active':''}" data-sev="MI" onclick="setSeverity('${id}','MI')">MI<span class="sub">次要缺點</span></button>
     </div>
     <textarea placeholder="請簡述異常狀況…" rows="2" oninput="onDescInput('${id}', this.value)"></textarea>
+    <div class="assignee-label">異常處理負責人（選填）<span class="vi">Người phụ trách xử lý (tùy chọn)</span></div>
+    <select class="assignee-select" data-selected="" onchange="onAssigneeInput('${id}', this)">${assigneeOptionsHtml("")}</select>
     <div class="photo-btn-row" style="margin-top:8px">
       <label class="photo-btn">📷 拍照<input type="file" accept="image/*" capture="environment" onchange="onPhotoSelect('${id}', this)"></label>
       <label class="photo-btn">📁 從相簿選取<input type="file" accept="image/*" onchange="onPhotoSelect('${id}', this)"></label>
@@ -463,6 +486,7 @@ window.onNumberInput = function(id) {
 };
 window.onTextInput = function(id) { itemStates[id].value = document.getElementById(`in-${id}`).value; };
 window.onDescInput = function(id, val) { itemStates[id].desc = val; };
+window.onAssigneeInput = function(id, sel) { itemStates[id].assigneeId = sel.value || null; sel.dataset.selected = sel.value; };
 window.setSeverity = function(id, sev) {
   itemStates[id].severity = sev;
   document.querySelectorAll(`#abn-${id} .sev-btn`).forEach(b => b.classList.toggle("active", b.dataset.sev === sev));
@@ -576,6 +600,7 @@ window.submitInspection = async function() {
     for (const item of currentTemplate.items) {
       const st = itemStates[item.itemId];
       if (!st.isAbnormal) continue;
+      const assignee = st.assigneeId ? assignees[st.assigneeId] : null;
       const issueRef = await addDoc(issuesCol, {
         recordId: recordRef.id,
         areaId: currentArea.id,
@@ -588,7 +613,8 @@ window.submitInspection = async function() {
         description: st.desc.trim(),
         photoUrls: st.photos,
         status: "待處理",
-        assignedTo: null,
+        assignedTo: assignee?.nameZh || null,
+        assignedToVi: assignee?.nameVi || null,
         reportedBy: piUser.name || piUser.employeeId,
         reportedById: piUser.employeeId,
         reportedAt: serverTimestamp(),

@@ -134,6 +134,11 @@ service cloud.firestore {
       allow read:  if canUse('inspection');
       allow write: if canManage('inspection');
     }
+    // 異常處理負責人名單（中越文對照），巡檢送單與後台管理時選用
+    match /pi_assignees/{assigneeId} {
+      allow read:  if canUse('inspection');
+      allow write: if canManage('inspection');
+    }
     // 巡檢表單範本：只有實際執行巡檢作業時會用到
     match /pi_checklist_templates/{templateId} {
       allow read:  if canManage('inspection');
@@ -154,7 +159,7 @@ service cloud.firestore {
       allow update: if canManage('inspection')
         || (canUse('inspection')
             && request.resource.data.diff(resource.data).affectedKeys()
-                 .hasOnly(['assignedTo', 'countermeasure', 'resolutionPhotoUrls', 'status'])
+                 .hasOnly(['assignedTo', 'assignedToVi', 'countermeasure', 'resolutionPhotoUrls', 'status'])
             && request.resource.data.status in ['待處理', '改善中', '待複檢（待主管簽核）']);
     }
 

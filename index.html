@@ -4,13 +4,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>越南力山工業廠務系統</title>
-    <link rel="stylesheet" href="styles.css?v=21">
+    <link rel="stylesheet" href="styles.css?v=8a989f08">
     <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
 </head>
   <body>
-    <script type="module" src="auth-guard.js?v=3"></script>
+    <script type="module" src="auth-guard.js?v=d75ba30e"></script>
 
     <!-- 向下相容：舊版分享連結 index.html?p=xxx 自動跳轉 -->
     <script>
@@ -140,7 +140,7 @@
       // 依權限隱藏用不到的系統入口，避免點進去才發現被擋。
       // 磁磚上的 data-app 對應 auth-guard.js 的 MIV_APPS 代碼；
       // 沒有勾「使用」的系統就不顯示。權限在 admin-users.html 勾選。
-      import { mivAuthReady } from "./auth-guard.js?v=3";
+      import { mivAuthReady } from "./auth-guard.js?v=d75ba30e";
       mivAuthReady.then(user => {
         document.querySelectorAll(".hub-tile[data-app]").forEach(tile => {
           if (!user.can(tile.dataset.app)) tile.style.display = "none";

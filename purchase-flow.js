@@ -1,6 +1,6 @@
 // purchase-flow.js — 採購流程定義（A 一般合約 / B 訂貨契約單）
 // 來源：品保設備採購進度追蹤_最終版.xlsx →「流程步驟說明」工作表 v3
-// 修改本檔後請把引用頁面的 ?v= 版本號往上加，避免瀏覽器快取到舊版。
+// ?v= 版本號由 tools/sync-asset-versions.mjs 於部署前依內容自動更新，不用手動改。
 
 // 金額判斷門檻（台幣）：預付款 < 30萬 且 總價 < 100萬 → B 流程，否則 → A 流程
 export const THRESHOLD = { prepayTWD: 300000, totalTWD: 1000000 };

@@ -1,5 +1,8 @@
 {
   "hosting": {
+    "predeploy": [
+      "node tools/sync-asset-versions.mjs"
+    ],
     "public": ".",
     "ignore": [
       "firebase.json",

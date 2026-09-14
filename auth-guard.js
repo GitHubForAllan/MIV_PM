@@ -1,7 +1,8 @@
 // auth-guard.js — 共用登入驗證與權限模組
 // 由各系統頁面以 <script type="module" src="auth-guard.js?v=N"></script> 引入。
-// 修改這個檔案時記得把 ?v= 版本號往上加一，否則 Firebase Hosting／瀏覽器
-// 的快取會讓其他頁面繼續抓到舊版本（styles.css 也是用同樣的機制）。
+// ※ ?v= 不用手動維護：部署前 tools/sync-asset-versions.mjs 會依檔案內容算出
+//   雜湊並改寫全站引用（已接在 firebase.json 的 hosting.predeploy）。
+//   本檔在 Hosting 上是 max-age=3600，靠這個雜湊讓快取自動失效。
 // 未登入者導向 login.html（帶 redirect 參數，登入後導回原頁）；
 // 已登入者在頁面頂端顯示「工號/姓名 + 登出」，並將權限資料掛在 window.mivUser。
 //
@@ -195,21 +196,57 @@ export const mivAuthReady = new Promise(resolve => { resolveReady = resolve; });
 
 setPersistence(auth, browserLocalPersistence).catch(() => {});
 
+// 讀取權限文件失敗時的畫面。
+// ※ 這裡必須跟「權限不足」分開：讀取失敗代表我們根本不知道這個人有什麼權限，
+//   若沿用空白權限往下走，畫面會顯示「權限不足」，看起來就像權限被拿掉了，
+//   但其實只是網路打嗝，重新整理就好。
+function renderLoadErrorScreen(err) {
+  document.body.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:10px;color:#374151;text-align:center;padding:24px;font:14px/1.6 'Segoe UI','Noto Sans TC',Arial,sans-serif">
+      <p style="font-size:1.2rem;font-weight:700">無法讀取權限資料</p>
+      <p style="color:#64748b">這不是權限不足，是連線讀取失敗，請重新整理再試一次。<br>
+        <span style="font-style:italic;font-size:.9em">Không đọc được dữ liệu phân quyền, vui lòng tải lại trang.</span></p>
+      <button onclick="location.reload()" style="margin-top:6px;padding:8px 22px;border:0;background:#2563eb;color:#fff;border-radius:8px;font-weight:700;cursor:pointer">重新整理 / Tải lại</button>
+      <p style="color:#94a3b8;font-size:.78rem;margin-top:10px">${esc(err && (err.code || err.message) || "")}</p>
+      <button onclick="window.mivLogout()" style="border:1px solid #cbd5e1;background:transparent;border-radius:8px;padding:6px 16px;color:#64748b;cursor:pointer">登出 / Đăng xuất</button>
+    </div>`;
+}
+
+// 短暫的連線問題重試幾次再放棄，避免一次失敗就把人擋在門外
+async function loadUserDoc(uid, tries = 3) {
+  let lastErr = null;
+  for (let i = 0; i < tries; i++) {
+    try {
+      return { ok: true, snap: await getDoc(doc(db, "users", uid)) };
+    } catch (err) {
+      lastErr = err;
+      console.warn(`讀取使用者權限失敗（第 ${i + 1} 次）：`, err);
+      if (i < tries - 1) await new Promise(r => setTimeout(r, 400 * (i + 1)));
+    }
+  }
+  return { ok: false, err: lastErr };
+}
+
 onAuthStateChanged(auth, async (user) => {
   if (!user) { goToLogin(); return; }
 
   const profile = { uid: user.uid, employeeId: (user.email || "").split("@")[0], name: "", role: "" };
+  const res = await loadUserDoc(user.uid);
+
+  // 讀不到就停在這裡，不要 resolve mivAuthReady，
+  // 否則各頁面會拿著空白權限去算，然後顯示誤導人的「權限不足」。
+  if (!res.ok) {
+    console.error("讀取使用者權限失敗，已放棄：", res.err);
+    renderLoadErrorScreen(res.err);
+    return;
+  }
+
   let data = null;
-  try {
-    const snap = await getDoc(doc(db, "users", user.uid));
-    if (snap.exists()) {
-      data = snap.data();
-      profile.employeeId = data.employeeId || profile.employeeId;
-      profile.name = data.name || "";
-      profile.role = data.role || "";
-    }
-  } catch (err) {
-    console.error("讀取使用者權限失敗：", err);
+  if (res.snap.exists()) {
+    data = res.snap.data();
+    profile.employeeId = data.employeeId || profile.employeeId;
+    profile.name = data.name || "";
+    profile.role = data.role || "";
   }
 
   const perms = mivResolvePerms(data);

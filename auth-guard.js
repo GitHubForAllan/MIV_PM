@@ -59,6 +59,8 @@ export const MIV_APPS = [
     useHint: "送單、檢視、簽核", manageHint: "後台單位／類別／工時單價" },
   { key: "purchase", name: "採購進度追蹤", sub: "Purchase Tracking", short: "採購",
     useHint: "檢視案件與報表", manageHint: "建立／編輯案件、後台主檔" },
+  { key: "briefing", name: "返台述職排程", sub: "Briefing Schedule", short: "述職排程",
+    useHint: "檢視日曆、提出申請", manageHint: "刪除他人申請、管理記錄" },
 ];
 export const MIV_APP_KEYS = MIV_APPS.map(a => a.key);
 
@@ -72,6 +74,7 @@ const LEGACY_USE = {
   container:   ["viewer", "production", "toolroom", "quality", "admin"],
   techreq:     ["viewer", "production", "toolroom", "quality", "admin"],
   purchase:    ["viewer", "production", "toolroom", "quality", "admin"],
+  briefing:    ["viewer", "production", "toolroom", "quality", "admin"],
 };
 const LEGACY_MANAGE = {
   andon:       ["admin"],
@@ -82,6 +85,7 @@ const LEGACY_MANAGE = {
   container:   ["admin"],
   techreq:     ["admin"],
   purchase:    ["production", "toolroom", "quality", "admin"],
+  briefing:    ["admin"],
 };
 
 // 由 users 文件資料算出實際權限：{ isAdmin, use:Set, manage:Set, migrated }

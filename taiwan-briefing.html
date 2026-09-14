@@ -1,0 +1,1289 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>返台述職排程 — 越南力山工業</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap">
+  <style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:             #F1F4F9;
+    --surface:        #FFFFFF;
+    --surface2:       #F8FAFD;
+    --border:         #E2E8F2;
+    --border-subtle:  #EBF0F8;
+    --accent:         #4B7CF6;
+    --accent-bg:      #EEF3FF;
+    --conflict:       #DC2626;
+    --conflict-bg:    #FEF2F2;
+    --conflict-bdr:   #FECACA;
+    --text:           #1A2440;
+    --text-muted:     #5B6A84;
+    --text-light:     #A8B8CC;
+    --shadow-sm:      0 1px 3px rgba(26,36,64,.07), 0 1px 2px rgba(26,36,64,.05);
+    --shadow-md:      0 4px 14px rgba(26,36,64,.09);
+    --shadow-lg:      0 12px 32px rgba(26,36,64,.14);
+    --radius:         8px;
+    --font:           'Noto Sans TC', system-ui, -apple-system, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg:            #0E1525;
+      --surface:       #162038;
+      --surface2:      #1C2A46;
+      --border:        #263654;
+      --border-subtle: #1E2E4A;
+      --accent:        #60A5FA;
+      --accent-bg:     #1E3A6E;
+      --conflict:      #F87171;
+      --conflict-bg:   #450A0A;
+      --conflict-bdr:  #7F1D1D;
+      --text:          #DCE8FC;
+      --text-muted:    #7A9AC0;
+      --text-light:    #334D6E;
+      --shadow-sm:     0 1px 3px rgba(0,0,0,.4);
+      --shadow-md:     0 4px 14px rgba(0,0,0,.5);
+      --shadow-lg:     0 12px 32px rgba(0,0,0,.65);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg:            #0E1525;
+    --surface:       #162038;
+    --surface2:      #1C2A46;
+    --border:        #263654;
+    --border-subtle: #1E2E4A;
+    --accent:        #60A5FA;
+    --accent-bg:     #1E3A6E;
+    --conflict:      #F87171;
+    --conflict-bg:   #450A0A;
+    --conflict-bdr:  #7F1D1D;
+    --text:          #DCE8FC;
+    --text-muted:    #7A9AC0;
+    --text-light:    #334D6E;
+    --shadow-sm:     0 1px 3px rgba(0,0,0,.4);
+    --shadow-md:     0 4px 14px rgba(0,0,0,.5);
+    --shadow-lg:     0 12px 32px rgba(0,0,0,.65);
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* Page header (below auth-guard bar) */
+  .page-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    box-shadow: var(--shadow-sm);
+  }
+  .page-title {
+    font-size: 15px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .page-title-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+  .header-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .month-label {
+    font-size: 14px;
+    font-weight: 600;
+    min-width: 88px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .btn-icon {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    line-height: 1;
+    transition: background .12s;
+    user-select: none;
+  }
+  .btn-icon:hover { background: var(--accent-bg); color: var(--accent); }
+  .btn-today {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 4px 9px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    font-family: var(--font);
+    transition: all .12s;
+  }
+  .btn-today:hover { background: var(--accent-bg); color: var(--accent); border-color: var(--accent); }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: var(--font);
+    font-weight: 600;
+    transition: opacity .12s;
+  }
+  .btn-primary:hover { opacity: .85; }
+  .btn-primary:disabled { opacity: .55; cursor: not-allowed; }
+
+  /* Conflict banner */
+  #conflictBanner {
+    background: var(--conflict-bg);
+    border-bottom: 1px solid var(--conflict-bdr);
+    padding: 7px 24px;
+    font-size: 12px;
+    color: var(--conflict);
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    line-height: 1.5;
+  }
+
+  /* Main */
+  .main-content {
+    padding: 18px 24px 32px;
+    max-width: 1300px;
+    margin: 0 auto;
+  }
+
+  /* Legend */
+  .legend-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    min-height: 20px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .legend-bar { width: 14px; height: 3px; border-radius: 2px; }
+  .legend-tag {
+    font-size: 8px;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-weight: 700;
+    letter-spacing: .03em;
+    line-height: 1.4;
+  }
+
+  /* Calendar */
+  .calendars-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  @media (max-width: 860px) { .calendars-row { grid-template-columns: 1fr; } }
+  .cal-month-title {
+    padding: 8px 12px 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+    letter-spacing: .04em;
+  }
+  .calendar-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .cal-head {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+  .cal-head-cell {
+    padding: 8px 4px;
+    text-align: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    border-right: 1px solid var(--border-subtle);
+  }
+  .cal-head-cell:last-child { border-right: none; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
+  .cal-cell {
+    min-height: 110px;
+    padding: 5px;
+    border-right: 1px solid var(--border-subtle);
+    border-bottom: 1px solid var(--border-subtle);
+    position: relative;
+  }
+  .cal-cell:nth-child(7n) { border-right: none; }
+  .cal-cell.other-month { background: var(--surface2); }
+  .cal-cell.other-month .day-num { color: var(--text-light); }
+  .cal-cell.has-conflict::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--conflict);
+  }
+  .day-num {
+    font-size: 11px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    width: 20px; height: 20px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    margin-bottom: 3px;
+  }
+  .cal-cell.today .day-num { background: var(--accent); color: #fff; }
+  .day-chips { display: flex; flex-direction: column; gap: 2px; }
+  .chip {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 10.5px;
+    font-weight: 500;
+    line-height: 1.3;
+    overflow: hidden;
+    border: 1px solid transparent;
+    min-width: 0;
+  }
+  .chip-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+  .chip-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
+  .chip-badge {
+    font-size: 8px;
+    padding: 0 3px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    font-weight: 700;
+    letter-spacing: .02em;
+    line-height: 1.5;
+  }
+  .chip-more { font-size: 10px; color: var(--text-muted); padding: 1px 4px; }
+
+  /* Applications table */
+  .apps-section {
+    margin-top: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .apps-section-hd {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .apps-section-hd h2 { font-size: 13px; font-weight: 700; }
+  .apps-count {
+    font-size: 11px;
+    color: var(--text-muted);
+    background: var(--surface2);
+    padding: 1px 7px;
+    border-radius: 9px;
+    border: 1px solid var(--border);
+    font-variant-numeric: tabular-nums;
+  }
+  .apps-table-wrap { overflow-x: auto; }
+  .apps-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .apps-table th {
+    text-align: left;
+    padding: 9px 14px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+    white-space: nowrap;
+  }
+  .apps-table td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border-subtle);
+    vertical-align: middle;
+  }
+  .apps-table tr:last-child td { border-bottom: none; }
+  .apps-table tr:hover td { background: var(--surface2); }
+  .dept-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .dept-badge-dot { width: 5px; height: 5px; border-radius: 50%; }
+  .date-range { font-variant-numeric: tabular-nums; color: var(--text-muted); font-size: 11.5px; white-space: nowrap; }
+  .date-val { color: var(--text); font-weight: 500; font-variant-numeric: tabular-nums; font-size: 11.5px; white-space: nowrap; }
+  .conflict-flag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    color: var(--conflict);
+    background: var(--conflict-bg);
+    padding: 1px 6px;
+    border-radius: 9px;
+    border: 1px solid var(--conflict-bdr);
+  }
+  /* Multi-date picker */
+  .date-add-row { display: flex; gap: 8px; align-items: center; }
+  .date-add-row .form-input { flex: 1; }
+  .btn-add-date {
+    background: var(--accent-bg);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 7px 13px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: var(--font);
+    font-weight: 600;
+    white-space: nowrap;
+    transition: all .12s;
+  }
+  .btn-add-date:hover { background: var(--accent); color: #fff; }
+  .date-chips-area {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-top: 8px; min-height: 26px;
+  }
+  .date-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--accent-bg); border: 1px solid var(--accent);
+    color: var(--accent); border-radius: 12px;
+    padding: 2px 8px 2px 10px; font-size: 11px; font-weight: 600;
+  }
+  .date-chip-rm {
+    background: none; border: none; color: var(--accent);
+    cursor: pointer; font-size: 13px; line-height: 1;
+    padding: 0; opacity: .7;
+  }
+  .date-chip-rm:hover { opacity: 1; }
+
+  /* Special events */
+  .event-cell-label {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 3px;
+    border: 1px solid transparent;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: .02em;
+  }
+  .events-section {
+    margin-top: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .events-section-hd {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .events-section-hd h2 { font-size: 13px; font-weight: 700; }
+  .events-list { padding: 8px 16px 12px; }
+  .event-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: 12px;
+  }
+  .event-row:last-child { border-bottom: none; }
+  .event-color-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .event-title { flex: 1; font-weight: 600; }
+  .event-dates { color: var(--text-muted); font-variant-numeric: tabular-nums; font-size: 11px; }
+  .color-swatch-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .color-swatch {
+    width: 26px; height: 26px; border-radius: 50%; cursor: pointer;
+    border: 3px solid transparent; transition: transform .1s, border-color .1s;
+    outline-offset: 2px;
+  }
+  .color-swatch:hover { transform: scale(1.1); }
+  .color-swatch.selected { border-color: var(--text); }
+
+  .btn-delete, .btn-edit {
+    background: none;
+    border: 1px solid transparent;
+    color: var(--text-muted);
+    padding: 3px 8px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 11px;
+    font-family: var(--font);
+    transition: all .12s;
+  }
+  .btn-delete:hover { border-color: var(--conflict); color: var(--conflict); background: var(--conflict-bg); }
+  .btn-edit:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+  .empty-state { text-align: center; padding: 36px 16px; color: var(--text-muted); font-size: 13px; }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+    padding: 16px;
+    backdrop-filter: blur(2px);
+  }
+  .modal-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: var(--shadow-lg);
+    width: 100%;
+    max-width: 440px;
+    padding: 24px;
+  }
+  .modal-title { font-size: 15px; font-weight: 700; margin-bottom: 18px; }
+  .form-group { margin-bottom: 14px; }
+  .form-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+  .form-input, .form-select {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface2);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 13px;
+    outline: none;
+    transition: border-color .12s, box-shadow .12s;
+    appearance: none;
+  }
+  .form-input:focus, .form-select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(75,124,246,.15);
+  }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .form-error { font-size: 10.5px; color: var(--conflict); margin-top: 4px; min-height: 14px; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+  .btn-secondary {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 13px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: var(--font);
+    font-weight: 500;
+    transition: background .12s;
+  }
+  .btn-secondary:hover { background: var(--border); }
+
+  /* Loading */
+  .loading-state {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px; height: 200px; color: var(--text-muted); font-size: 12px;
+    grid-column: 1 / -1;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+  @media (max-width: 640px) {
+    .page-header { padding: 0 12px; }
+    .main-content { padding: 12px 12px 24px; }
+    .cal-cell { min-height: 80px; }
+  }
+  </style>
+</head>
+<body>
+  <script type="module" src="auth-guard.js?v=3"></script>
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div class="page-title">
+      ✈️ 返台述職排程
+      <span class="page-title-sub">Briefing Schedule</span>
+    </div>
+    <div class="header-nav">
+      <button class="btn-icon" id="prevMonth">&#8249;</button>
+      <span class="month-label" id="monthLabel"></span>
+      <button class="btn-icon" id="nextMonth">&#8250;</button>
+      <button class="btn-today" id="todayBtn">今天</button>
+    </div>
+    <button class="btn-primary" id="addBtn">＋ 新增申請</button>
+  </div>
+
+  <!-- Conflict banner -->
+  <div id="conflictBanner" hidden>
+    <span>⚠</span><span id="conflictText"></span>
+  </div>
+
+  <!-- Main -->
+  <div class="main-content">
+    <div class="legend-row" id="legendRow"></div>
+
+    <div class="calendars-row">
+      <div class="calendar-wrap">
+        <div class="cal-month-title" id="calTitle1"></div>
+        <div class="cal-head">
+          <div class="cal-head-cell">日</div>
+          <div class="cal-head-cell">一</div>
+          <div class="cal-head-cell">二</div>
+          <div class="cal-head-cell">三</div>
+          <div class="cal-head-cell">四</div>
+          <div class="cal-head-cell">五</div>
+          <div class="cal-head-cell">六</div>
+        </div>
+        <div class="cal-grid" id="calGrid1">
+          <div class="loading-state"><div class="spinner"></div> 載入中...</div>
+        </div>
+      </div>
+      <div class="calendar-wrap">
+        <div class="cal-month-title" id="calTitle2"></div>
+        <div class="cal-head">
+          <div class="cal-head-cell">日</div>
+          <div class="cal-head-cell">一</div>
+          <div class="cal-head-cell">二</div>
+          <div class="cal-head-cell">三</div>
+          <div class="cal-head-cell">四</div>
+          <div class="cal-head-cell">五</div>
+          <div class="cal-head-cell">六</div>
+        </div>
+        <div class="cal-grid" id="calGrid2"></div>
+      </div>
+    </div>
+
+    <div class="apps-section">
+      <div class="apps-section-hd">
+        <h2>所有申請記錄</h2>
+        <span class="apps-count" id="appsCount">0 筆</span>
+      </div>
+      <div class="apps-table-wrap"><div id="appsList"></div></div>
+    </div>
+
+      <div class="events-section">
+        <div class="events-section-hd">
+          <h2>特殊事件</h2>
+          <span class="apps-count" id="eventsCount">0 筆</span>
+          <button class="btn-primary" id="addEventBtn" style="margin-left:auto;font-size:11px;padding:4px 11px" hidden>＋ 新增事件</button>
+        </div>
+        <div class="events-list" id="eventsList">
+          <div class="empty-state" style="padding:16px">尚無特殊事件</div>
+        </div>
+      </div>
+  </div>
+
+  <!-- Event Modal -->
+  <div id="eventModal" hidden>
+    <div class="modal-overlay" id="eventModalOverlay">
+      <div class="modal-box" role="dialog" aria-modal="true">
+        <div class="modal-title">新增特殊事件</div>
+        <form id="eventForm" novalidate>
+          <div class="form-group">
+            <label class="form-label">事件名稱</label>
+            <input type="text" class="form-input" id="evFieldTitle" placeholder="例：REX來訪、設備維護" maxlength="20">
+            <div class="form-error" id="evErrTitle"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">事件期間</label>
+            <div class="form-row">
+              <div>
+                <input type="date" class="form-input" id="evFieldStart" aria-label="開始日期">
+                <div class="form-error" id="evErrStart"></div>
+              </div>
+              <div>
+                <input type="date" class="form-input" id="evFieldEnd" aria-label="結束日期">
+                <div class="form-error" id="evErrEnd"></div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">顏色</label>
+            <div class="color-swatch-row" id="colorSwatches"></div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" id="evCancelBtn">取消</button>
+            <button type="submit" class="btn-primary" id="evSubmitBtn">新增事件</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="modal" hidden>
+    <div class="modal-overlay" id="modalOverlay">
+      <div class="modal-box" role="dialog" aria-modal="true">
+        <div class="modal-title" id="modalTitle">新增返台述職申請</div>
+        <form id="appForm" novalidate>
+          <div class="form-group">
+            <label class="form-label">姓名</label>
+            <input type="text" class="form-input" id="fieldName" placeholder="輸入中文姓名" autocomplete="off" maxlength="20">
+            <div class="form-error" id="errName"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">部門</label>
+            <select class="form-select" id="fieldDept">
+              <option value="">— 選擇部門 —</option>
+              <option value="開發部">開發部</option>
+              <option value="業務部">業務部</option>
+              <option value="製造部">製造部</option>
+              <option value="品保部">品保部</option>
+              <option value="採購部">採購部</option>
+              <option value="管理部">管理部</option>
+              <option value="其他">其他</option>
+            </select>
+            <div class="form-error" id="errDept"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">返台期間 <span style="font-weight:400;text-transform:none;letter-spacing:0">（每次上限 10 天）</span></label>
+            <div class="form-row">
+              <div>
+                <input type="date" class="form-input" id="fieldStart" aria-label="開始日期">
+                <div class="form-error" id="errStart"></div>
+              </div>
+              <div>
+                <input type="date" class="form-input" id="fieldEnd" aria-label="結束日期">
+                <div class="form-error" id="errEnd"></div>
+              </div>
+            </div>
+            <div id="tripCountHint" style="font-size:11px;color:var(--text-muted);margin-top:5px"></div>
+            <div class="form-error" id="errTrip"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">述職日期（至少 2 天，可選不連續日期）</label>
+            <div class="date-add-row">
+              <input type="date" class="form-input" id="fieldBriefingDate" aria-label="選擇述職日期">
+              <button type="button" class="btn-add-date" id="btnAddDate">加入</button>
+            </div>
+            <div class="date-chips-area" id="briefingChips"></div>
+            <div class="form-error" id="errBriefingDates"></div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" id="cancelBtn">取消</button>
+            <button type="submit" class="btn-primary" id="submitBtn">送出申請</button>
+            <input type="hidden" id="editingId">
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+  import { mivRequireApp } from './auth-guard.js?v=3';
+  import { getApps } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+  import {
+    getFirestore, collection, addDoc, updateDoc, deleteDoc, doc,
+    onSnapshot, query, orderBy
+  } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+  const mivUser = await mivRequireApp('briefing');
+  const fbDb = getFirestore(getApps()[0]);
+
+  // ── CONFIG ──
+  const DEPT_COLORS = {
+    '開發部': '#0072B2',  // 深藍
+    '業務部': '#D55E00',  // 朱紅橙
+    '製造部': '#009270',  // 深青綠
+    '品保部': '#9455CC',  // 紫羅蘭
+    '採購部': '#CC0044',  // 玫瑰紅
+    '管理部': '#B08800',  // 琥珀金
+    '其他':   '#6B7280',  // 石板灰
+  };
+  const deptColor = d => DEPT_COLORS[d] || '#6B7280';
+
+  function isDark() {
+    const t = document.documentElement.getAttribute('data-theme');
+    return t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches);
+  }
+  function hexRgba(hex, a) {
+    const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+    return `rgba(${r},${g},${b},${a})`;
+  }
+
+  // ── STATE ──
+  let applications = [];
+  let events = [];
+  let currentYear  = new Date().getFullYear();
+  let currentMonth = new Date().getMonth();
+  let selectedBriefingDates = [];
+
+  const EVENT_COLORS = ['#F97316','#EF4444','#8B5CF6','#0EA5E9','#22C55E','#EAB308'];
+  let selectedEventColor = EVENT_COLORS[0];
+
+  // ── HELPERS ──
+  function toDateStr(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+  const todayStr = () => toDateStr(new Date());
+  const inRange  = (d,s,e) => d >= s && d <= e;
+
+  function fmtCN(str) {
+    if (!str) return '';
+    const [y,m,d] = str.split('-');
+    return `${y}年${+m}月${+d}日`;
+  }
+  function fmtRange(s,e) {
+    if (s===e) return fmtCN(s);
+    const [sy,sm,sd] = s.split('-'), [ey,em,ed] = e.split('-');
+    if (sy===ey && sm===em) return `${sy}年${+sm}月${+sd}～${+ed}日`;
+    if (sy===ey) return `${sy}年${+sm}月${+sd}日～${+em}月${+ed}日`;
+    return `${fmtCN(s)} ～ ${fmtCN(e)}`;
+  }
+  function addDays(str,n) { const d=new Date(str); d.setDate(d.getDate()+n); return toDateStr(d); }
+
+  function isBriefDay(p,ds) {
+    if (Array.isArray(p.briefingDates)) return p.briefingDates.includes(ds);
+    if (p.briefingStart) return inRange(ds,p.briefingStart,p.briefingEnd);
+    return p.briefingDate===ds;
+  }
+
+  function fmtBriefingDates(app) {
+    if (Array.isArray(app.briefingDates) && app.briefingDates.length) {
+      return app.briefingDates.slice().sort().map(d=>{
+        const [,m,day]=d.split('-'); return `${+m}/${+day}`;
+      }).join('、');
+    }
+    if (app.briefingStart) return fmtRange(app.briefingStart,app.briefingEnd);
+    return fmtCN(app.briefingDate);
+  }
+
+  function renderBriefingChips() {
+    const area=document.getElementById('briefingChips');
+    area.innerHTML=selectedBriefingDates.slice().sort().map(d=>{
+      const [y,m,day]=d.split('-');
+      return `<span class="date-chip">${y}/${+m}/${+day}<button type="button" class="date-chip-rm" data-d="${d}">×</button></span>`;
+    }).join('');
+    area.querySelectorAll('.date-chip-rm').forEach(btn=>
+      btn.addEventListener('click',()=>{
+        selectedBriefingDates=selectedBriefingDates.filter(x=>x!==btn.dataset.d);
+        renderBriefingChips();
+      })
+    );
+  }
+
+  // ── CONFLICT ──
+  function conflictsForDate(ds) {
+    const present = applications.filter(a => inRange(ds,a.returnStart,a.returnEnd));
+    const byDept = {};
+    present.forEach(a => { (byDept[a.department]=byDept[a.department]||[]).push(a); });
+    const bad = new Set(Object.entries(byDept).filter(([,v])=>v.length>=2).map(([k])=>k));
+    return { present, hasConflict: bad.size>0 };
+  }
+
+  function conflictSummary() {
+    const map = new Map();
+    for (let i=0;i<applications.length;i++) for (let j=i+1;j<applications.length;j++) {
+      const a=applications[i], b=applications[j];
+      if (a.department!==b.department) continue;
+      const os = a.returnStart>b.returnStart?a.returnStart:b.returnStart;
+      const oe = a.returnEnd<b.returnEnd?a.returnEnd:b.returnEnd;
+      if (os<=oe) {
+        if (!map.has(a.department)) map.set(a.department,new Set());
+        map.get(a.department).add(a.name); map.get(a.department).add(b.name);
+      }
+    }
+    return map;
+  }
+
+  function isConflicted(id) {
+    const app=applications.find(a=>a.id===id);
+    if (!app) return false;
+    return applications.some(b => {
+      if (b.id===id||b.department!==app.department) return false;
+      return (app.returnStart>b.returnStart?app.returnStart:b.returnStart)
+           <=(app.returnEnd<b.returnEnd?app.returnEnd:b.returnEnd);
+    });
+  }
+
+  // ── RENDER ──
+  function renderAll() {
+    renderCalendar();
+    renderConflictBanner();
+    renderList();
+    renderLegend();
+    renderEvents();
+  }
+
+  function buildMonthHTML(year, month) {
+    const today=todayStr(), dark=isDark();
+    const bgA=dark?.25:.18, bdA=dark?.55:.42;
+    const bColor=dark?'#1E40AF':'#1C4ED8';
+    const firstDay=new Date(year,month,1).getDay();
+    const lastDate=new Date(year,month+1,0).getDate();
+    const prevLast=new Date(year,month,0).getDate();
+
+    let cells=[];
+    for(let i=firstDay-1;i>=0;i--) {
+      const d=prevLast-i;
+      cells.push({ds:toDateStr(new Date(year,month-1,d)),day:d,other:true});
+    }
+    for(let d=1;d<=lastDate;d++) {
+      const m=String(month+1).padStart(2,'0');
+      const ds=`${year}-${m}-${String(d).padStart(2,'0')}`;
+      cells.push({ds,day:d,other:false,isToday:ds===today});
+    }
+    const rem=cells.length%7===0?0:7-(cells.length%7);
+    for(let d=1;d<=rem;d++) cells.push({ds:toDateStr(new Date(year,month+1,d)),day:d,other:true});
+
+    return cells.map(cell=>{
+      let cls='cal-cell';
+      if(cell.other) cls+=' other-month';
+      if(cell.isToday) cls+=' today';
+      let chips='';
+      let cellStyle='', eventLabel='';
+      if(!cell.other){
+        const {present,hasConflict}=conflictsForDate(cell.ds);
+        if(hasConflict) cls+=' has-conflict';
+        const sorted=[...present].sort((a,b)=>(isBriefDay(a,cell.ds)?0:1)-(isBriefDay(b,cell.ds)?0:1)||a.name.localeCompare(b.name));
+        const shown=sorted.slice(0,3), extra=sorted.length-3;
+        const els=shown.map(p=>{
+          const c=deptColor(p.department);
+          return `<div class="chip" style="background:${hexRgba(c,bgA)};border-color:${hexRgba(c,bdA)}">
+            <div class="chip-dot" style="background:${c}"></div>
+            <span class="chip-name" style="color:${c}">${p.name}</span>
+            ${isBriefDay(p,cell.ds)?`<span class="chip-badge" style="background:${bColor};color:#fff">述</span>`:''}
+          </div>`;
+        });
+        if(extra>0) els.push(`<div class="chip-more">+${extra} 位</div>`);
+        if(els.length) chips=`<div class="day-chips">${els.join('')}</div>`;
+        // Special events
+        const cellEvs=events.filter(ev=>cell.ds>=ev.startDate&&cell.ds<=ev.endDate);
+        if(cellEvs.length>0){
+          const ev=cellEvs[0];
+          cellStyle=` style="background:${hexRgba(ev.color,dark?.18:.12)}"`;
+          eventLabel=`<div class="event-cell-label" style="background:${hexRgba(ev.color,dark?.38:.26)};color:${ev.color};border-color:${hexRgba(ev.color,.45)}">${ev.title}</div>`;
+        }
+      }
+      return `<div class="${cls}"${cellStyle}><div class="day-num">${cell.day}</div>${eventLabel}${chips}</div>`;
+    }).join('');
+  }
+
+  function renderCalendar() {
+    const y1=currentYear, m1=currentMonth;
+    const m2=(m1+1)%12, y2=m1===11?y1+1:y1;
+
+    document.getElementById('monthLabel').textContent =
+      y2===y1 ? `${y1} 年 ${m1+1} 月 / ${m2+1} 月`
+               : `${y1} 年 ${m1+1} 月 / ${y2} 年 ${m2+1} 月`;
+    document.getElementById('calTitle1').textContent = `${y1} 年 ${m1+1} 月`;
+    document.getElementById('calTitle2').textContent = `${y2} 年 ${m2+1} 月`;
+    document.getElementById('calGrid1').innerHTML = buildMonthHTML(y1, m1);
+    document.getElementById('calGrid2').innerHTML = buildMonthHTML(y2, m2);
+  }
+
+  function renderConflictBanner() {
+    const banner=document.getElementById('conflictBanner'), txt=document.getElementById('conflictText');
+    const map=conflictSummary();
+    if(!map.size){banner.hidden=true;return;}
+    txt.textContent='衝突提醒：'+[...map.entries()].map(([d,n])=>`${d}（${[...n].join('、')} 在台日期重疊）`).join('；');
+    banner.hidden=false;
+  }
+
+  function renderLegend() {
+    const row=document.getElementById('legendRow');
+    const depts=[...new Set(applications.map(a=>a.department).filter(Boolean))];
+    if(!depts.length){row.innerHTML='';return;}
+    const dark=isDark();
+    row.innerHTML=depts.map(d=>`<div class="legend-item"><div class="legend-dot" style="background:${deptColor(d)}"></div><span>${d}</span></div>`).join('')
+      +`<div class="legend-item" style="margin-left:4px"><span class="legend-tag" style="background:${dark?'#1E40AF':'#1C4ED8'};color:#fff">述</span><span>述職期間</span></div>`
+      +`<div class="legend-item"><div class="legend-bar" style="background:var(--conflict)"></div><span>部門衝突</span></div>`;
+  }
+
+  function renderList() {
+    const list=document.getElementById('appsList'), cnt=document.getElementById('appsCount');
+    cnt.textContent=`${applications.length} 筆`;
+    if(!applications.length){list.innerHTML='<div class="empty-state">尚無申請記錄，點擊右上角「＋ 新增申請」開始建立</div>';return;}
+    const dark=isDark();
+    const sorted=[...applications].sort((a,b)=>a.returnStart.localeCompare(b.returnStart)||a.name.localeCompare(b.name));
+    const canEdit = id => mivUser.canManage('briefing') || applications.find(a=>a.id===id)?.submittedBy===mivUser.uid;
+    list.innerHTML=`<table class="apps-table"><thead><tr>
+      <th>姓名</th><th>部門</th><th>返台期間</th><th>述職期間</th><th>狀態</th><th></th>
+    </tr></thead><tbody>${sorted.map(app=>{
+      const c=deptColor(app.department), bg=hexRgba(c,dark?.25:.12);
+      const bs=fmtBriefingDates(app);
+      const acts=canEdit(app.id)?`<button class="btn-edit" data-id="${app.id}">編輯</button><button class="btn-delete" data-id="${app.id}">刪除</button>`:'';
+      return `<tr>
+        <td><strong>${app.name}</strong></td>
+        <td><span class="dept-badge" style="background:${bg};color:${c}"><span class="dept-badge-dot" style="background:${c}"></span>${app.department}</span></td>
+        <td><span class="date-range">${fmtRange(app.returnStart,app.returnEnd)}</span></td>
+        <td><span class="date-val">${bs}</span></td>
+        <td>${isConflicted(app.id)?'<span class="conflict-flag">⚠ 衝突</span>':''}</td>
+        <td style="white-space:nowrap">${acts}</td>
+      </tr>`;
+    }).join('')}</tbody></table>`;
+
+    list.querySelectorAll('.btn-edit').forEach(btn =>
+      btn.addEventListener('click', () => openEditModal(btn.dataset.id))
+    );
+    list.querySelectorAll('.btn-delete').forEach(btn =>
+      btn.addEventListener('click', () => deleteApp(btn.dataset.id))
+    );
+  }
+
+  async function deleteApp(id) {
+    if(!confirm('確定要刪除此申請記錄？')) return;
+    try { await deleteDoc(doc(fbDb,'briefing_applications',id)); }
+    catch(e){ alert('刪除失敗，請稍後再試'); }
+  }
+
+  // ── EVENTS ──
+  function renderEvents() {
+    const list=document.getElementById('eventsList'), cnt=document.getElementById('eventsCount');
+    cnt.textContent=`${events.length} 筆`;
+    const canManage=mivUser.canManage('briefing');
+    document.getElementById('addEventBtn').hidden=!canManage;
+    if(!events.length){
+      list.innerHTML='<div class="empty-state" style="padding:16px">尚無特殊事件</div>';
+      return;
+    }
+    const sorted=[...events].sort((a,b)=>a.startDate.localeCompare(b.startDate));
+    list.innerHTML=sorted.map(ev=>`
+      <div class="event-row">
+        <div class="event-color-dot" style="background:${ev.color}"></div>
+        <span class="event-title">${ev.title}</span>
+        <span class="event-dates">${fmtRange(ev.startDate,ev.endDate)}</span>
+        ${canManage?`<button class="btn-delete" data-evid="${ev.id}" style="font-size:11px;padding:2px 8px">刪除</button>`:''}
+      </div>`).join('');
+    list.querySelectorAll('.btn-delete[data-evid]').forEach(btn=>
+      btn.addEventListener('click',()=>deleteEvent(btn.dataset.evid))
+    );
+  }
+
+  async function deleteEvent(id) {
+    if(!confirm('確定要刪除此特殊事件？')) return;
+    try { await deleteDoc(doc(fbDb,'briefing_events',id)); }
+    catch(e){ alert('刪除失敗，請稍後再試'); }
+  }
+
+  // ── EVENT MODAL ──
+  const eventModal=document.getElementById('eventModal');
+
+  function buildColorSwatches() {
+    const row=document.getElementById('colorSwatches');
+    row.innerHTML=EVENT_COLORS.map(c=>
+      `<div class="color-swatch${c===selectedEventColor?' selected':''}" data-color="${c}" style="background:${c}" title="${c}"></div>`
+    ).join('');
+    row.querySelectorAll('.color-swatch').forEach(sw=>
+      sw.addEventListener('click',()=>{
+        selectedEventColor=sw.dataset.color;
+        buildColorSwatches();
+      })
+    );
+  }
+
+  function openEventModal() {
+    const t=todayStr();
+    document.getElementById('evFieldTitle').value='';
+    document.getElementById('evFieldStart').value=t;
+    document.getElementById('evFieldEnd').value=t;
+    ['evErrTitle','evErrStart','evErrEnd'].forEach(id=>document.getElementById(id).textContent='');
+    selectedEventColor=EVENT_COLORS[0];
+    buildColorSwatches();
+    eventModal.hidden=false;
+    document.getElementById('evFieldTitle').focus();
+  }
+  function closeEventModal(){eventModal.hidden=true;}
+
+  document.getElementById('addEventBtn').addEventListener('click',openEventModal);
+  document.getElementById('evCancelBtn').addEventListener('click',closeEventModal);
+  document.getElementById('eventModalOverlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeEventModal();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!eventModal.hidden)closeEventModal();});
+
+  document.getElementById('eventForm').addEventListener('submit',async e=>{
+    e.preventDefault();
+    const title=document.getElementById('evFieldTitle').value.trim();
+    const start=document.getElementById('evFieldStart').value;
+    const end=document.getElementById('evFieldEnd').value;
+    let ok=true;
+    const err=(id,msg)=>{document.getElementById(id).textContent=msg;if(msg)ok=false;};
+    err('evErrTitle',title?'':'請輸入事件名稱');
+    err('evErrStart',start?'':'請選擇開始日期');
+    if(!end) err('evErrEnd','請選擇結束日期');
+    else if(end<start) err('evErrEnd','結束日期不得早於開始日期');
+    else err('evErrEnd','');
+    if(!ok)return;
+    const btn=document.getElementById('evSubmitBtn');
+    btn.disabled=true; btn.textContent='處理中…';
+    try {
+      await addDoc(collection(fbDb,'briefing_events'),{
+        title, startDate:start, endDate:end, color:selectedEventColor,
+        createdBy:mivUser.uid, createdAt:Date.now()
+      });
+      closeEventModal();
+      const d=new Date(start);
+      currentYear=d.getFullYear(); currentMonth=d.getMonth();
+      renderCalendar();
+    } catch(err2){
+      alert('新增失敗：'+(err2.message||'請稍後再試'));
+    }
+    btn.disabled=false; btn.textContent='新增事件';
+  });
+
+  // ── MODAL ──
+  const modal=document.getElementById('modal'), addBtn=document.getElementById('addBtn');
+  const cancelBtn=document.getElementById('cancelBtn'), appForm=document.getElementById('appForm');
+
+  function yearTripCount(year, excludeId, name) {
+    if (!name) return 0;
+    return applications.filter(a =>
+      a.id !== excludeId &&
+      a.name === name &&
+      (a.returnStart||'').startsWith(year)
+    ).length;
+  }
+
+  function updateTripHint(year, name, excludeId) {
+    const el = document.getElementById('tripCountHint');
+    if (!year) { el.textContent=''; return; }
+    if (!name) { el.textContent='請輸入姓名以顯示年度次數'; el.style.color='var(--text-muted)'; return; }
+    const used = yearTripCount(year, excludeId||null, name);
+    const remaining = 5 - used;
+    el.textContent = `${year} 年度「${name}」已申請 ${used} / 5 次（剩餘 ${remaining} 次）`;
+    el.style.color = used >= 5 ? 'var(--conflict)' : used >= 4 ? '#B45309' : 'var(--text-muted)';
+  }
+
+  function openModal() {
+    document.getElementById('modalTitle').textContent='新增返台述職申請';
+    document.getElementById('submitBtn').textContent='送出申請';
+    document.getElementById('editingId').value='';
+    selectedBriefingDates=[];
+    renderBriefingChips();
+    modal.hidden=false;
+    const t=todayStr();
+    document.getElementById('fieldName').value='';
+    document.getElementById('fieldDept').value='';
+    document.getElementById('fieldStart').value=t;
+    document.getElementById('fieldEnd').value=t;
+    document.getElementById('fieldBriefingDate').value='';
+    ['Name','Dept','Start','End','BriefingDates','Trip'].forEach(f=>document.getElementById('err'+f).textContent='');
+    updateTripHint(t.slice(0,4), '', null);
+    document.getElementById('fieldName').focus();
+  }
+
+  // 更新次數提示的觸發點
+  function refreshHint() {
+    const name = document.getElementById('fieldName').value.trim();
+    const start = document.getElementById('fieldStart').value;
+    const year = (start||'').slice(0,4);
+    const editingId = document.getElementById('editingId').value;
+    updateTripHint(year, name, editingId||null);
+  }
+
+  function openEditModal(id) {
+    const app=applications.find(a=>a.id===id);
+    if(!app)return;
+    document.getElementById('modalTitle').textContent='修改述職申請';
+    document.getElementById('submitBtn').textContent='儲存變更';
+    document.getElementById('editingId').value=id;
+    if (Array.isArray(app.briefingDates)) {
+      selectedBriefingDates=[...app.briefingDates];
+    } else if (app.briefingStart) {
+      // 舊格式：展開日期範圍成陣列
+      selectedBriefingDates=[];
+      let cur=app.briefingStart;
+      while(cur<=app.briefingEnd){ selectedBriefingDates.push(cur); cur=addDays(cur,1); }
+    } else if (app.briefingDate) {
+      selectedBriefingDates=[app.briefingDate];
+    } else {
+      selectedBriefingDates=[];
+    }
+    renderBriefingChips();
+    modal.hidden=false;
+    document.getElementById('fieldName').value=app.name||'';
+    document.getElementById('fieldDept').value=app.department||'';
+    document.getElementById('fieldStart').value=app.returnStart||'';
+    document.getElementById('fieldEnd').value=app.returnEnd||'';
+    document.getElementById('fieldBriefingDate').value='';
+    ['Name','Dept','Start','End','BriefingDates','Trip'].forEach(f=>document.getElementById('err'+f).textContent='');
+    updateTripHint((app.returnStart||'').slice(0,4), app.name||'', id);
+    document.getElementById('fieldName').focus();
+  }
+
+  function closeModal(){modal.hidden=true;appForm.reset();selectedBriefingDates=[];renderBriefingChips();document.getElementById('tripCountHint').textContent='';}
+
+  addBtn.addEventListener('click',openModal);
+  cancelBtn.addEventListener('click',closeModal);
+  document.getElementById('modalOverlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!modal.hidden)closeModal();});
+
+  document.getElementById('fieldStart').addEventListener('change', refreshHint);
+  document.getElementById('fieldName').addEventListener('input', refreshHint);
+
+  document.getElementById('btnAddDate').addEventListener('click',()=>{
+    const d=document.getElementById('fieldBriefingDate').value;
+    if(!d) return;
+    if(!selectedBriefingDates.includes(d)){
+      selectedBriefingDates.push(d);
+      renderBriefingChips();
+    }
+    document.getElementById('fieldBriefingDate').value='';
+    document.getElementById('errBriefingDates').textContent='';
+  });
+
+  appForm.addEventListener('submit',async e=>{
+    e.preventDefault();
+    const name=document.getElementById('fieldName').value.trim();
+    const dept=document.getElementById('fieldDept').value;
+    const start=document.getElementById('fieldStart').value;
+    const end=document.getElementById('fieldEnd').value;
+    const editingId=document.getElementById('editingId').value;
+
+    let ok=true;
+    const err=(id,msg)=>{document.getElementById('err'+id).textContent=msg;if(msg)ok=false;};
+    err('Name', name?'':'請輸入姓名');
+    err('Dept', dept?'':'請選擇部門');
+    err('Start',start?'':'請選擇返台開始日期');
+
+    // 10-day limit
+    const tripDays = start && end ? Math.round((new Date(end)-new Date(start))/86400000)+1 : 0;
+    if (!end) err('End','請選擇返台結束日期');
+    else if (end < start) err('End','結束日期不得早於開始日期');
+    else if (tripDays > 10) {
+      err('End',`返台期間為 ${tripDays} 天，超過上限（10 天）`);
+      alert(`⚠️ 返台期間超過上限\n\n本次選擇 ${tripDays} 天，每次返台最多 10 天，請縮短日期範圍。`);
+    } else err('End','');
+
+    // 5-trips-per-year limit（以姓名計算）
+    const year = (start||'').slice(0,4);
+    if (year && name) {
+      const used = yearTripCount(year, editingId||null, name);
+      if (used >= 5) {
+        err('Trip', `${year} 年度「${name}」已達返台次數上限（${used} / 5 次）`);
+        alert(`⚠️ 已達年度返台次數上限\n\n${name} 在 ${year} 年度已申請 ${used} 次，每年最多 5 次，無法再新增。\n如需調整，請刪除舊記錄後再申請。`);
+      } else {
+        err('Trip','');
+        if (used === 4) {
+          alert(`⚠️ 年度配額僅剩 1 次\n\n${name} 在 ${year} 年度已申請 ${used} 次，新增後將達上限（5次），請確認後再送出。`);
+        }
+      }
+    } else {
+      err('Trip','');
+    }
+
+    const outOfRange=selectedBriefingDates.filter(d=>d<start||d>end);
+    err('BriefingDates',
+      selectedBriefingDates.length<2 ? '請至少加入 2 個述職日期' :
+      outOfRange.length ? `述職日期需在返台期間內（${outOfRange.map(d=>{const[,m,day]=d.split('-');return`${+m}/${+day}`}).join('、')} 超出範圍）` : '');
+    if(!ok)return;
+
+    const btn=document.getElementById('submitBtn');
+    btn.disabled=true;
+    const origText=btn.textContent; btn.textContent='處理中…';
+    try {
+      const sortedDates=selectedBriefingDates.slice().sort();
+      if(editingId){
+        await updateDoc(doc(fbDb,'briefing_applications',editingId),{
+          name, department:dept,
+          returnStart:start, returnEnd:end,
+          briefingDates:sortedDates,
+          updatedAt: Date.now()
+        });
+      } else {
+        await addDoc(collection(fbDb,'briefing_applications'),{
+          name, department:dept,
+          returnStart:start, returnEnd:end,
+          briefingDates:sortedDates,
+          submittedBy: mivUser.uid,
+          submittedByName: mivUser.name||mivUser.employeeId,
+          submittedAt: Date.now()
+        });
+      }
+      closeModal();
+      const d=new Date(start);
+      currentYear=d.getFullYear(); currentMonth=d.getMonth();
+      renderCalendar();
+    } catch(err2) {
+      alert('操作失敗：'+(err2.message||'請稍後再試'));
+    }
+    btn.disabled=false; btn.textContent=origText;
+  });
+
+  // ── NAVIGATION ──
+  document.getElementById('prevMonth').addEventListener('click',()=>{if(--currentMonth<0){currentMonth=11;currentYear--;}renderCalendar();});
+  document.getElementById('nextMonth').addEventListener('click',()=>{if(++currentMonth>11){currentMonth=0;currentYear++;}renderCalendar();});
+  document.getElementById('todayBtn').addEventListener('click',()=>{const n=new Date();currentYear=n.getFullYear();currentMonth=n.getMonth();renderCalendar();});
+
+  // ── REALTIME ──
+  renderCalendar();
+  onSnapshot(
+    query(collection(fbDb,'briefing_applications'),orderBy('submittedAt','asc')),
+    snap => { applications=snap.docs.map(d=>({id:d.id,...d.data()})); renderAll(); },
+    err => console.error('snapshot error',err)
+  );
+  onSnapshot(
+    query(collection(fbDb,'briefing_events'),orderBy('createdAt','asc')),
+    snap => { events=snap.docs.map(d=>({id:d.id,...d.data()})); renderAll(); },
+    err => console.error('events snapshot error',err)
+  );
+  </script>
+</body>
+</html>

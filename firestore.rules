@@ -208,6 +208,25 @@ service cloud.firestore {
             && resource.data.status in ['pending_approval', 'rejected']);
     }
 
+    // ── 返台述職排程 ────────────────────────────────────────────
+    // 所有有使用權限者可讀取與新增；刪除他人記錄需管理權限，
+    // 刪除自己的記錄一律允許。
+    match /briefing_applications/{appId} {
+      allow read:   if canUse('briefing');
+      allow create: if canUse('briefing')
+        && request.resource.data.submittedBy == request.auth.uid;
+      allow update: if canManage('briefing')
+        || (canUse('briefing') && resource.data.submittedBy == request.auth.uid);
+      allow delete: if canManage('briefing')
+        || (canUse('briefing') && resource.data.submittedBy == request.auth.uid);
+    }
+    // 特殊事件（REX來訪、維護等）：全體可讀；建立與刪除需管理權限
+    match /briefing_events/{eventId} {
+      allow read:   if canUse('briefing');
+      allow create: if canManage('briefing');
+      allow delete: if canManage('briefing');
+    }
+
     // ── 採購進度追蹤 ────────────────────────────────────────────
     // 案件與主檔：可使用者檢視；建立與編輯需管理權限
     match /purchase_cases/{caseId} {

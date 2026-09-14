@@ -456,6 +456,28 @@
         <div style="font-size:.78rem;font-weight:700;color:#475569;margin-bottom:8px">② 品項 / Loại thiết bị</div>
         <input id="ch-sub-search" placeholder="搜尋品項… / Tìm loại…" style="width:100%;border:1px solid #e2e5ed;border-radius:6px;padding:7px 9px;font-size:.82rem;outline:none;box-sizing:border-box;margin-bottom:8px">
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:7px;max-height:220px;overflow-y:auto" id="ch-sub-btns"></div>
+        <button type="button" id="ch-add-item-btn" onclick="chToggleAddItem()" style="margin-top:8px;width:100%;padding:8px;border:1.5px dashed #94a3b8;border-radius:8px;background:#f8fafc;color:#475569;font-size:.8rem;font-weight:600;cursor:pointer">＋ 找不到適合的品項？新增一個 / Không thấy loại phù hợp? Thêm mới</button>
+        <div id="ch-add-item-form" style="display:none;margin-top:8px;padding:12px;border:1px solid #e2e5ed;border-radius:8px;background:#f8fafc">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+            <div>
+              <label style="font-size:.72rem;font-weight:600;color:#475569;display:block;margin-bottom:3px">代碼 / Mã *</label>
+              <input id="ch-new-code" placeholder="例：41Z0" style="width:100%;border:1px solid #e2e5ed;border-radius:6px;padding:7px 9px;font-size:.82rem;outline:none;box-sizing:border-box;font-family:monospace">
+            </div>
+            <div>
+              <label style="font-size:.72rem;font-weight:600;color:#475569;display:block;margin-bottom:3px">中文名稱 *</label>
+              <input id="ch-new-zh" placeholder="例：雷射對心儀" style="width:100%;border:1px solid #e2e5ed;border-radius:6px;padding:7px 9px;font-size:.82rem;outline:none;box-sizing:border-box">
+            </div>
+          </div>
+          <div style="margin-bottom:8px">
+            <label style="font-size:.72rem;font-weight:600;color:#475569;display:block;margin-bottom:3px">越文名稱（選填）/ Tên tiếng Việt</label>
+            <input id="ch-new-vi" placeholder="例：Máy canh chỉnh laser" style="width:100%;border:1px solid #e2e5ed;border-radius:6px;padding:7px 9px;font-size:.82rem;outline:none;box-sizing:border-box">
+          </div>
+          <div id="ch-new-hint" style="font-size:.72rem;color:var(--danger);margin-bottom:8px"></div>
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button type="button" onclick="chToggleAddItem(false)" style="padding:6px 14px;border-radius:6px;border:1px solid #e2e5ed;background:#fff;color:#374151;font-size:.8rem;font-weight:600;cursor:pointer">取消</button>
+            <button type="button" onclick="chSaveNewItem()" style="padding:6px 14px;border-radius:6px;border:none;background:#2563eb;color:#fff;font-size:.8rem;font-weight:600;cursor:pointer">新增並選用</button>
+          </div>
+        </div>
       </div>
       <div id="ch-serial-area" style="display:none;margin-bottom:14px">
         <div style="font-size:.78rem;font-weight:700;color:#475569;margin-bottom:6px">③ 取得年份 + 流水序號<span style="font-weight:400;color:#94a3b8"> / Năm + số thứ tự</span></div>
@@ -598,6 +620,7 @@ const firebaseConfig = {
 const fbApp = initializeApp(firebaseConfig);
 const db = getFirestore(fbApp);
 const assetsCol = collection(db, "calibration_assets");
+const customItemsCol = collection(db, "calibration_custom_items");
 
 // 類別大碼(前2碼) → 預設校驗週期（月）
 const CYCLE_BY_PREFIX = { '40':12,'41':12,'42':12,'43':24,'44':24,'45':12,'46':12,'47':12,'48':12 };
@@ -940,6 +963,22 @@ window.deleteAsset = async function(id) {
 let CATS = [];
 fetch('category_codes.json').then(r => r.json()).then(d => CATS = d).catch(() => { CATS = []; });
 
+// 使用者透過「編號小幫手」新增的自訂品項（不在靜態目錄中），依大分類 key 分組
+let customItemsByCat = {};
+onSnapshot(customItemsCol, snap => {
+  customItemsByCat = {};
+  snap.forEach(d => {
+    const it = { id: d.id, ...d.data() };
+    (customItemsByCat[it.categoryKey] || (customItemsByCat[it.categoryKey] = [])).push(it);
+  });
+  if (_chCatIdx !== null) chRenderSubBtns(document.getElementById('ch-sub-search').value);
+});
+
+function chItemsForCat(g) {
+  const custom = (customItemsByCat[g.key] || []).map(it => ({ ...it, isNew: true }));
+  return [...(g.items || []), ...custom];
+}
+
 let _chCatIdx = null, _chItem = null;
 
 window.openCodeHelper = function() {
@@ -948,6 +987,7 @@ window.openCodeHelper = function() {
   document.getElementById('ch-serial-area').style.display = 'none';
   document.getElementById('ch-preview-area').style.display = 'none';
   document.getElementById('ch-sub-search').value = '';
+  chToggleAddItem(false);
   document.getElementById('ch-apply-btn').disabled = true;
   document.getElementById('ch-apply-btn').style.opacity = '.5';
   document.getElementById('ch-cat-btns').innerHTML = CATS.map((g, i) => `
@@ -970,6 +1010,7 @@ window.chSelectCat = function(idx) {
     b.querySelector('div:last-child').style.color = a ? '#cbd5e1' : '#64748b';
   });
   chRenderSubBtns('');
+  chToggleAddItem(false);
   document.getElementById('ch-sub-area').style.display = '';
   document.getElementById('ch-serial-area').style.display = 'none';
   document.getElementById('ch-preview-area').style.display = 'none';
@@ -980,7 +1021,7 @@ window.chSelectCat = function(idx) {
 function chRenderSubBtns(filter) {
   const g = CATS[_chCatIdx]; if (!g) return;
   const f = (filter||'').toLowerCase();
-  const items = g.items.filter(it => !f || it.code.toLowerCase().includes(f) || (it.zh||'').toLowerCase().includes(f) || (it.vi||'').toLowerCase().includes(f));
+  const items = chItemsForCat(g).filter(it => !f || it.code.toLowerCase().includes(f) || (it.zh||'').toLowerCase().includes(f) || (it.vi||'').toLowerCase().includes(f));
   document.getElementById('ch-sub-btns').innerHTML = items.map(it => `
     <button onclick="chSelectItem('${it.code.replace(/'/g,"\\'")}')" data-code="${esc(it.code)}"
       style="padding:8px 10px;border-radius:8px;border:1px solid #e2e5ed;background:#fff;cursor:pointer;font-size:.8rem;text-align:left;line-height:1.35">
@@ -990,8 +1031,34 @@ function chRenderSubBtns(filter) {
 }
 document.getElementById('ch-sub-search').addEventListener('input', e => chRenderSubBtns(e.target.value));
 
+window.chToggleAddItem = function(show) {
+  const visible = show === undefined ? document.getElementById('ch-add-item-form').style.display === 'none' : !!show;
+  document.getElementById('ch-add-item-form').style.display = visible ? '' : 'none';
+  if (visible) {
+    document.getElementById('ch-new-code').value = '';
+    document.getElementById('ch-new-zh').value = '';
+    document.getElementById('ch-new-vi').value = '';
+    document.getElementById('ch-new-hint').textContent = '';
+  }
+};
+
+window.chSaveNewItem = async function() {
+  const g = CATS[_chCatIdx]; if (!g) return;
+  const code = document.getElementById('ch-new-code').value.trim().toUpperCase();
+  const zh = document.getElementById('ch-new-zh').value.trim();
+  const vi = document.getElementById('ch-new-vi').value.trim();
+  const hint = document.getElementById('ch-new-hint');
+  if (!code || !zh) { hint.textContent = '請填寫代碼與中文名稱 / Vui lòng nhập mã và tên'; return; }
+  if (chItemsForCat(g).some(it => it.code.toUpperCase() === code)) { hint.textContent = '此代碼已存在 / Mã đã tồn tại'; return; }
+  await addDoc(customItemsCol, { categoryKey: g.key, code, zh, vi: vi || '', createdAt: serverTimestamp() });
+  chToggleAddItem(false);
+  document.getElementById('ch-sub-search').value = '';
+  chRenderSubBtns('');
+  chSelectItem(code);
+};
+
 window.chSelectItem = function(code) {
-  _chItem = CATS[_chCatIdx].items.find(it => it.code === code);
+  _chItem = chItemsForCat(CATS[_chCatIdx]).find(it => it.code === code);
   if (!_chItem) return;
   document.querySelectorAll('#ch-sub-btns button').forEach(b => {
     const a = b.dataset.code === code;

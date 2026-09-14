@@ -127,6 +127,11 @@ service cloud.firestore {
       allow read:  if canUse('calibration');
       allow write: if canManage('calibration');
     }
+    // 編號小幫手新增的自訂品項（不在《儀器設備編號原則目錄》靜態清單中）
+    match /calibration_custom_items/{itemId} {
+      allow read:  if canUse('calibration');
+      allow write: if canManage('calibration');
+    }
 
     // ── 製程巡檢系統 ────────────────────────────────────────────
     // 站點：紀錄查詢與異常追蹤都需要讀；維護屬後台管理

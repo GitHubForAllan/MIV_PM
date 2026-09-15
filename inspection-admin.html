@@ -167,6 +167,7 @@
 <div class="modal-overlay hidden" id="area-modal">
   <div class="modal">
     <h2 id="area-modal-title">新增站點</h2>
+    <p id="area-modal-hint" style="display:none;font-size:.8rem;color:var(--text-soft);background:var(--muted-bg);border-radius:6px;padding:8px 10px;margin:-10px 0 16px;line-height:1.6"></p>
     <div class="form-grid">
       <div class="form-group"><label>棟別 *</label>
         <select id="a-building"><option value="A">A棟</option><option value="B">B棟</option><option value="C">C棟</option></select>
@@ -180,6 +181,9 @@
       </div>
       <div class="form-group"><label style="visibility:hidden">狀態</label>
         <div class="checkbox-row"><input type="checkbox" id="a-active" checked><label for="a-active">啟用中</label></div>
+      </div>
+      <div class="form-group full" id="a-copy-row" style="display:none">
+        <div class="checkbox-row"><input type="checkbox" id="a-copy-tpl" checked><label for="a-copy-tpl">一併複製巡檢清單</label></div>
       </div>
     </div>
     <div class="modal-footer">
@@ -270,24 +274,76 @@ function renderAreasTable() {
       <td><span class="badge ${a.isActive?'badge-ok':'badge-muted'}">${a.isActive?'啟用中':'已停用'}</span></td>
       <td style="white-space:nowrap">
         <button class="btn-icon" title="編輯" onclick="openAreaModal('${a.id}')">✏️</button>
+        <button class="btn-icon" title="複製此站點（含巡檢清單）" onclick="copyArea('${a.id}')">📄</button>
         <button class="btn-icon" title="刪除" onclick="deleteArea('${a.id}')">🗑️</button>
       </td>
     </tr>`).join("") || `<tr><td colspan="7" style="text-align:center;color:var(--text-soft);padding:24px">尚無站點資料，請新增或匯入初始資料</td></tr>`;
 }
 let editingAreaId = null;
-window.openAreaModal = function(id) {
-  editingAreaId = id;
-  const a = id ? areas[id] : null;
-  document.getElementById("area-modal-title").textContent = id ? "編輯站點" : "新增站點";
+let copySourceAreaId = null;
+
+// 名稱自動遞增：TM25VS → TM25VS2、第1線 → 第2線
+function nextName(name) {
+  const s = String(name ?? "").trim();
+  if (!s) return "";
+  const m = s.match(/^(.*?)(\d+)$/);
+  return m ? m[1] + (Number(m[2]) + 1) : s + "2";
+}
+// 複製項目時重新產生 itemId，避免與來源清單混淆
+function cloneItems(items) {
+  const stamp = Date.now().toString(36);
+  return (items || []).map((it, i) => ({ ...JSON.parse(JSON.stringify(it)), itemId: "it_" + stamp + "_" + i + Math.random().toString(36).slice(2,5) }));
+}
+function areaLabel(a) {
+  return `${a.building}棟 ${a.stationName}${a.lineNo ? "第"+a.lineNo+"線" : ""}${a.currentModel ? "（"+a.currentModel+"）" : ""}`;
+}
+
+function fillAreaForm(a) {
   document.getElementById("a-building").value = a?.building || "A";
   document.getElementById("a-name").value = a?.stationName || "";
   document.getElementById("a-line").value = a?.lineNo || "";
   document.getElementById("a-model").value = a?.currentModel || "";
   document.getElementById("a-sort").value = a?.sortOrder ?? 1;
   document.getElementById("a-active").checked = a ? !!a.isActive : true;
+}
+
+window.openAreaModal = function(id) {
+  editingAreaId = id;
+  copySourceAreaId = null;
+  document.getElementById("area-modal-title").textContent = id ? "編輯站點" : "新增站點";
+  document.getElementById("area-modal-hint").style.display = "none";
+  document.getElementById("a-copy-row").style.display = "none";
+  fillAreaForm(id ? areas[id] : null);
   document.getElementById("area-modal").classList.remove("hidden");
 };
-window.closeAreaModal = () => document.getElementById("area-modal").classList.add("hidden");
+
+window.copyArea = function(id) {
+  const src = areas[id];
+  if (!src) return;
+  editingAreaId = null;
+  copySourceAreaId = id;
+
+  // 依來源性質建議新名稱：有機種改機種、有線別改線別，其餘改站點名稱
+  const draft = { ...src };
+  if (src.currentModel) draft.currentModel = nextName(src.currentModel);
+  else if (src.lineNo) draft.lineNo = nextName(src.lineNo);
+  else draft.stationName = nextName(src.stationName);
+  draft.sortOrder = (src.sortOrder || 0) + 1;
+
+  const tplNote = src.currentModel
+    ? (templatesByModel[src.currentModel] ? `將一併把機種「${src.currentModel}」的巡檢清單複製給新機種。` : "來源機種尚無巡檢清單可複製。")
+    : (templatesByArea[src.id] ? `將一併複製此站點的巡檢清單（${templatesByArea[src.id].items.length} 項）。` : "來源站點尚無巡檢清單可複製。");
+
+  document.getElementById("area-modal-title").textContent = "複製站點";
+  const hint = document.getElementById("area-modal-hint");
+  hint.textContent = `來源：${areaLabel(src)}。請修改站點名稱／線別／機種後儲存，${tplNote}`;
+  hint.style.display = "";
+  document.getElementById("a-copy-row").style.display = "";
+  document.getElementById("a-copy-tpl").checked = true;
+  fillAreaForm(draft);
+  document.getElementById("area-modal").classList.remove("hidden");
+};
+window.closeAreaModal = () => { copySourceAreaId = null; document.getElementById("area-modal").classList.add("hidden"); };
 window.saveArea = async function() {
   const stationName = document.getElementById("a-name").value.trim();
   if (!stationName) { showToast("⚠️ 請輸入站點名稱"); return; }
@@ -299,11 +355,43 @@ window.saveArea = async function() {
     sortOrder: Number(document.getElementById("a-sort").value) || 0,
     isActive: document.getElementById("a-active").checked,
   };
+  if (copySourceAreaId) {
+    const src = areas[copySourceAreaId];
+    if (src && src.building === data.building && src.stationName === data.stationName
+        && (src.lineNo || null) === data.lineNo && (src.currentModel || null) === data.currentModel) {
+      showToast("⚠️ 內容與來源完全相同，請修改站點名稱、線別或機種");
+      return;
+    }
+    const newRef = await addDoc(areasCol, data);
+    let note = "";
+    if (document.getElementById("a-copy-tpl").checked && src) note = await copyChecklistForCopiedArea(src, newRef.id, data);
+    closeAreaModal();
+    showToast("✅ 已複製站點" + note);
+    return;
+  }
   if (editingAreaId) await updateDoc(doc(db, "pi_areas", editingAreaId), data);
   else await addDoc(areasCol, data);
   closeAreaModal();
   showToast("✅ 已儲存");
 };
+
+// 複製站點時一併複製巡檢清單；回傳給使用者的補充說明
+async function copyChecklistForCopiedArea(src, newAreaId, data) {
+  if (src.currentModel) {
+    const srcTpl = templatesByModel[src.currentModel];
+    const newModel = data.currentModel;
+    if (!srcTpl) return "（來源機種無清單可複製）";
+    if (!newModel) return "（新站點未填機種，未複製清單）";
+    if (newModel === src.currentModel) return "（沿用機種「" + newModel + "」原有清單）";
+    if (templatesByModel[newModel]) return "（機種「" + newModel + "」已有清單，未覆蓋）";
+    await addDoc(templatesCol, { areaId: null, modelName: newModel, version: 1, isActive: true, items: cloneItems(srcTpl.items) });
+    return "，並建立機種「" + newModel + "」清單 v1";
+  }
+  const srcTpl = templatesByArea[src.id];
+  if (!srcTpl) return "（來源站點無清單可複製）";
+  await addDoc(templatesCol, { areaId: newAreaId, modelName: null, version: 1, isActive: true, items: cloneItems(srcTpl.items) });
+  return "，並複製巡檢清單 " + srcTpl.items.length + " 項";
+}
 window.deleteArea = async function(id) {
   const a = areas[id];
   if (!confirm(`確定刪除站點「${a.stationName}」？相關巡檢清單將保留但不再對應此站點。`)) return;
@@ -399,7 +487,10 @@ function renderTplPanel() {
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
       <div><b>${esc(title)}</b>
         <span style="color:var(--text-soft);font-size:.8rem">　${tpl ? '目前版本 v'+tpl.version : '尚無清單，新增項目後將建立第一版'}</span></div>
-      <button class="btn btn-primary btn-sm" onclick="addItemRow()">＋ 新增項目</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-outline btn-sm" onclick="copyTemplateToNewModel()" title="以目前畫面上的項目建立另一份機種清單">📄 複製為新機種清單</button>
+        <button class="btn btn-primary btn-sm" onclick="addItemRow()">＋ 新增項目</button>
+      </div>
     </div>
     <div class="item-cols-hdr"><div>項目名稱</div><div>分類</div><div>類型</div><div>預設等級</div><div>單位</div><div>下限</div><div>上限</div><div>必填</div><div></div><div></div></div>
     <div id="item-rows"></div>
@@ -447,6 +538,20 @@ window.moveItemRow = function(i, dir) {
   if (j < 0 || j >= editingItems.length) return;
   [editingItems[i], editingItems[j]] = [editingItems[j], editingItems[i]];
   renderItemRows();
+};
+
+window.copyTemplateToNewModel = async function() {
+  if (!currentTplTarget) return;
+  const cleaned = editingItems.filter(it => it.itemName.trim());
+  if (!cleaned.length) { showToast("⚠️ 目前沒有可複製的項目"); return; }
+  const suggested = currentTplTarget.type === "model" ? nextName(currentTplTarget.name) : "";
+  const input = prompt("複製目前清單為新機種，請輸入新機種名稱（例如 TM25VS2）：", suggested);
+  if (!input || !input.trim()) return;
+  const modelName = input.trim();
+  if (templatesByModel[modelName]) { showToast(`⚠️ 機種「${modelName}」已有清單，請改用其他名稱`); return; }
+  await addDoc(templatesCol, { areaId: null, modelName, version: 1, isActive: true, items: cloneItems(cleaned) });
+  showToast(`✅ 已複製為機種「${modelName}」清單 v1`);
+  window.selectTplTarget("model", modelName);
 };
 
 window.saveTemplate = async function() {

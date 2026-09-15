@@ -270,6 +270,7 @@ function renderAreasTable() {
       <td><span class="badge ${a.isActive?'badge-ok':'badge-muted'}">${a.isActive?'啟用中':'已停用'}</span></td>
       <td style="white-space:nowrap">
         <button class="btn-icon" title="編輯" onclick="openAreaModal('${a.id}')">✏️</button>
+        <button class="btn-icon" title="複製站點（含巡檢清單）" onclick="duplicateArea('${a.id}')">📋</button>
         <button class="btn-icon" title="刪除" onclick="deleteArea('${a.id}')">🗑️</button>
       </td>
     </tr>`).join("") || `<tr><td colspan="7" style="text-align:center;color:var(--text-soft);padding:24px">尚無站點資料，請新增或匯入初始資料</td></tr>`;
@@ -309,6 +310,32 @@ window.deleteArea = async function(id) {
   if (!confirm(`確定刪除站點「${a.stationName}」？相關巡檢清單將保留但不再對應此站點。`)) return;
   await deleteDoc(doc(db, "pi_areas", id));
   showToast("已刪除");
+};
+
+// 複製站點：連同目前使用中的巡檢清單一起複製一份全新、彼此獨立的站點+清單，
+// 複製後的站點一律改為「依站點固定清單」（currentModel 設為空），
+// 修改複製出來的清單不會影響原本的機種清單或其他共用同一機種的站點。
+window.duplicateArea = async function(id) {
+  const a = areas[id];
+  if (!a) return;
+  const newName = prompt("新站點名稱 / Tên trạm mới:", a.stationName);
+  if (!newName || !newName.trim()) return;
+  const sourceTpl = a.currentModel ? templatesByModel[a.currentModel] : templatesByArea[a.id];
+  const newAreaRef = await addDoc(areasCol, {
+    building: a.building,
+    stationName: newName.trim(),
+    lineNo: a.lineNo || null,
+    currentModel: null,
+    sortOrder: a.sortOrder || 0,
+    isActive: true,
+  });
+  if (sourceTpl) {
+    await addDoc(templatesCol, {
+      areaId: newAreaRef.id, modelName: null, version: 1, isActive: true,
+      items: JSON.parse(JSON.stringify(sourceTpl.items)),
+    });
+  }
+  showToast(sourceTpl ? `✅ 已複製為「${newName.trim()}」（含巡檢清單 ${sourceTpl.items.length} 項）` : `✅ 已複製為「${newName.trim()}」（原站點尚無清單可複製）`);
 };
 
 // ══════════════ 巡檢清單管理 ══════════════

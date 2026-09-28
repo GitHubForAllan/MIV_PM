@@ -109,6 +109,7 @@
       <div class="stat-card warn"><div class="lbl">MA 主要缺點</div><div class="val" id="s-ma">—</div></div>
       <div class="stat-card muted"><div class="lbl">MI 次要缺點</div><div class="val" id="s-mi">—</div></div>
       <div class="stat-card danger"><div class="lbl">尚未結案異常</div><div class="val" id="s-open">—</div></div>
+      <div class="stat-card ok"><div class="lbl">結案率</div><div class="val" id="s-closerate">—</div></div>
     </div>
 
     <h2 class="sec-title">依站點統計</h2>
@@ -230,6 +231,8 @@ function renderStats(days) {
   document.getElementById("s-ma").textContent = lastIssues.filter(i => i.severity === "MA").length;
   document.getElementById("s-mi").textContent = lastIssues.filter(i => i.severity === "MI").length;
   document.getElementById("s-open").textContent = lastIssues.filter(i => i.status !== "已結案").length;
+  const closedIssues = lastIssues.filter(i => i.status === "已結案").length;
+  document.getElementById("s-closerate").textContent = lastIssues.length ? Math.round(closedIssues/lastIssues.length*100) + "%" : "—";
 
   const byArea = {};
   activeAreas.forEach(a => byArea[a.id] = { area: a, actual: 0, abnormal: 0, issueTotal: 0, issueClosed: 0 });

@@ -407,10 +407,19 @@ onSnapshot(catCol, snap => {
   render();
 }, onDbError);
 onSnapshot(configRef, snap => { config = snap.exists() ? snap.data() : { hourlyRate: 0, techStaff: [] }; }, onDbError);
+// 網址帶 ?id=xxx 時（簽核通知信裡的連結）直接開啟該張委託單，只開一次
+let pendingOpenId = new URLSearchParams(location.search).get("id");
+
 onSnapshot(reqCol, snap => {
   requests = {};
   snap.forEach(d => requests[d.id] = { id: d.id, ...d.data() });
   render(); updateStats();
+  if (pendingOpenId) {
+    const target = pendingOpenId;
+    pendingOpenId = null;
+    if (requests[target]) openDetail(target);
+    else showToast("⚠️ 找不到指定的委託單，可能已被刪除 / Không tìm thấy đơn ủy thác");
+  }
 }, onDbError);
 
 function populateDeptSelects() {
@@ -571,6 +580,52 @@ window.onPhotoSelect = async function(input) {
 };
 window.removeEditPhoto = function(i) { editPhotos.splice(i, 1); renderEditPhotos(); };
 window.openLightbox = src => { document.getElementById("lightbox-img").src = src; document.getElementById("lightbox").classList.remove("hidden"); };
+
+// ── 通知主管簽核 ──
+// 靜態網站沒有後端可以寄信，因此改為開啟使用者自己的郵件軟體並把內容填好，
+// 按一下傳送即可。日後若改用自動寄信（Firebase 擴充功能／EmailJS），
+// 下方 buildApprovalMail() 產生的內容可以直接沿用。
+function requestLink(id) {
+  return location.origin + location.pathname + "?id=" + encodeURIComponent(id);
+}
+function buildApprovalMail(r) {
+  const dept = departments[r.deptId] || {};
+  const lines = [
+    "您好，有一張委託單需要您簽核：",
+    "",
+    "委託單號：" + (r.no || "—"),
+    "委託單位：" + (dept.name || r.deptName || "—"),
+    "委託人　：" + (r.requesterName || "—"),
+    "委託類別：" + (r.category || "—"),
+    "機種　　：" + (r.model || "—"),
+    "圖號　　：" + (r.drawingNo || "—"),
+    "希望完成：" + (r.desiredDate ? fmtDT(r.desiredDate) : "—"),
+    "",
+    "委託內容：",
+    (r.detail || "—"),
+    "",
+    "請點以下連結進入系統簽核：",
+    requestLink(r.id),
+    "",
+    "（本信由技術課委託管理系統產生）",
+  ];
+  return {
+    to: dept.supervisorEmail || "",
+    subject: `[委託單簽核] ${r.no || ""} ${dept.name || ""} ${r.model || ""}`.trim(),
+    body: lines.join("\n"),
+  };
+}
+window.notifySupervisor = function(id) {
+  const r = requests[id];
+  if (!r) return;
+  const mail = buildApprovalMail(r);
+  if (!mail.to) {
+    showToast("⚠️ 此單位尚未設定主管信箱，請管理員於後台設定 / Chưa thiết lập email quản lý");
+    return;
+  }
+  location.href = `mailto:${encodeURIComponent(mail.to)}` +
+    `?subject=${encodeURIComponent(mail.subject)}&body=${encodeURIComponent(mail.body)}`;
+};
 
 window.openWorksheet = function(id) {
   window.open("tech-request-worksheet.html?id=" + encodeURIComponent(id), "_blank", "noopener");
@@ -761,6 +816,11 @@ window.recalcCost = recalcCost;
 
 function renderActions(r, canEditBase) {
   const actions = [`<button class="btn btn-outline" onclick="closeDetail()">關閉 <span class="vi">Đóng</span></button>`];
+
+  // 待簽核期間提供「通知主管」，讓委託人把簽核連結寄給主管
+  if (r.status === "pending_approval" && (departments[r.deptId] || {}).supervisorEmail) {
+    actions.push(`<button class="btn btn-outline" onclick="notifySupervisor('${r.id}')">✉ 通知主管 <span class="vi">Thông báo QL</span></button>`);
+  }
 
   // 報工單：委託單開立後即可產生，供現場填寫工時成本或直接列印（已退回的單除外）
   if (r.status !== "rejected") {

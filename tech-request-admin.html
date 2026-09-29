@@ -113,7 +113,8 @@
 
   <div class="card">
     <h2>委託單位與簽核主管對照表<span class="vi">Đơn vị ủy thác &amp; Quản lý ký duyệt</span></h2>
-    <p class="card-sub">委託人送出委託單時可選擇的「委託單位」清單；每個單位需指定一位簽核主管，委託單送出後會通知該主管簽核。</p>
+    <p class="card-sub">委託人送出委託單時可選擇的「委託單位」清單；每個單位需指定一位簽核主管，委託單送出後會通知該主管簽核。<br>
+      「主管信箱」是用來寄送簽核通知的真實郵件地址 — 系統登入帳號是 <code>工號@miv.local</code>（內部帳號，不是信箱），所以必須另外填寫。留空則該單位送單後不會顯示通知按鈕。</p>
     <div class="add-grid cols4">
       <div class="field"><label>單位名稱（中文）</label><input id="add-dept-name" placeholder="例：生產一課"></div>
       <div class="field"><label>單位名稱（越文，選填）</label><input id="add-dept-nameVi" placeholder="例：Sản xuất 1"></div>
@@ -121,12 +122,16 @@
         <label>簽核主管</label>
         <select id="add-dept-supervisor"><option value="">請選擇…</option></select>
       </div>
-      <div></div>
+      <div class="field">
+        <label>主管信箱（通知用）</label>
+        <select id="add-dept-email-pick"><option value="">從通訊錄選擇…</option></select>
+        <input type="email" id="add-dept-email" placeholder="或直接輸入信箱" style="margin-top:5px">
+      </div>
       <button class="btn btn-primary" id="btn-add-dept">新增</button>
     </div>
     <p class="row-msg" id="dept-msg"></p>
     <table style="margin-top:14px">
-      <thead><tr><th>單位名稱</th><th>越文名稱</th><th>簽核主管</th><th style="width:100px">操作</th></tr></thead>
+      <thead><tr><th>單位名稱</th><th>越文名稱</th><th>簽核主管</th><th>主管信箱</th><th style="width:100px">操作</th></tr></thead>
       <tbody id="dept-rows"></tbody>
     </table>
     <div class="empty-state hidden" id="dept-empty">尚未設定任何委託單位。</div>
@@ -184,6 +189,43 @@ function initPage() {
   let config = { hourlyRate: 0, techStaff: [] };
   let departments = {};
   let categories = {};
+  let contacts = [];   // 公司通訊錄（contacts.json），供挑選通知信箱
+
+  // 通訊錄依部門分組成下拉選項；載入失敗時仍可手動輸入信箱。
+  function contactOptionsHtml() {
+    if (!contacts.length) return `<option value="">（通訊錄未載入）</option>`;
+    const byDept = {};
+    contacts.forEach(c => (byDept[c.dept || "其他"] ||= []).push(c));
+    return `<option value="">從通訊錄選擇…</option>` +
+      Object.keys(byDept).sort().map(dept =>
+        `<optgroup label="${esc(dept)}">` +
+        byDept[dept].map(c =>
+          `<option value="${esc(c.email)}">${esc(c.name || c.email)}${c.company ? "（" + esc(c.company) + "）" : ""}</option>`
+        ).join("") + `</optgroup>`
+      ).join("");
+  }
+
+  // 下拉選了人就把信箱填進旁邊的輸入框（輸入框仍可自行覆寫）
+  function bindContactPicker(pickEl, inputEl) {
+    pickEl.addEventListener("change", () => {
+      if (pickEl.value) { inputEl.value = pickEl.value; pickEl.value = ""; }
+    });
+  }
+
+  fetch("contacts.json")
+    .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
+    .then(d => {
+      contacts = Array.isArray(d.contacts) ? d.contacts : [];
+      const addPick = document.getElementById("add-dept-email-pick");
+      addPick.innerHTML = contactOptionsHtml();
+      bindContactPicker(addPick, document.getElementById("add-dept-email"));
+      renderDeptRows();   // 重畫既有列，讓每列的下拉也帶入通訊錄
+    })
+    .catch(err => {
+      console.error("載入通訊錄失敗：", err);
+      document.getElementById("add-dept-email-pick").innerHTML =
+        `<option value="">（通訊錄載入失敗，請直接輸入信箱）</option>`;
+    });
 
   function userOptionsHtml() {
     const list = Object.values(users).sort((a,b) => (a.employeeId||"").localeCompare(b.employeeId||""));
@@ -378,27 +420,38 @@ function initPage() {
         <td><input class="f-name" value="${esc(d.name||"")}" style="width:130px;padding:5px 7px;border:1px solid var(--line-strong);border-radius:5px"></td>
         <td><input class="f-nameVi" value="${esc(d.nameVi||"")}" style="width:150px;padding:5px 7px;border:1px solid var(--line-strong);border-radius:5px"></td>
         <td><select class="f-sup" style="padding:5px 7px;border:1px solid var(--line-strong);border-radius:5px">${userOptionsHtml()}</select></td>
+        <td>
+          <select class="f-email-pick" style="width:180px;padding:5px 7px;border:1px solid var(--line-strong);border-radius:5px">${contactOptionsHtml()}</select>
+          <input class="f-email" type="email" value="${esc(d.supervisorEmail||"")}" placeholder="或直接輸入信箱"
+                 style="width:180px;margin-top:4px;padding:5px 7px;border:1px solid var(--line-strong);border-radius:5px">
+        </td>
         <td style="display:flex;gap:6px">
           <button class="btn btn-ghost btn-save" style="padding:6px 12px;font-size:.78rem">儲存</button>
           <button class="btn btn-danger btn-del" style="padding:6px 12px;font-size:.78rem">刪除</button>
         </td>
       </tr>
-      <tr><td colspan="4" style="border:none;padding:0 8px"><p class="row-msg"></p></td></tr>
+      <tr><td colspan="5" style="border:none;padding:0 8px"><p class="row-msg"></p></td></tr>
     `).join("");
     rowsEl.querySelectorAll("tr[data-id]").forEach(tr => {
       const id = tr.dataset.id;
       tr.querySelector(".f-sup").value = departments[id].supervisorUid || "";
+      bindContactPicker(tr.querySelector(".f-email-pick"), tr.querySelector(".f-email"));
       const msgEl = tr.nextElementSibling.querySelector(".row-msg");
       tr.querySelector(".btn-save").addEventListener("click", async () => {
         const name = tr.querySelector(".f-name").value.trim();
         const nameVi = tr.querySelector(".f-nameVi").value.trim();
         const supervisorUid = tr.querySelector(".f-sup").value;
+        const supervisorEmail = tr.querySelector(".f-email").value.trim();
         if (!name) { msgEl.style.color = "#ad2727"; msgEl.textContent = "單位名稱不可為空"; return; }
         if (!supervisorUid) { msgEl.style.color = "#ad2727"; msgEl.textContent = "請指定簽核主管"; return; }
+        if (supervisorEmail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(supervisorEmail)) {
+          msgEl.style.color = "#ad2727"; msgEl.textContent = "信箱格式不正確"; return;
+        }
         const su = users[supervisorUid];
         try {
           await setDoc(doc(db, "treq_departments", id), {
-            name, nameVi, supervisorUid, supervisorName: su ? (su.name || su.employeeId) : ""
+            name, nameVi, supervisorUid, supervisorEmail,
+            supervisorName: su ? (su.name || su.employeeId) : ""
           }, { merge: true });
           msgEl.style.color = "#20a66a"; msgEl.textContent = "✓ 已儲存";
           setTimeout(() => msgEl.textContent = "", 2500);
@@ -418,19 +471,25 @@ function initPage() {
     const name = document.getElementById("add-dept-name").value.trim();
     const nameVi = document.getElementById("add-dept-nameVi").value.trim();
     const supervisorUid = document.getElementById("add-dept-supervisor").value;
+    const supervisorEmail = document.getElementById("add-dept-email").value.trim();
     const msgEl = document.getElementById("dept-msg");
     if (!name) { msgEl.style.color = "#ad2727"; msgEl.textContent = "請輸入單位名稱"; return; }
     if (!supervisorUid) { msgEl.style.color = "#ad2727"; msgEl.textContent = "請指定簽核主管"; return; }
+    if (supervisorEmail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(supervisorEmail)) {
+      msgEl.style.color = "#ad2727"; msgEl.textContent = "信箱格式不正確"; return;
+    }
     const su = users[supervisorUid];
     const btn = document.getElementById("btn-add-dept");
     btn.disabled = true;
     try {
       const newDoc = doc(deptCol);
-      await setDoc(newDoc, { name, nameVi, supervisorUid, supervisorName: su ? (su.name || su.employeeId) : "" });
+      await setDoc(newDoc, { name, nameVi, supervisorUid, supervisorEmail,
+        supervisorName: su ? (su.name || su.employeeId) : "" });
       msgEl.style.color = "#20a66a"; msgEl.textContent = "✓ 已新增";
       document.getElementById("add-dept-name").value = "";
       document.getElementById("add-dept-nameVi").value = "";
       document.getElementById("add-dept-supervisor").value = "";
+      document.getElementById("add-dept-email").value = "";
       setTimeout(() => msgEl.textContent = "", 2500);
     } catch (e) {
       msgEl.style.color = "#ad2727"; msgEl.textContent = "新增失敗：" + e.message;

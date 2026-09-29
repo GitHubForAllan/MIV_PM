@@ -112,6 +112,20 @@
   </div>
 
   <div class="card">
+    <h2>簽核主管信箱清單<span class="vi">Email quản lý ký duyệt</span></h2>
+    <p class="card-sub">下方「委託單位對照表」的主管信箱可從這份清單直接挑選。只需建立技術課實際會用到的幾位即可，
+      需要時隨時新增；在對照表手動輸入新信箱並儲存時，也會自動收進這份清單。</p>
+    <div class="add-grid">
+      <div class="field"><label>姓名（選填）</label><input id="add-approver-name" placeholder="例：王主管"></div>
+      <div class="field"><label>信箱</label><input type="email" id="add-approver-email" placeholder="請輸入主管的公司信箱"></div>
+      <div></div>
+      <button class="btn btn-primary" id="btn-add-approver">新增</button>
+    </div>
+    <p class="row-msg" id="approver-msg"></p>
+    <div id="approver-list" style="margin-top:14px"></div>
+  </div>
+
+  <div class="card">
     <h2>委託單位與簽核主管對照表<span class="vi">Đơn vị ủy thác &amp; Quản lý ký duyệt</span></h2>
     <p class="card-sub">委託人送出委託單時可選擇的「委託單位」清單；每個單位需指定一位簽核主管，委託單送出後會通知該主管簽核。<br>
       「主管信箱」是用來寄送簽核通知的真實郵件地址 — 系統登入帳號是 <code>工號@miv.local</code>（內部帳號，不是信箱），所以必須另外填寫。留空則該單位送單後不會顯示通知按鈕。</p>
@@ -124,7 +138,7 @@
       </div>
       <div class="field">
         <label>主管信箱（通知用）</label>
-        <select id="add-dept-email-pick"><option value="">從通訊錄選擇…</option></select>
+        <select id="add-dept-email-pick"><option value="">從清單選擇…</option></select>
         <input type="email" id="add-dept-email" placeholder="或直接輸入信箱" style="margin-top:5px">
       </div>
       <button class="btn btn-primary" id="btn-add-dept">新增</button>
@@ -189,20 +203,17 @@ function initPage() {
   let config = { hourlyRate: 0, techStaff: [] };
   let departments = {};
   let categories = {};
-  let contacts = [];   // 公司通訊錄（contacts.json），供挑選通知信箱
+  // 簽核主管信箱清單：只存技術課實際會用到的幾位，存在 treq_meta/config.approvers。
+  // 不放全公司通訊錄 —— 靜態網站的檔案都是公開的，整份名單會被任何人下載。
+  const approvers = () => Array.isArray(config.approvers) ? config.approvers : [];
 
-  // 通訊錄依部門分組成下拉選項；載入失敗時仍可手動輸入信箱。
-  function contactOptionsHtml() {
-    if (!contacts.length) return `<option value="">（通訊錄未載入）</option>`;
-    const byDept = {};
-    contacts.forEach(c => (byDept[c.dept || "其他"] ||= []).push(c));
-    return `<option value="">從通訊錄選擇…</option>` +
-      Object.keys(byDept).sort().map(dept =>
-        `<optgroup label="${esc(dept)}">` +
-        byDept[dept].map(c =>
-          `<option value="${esc(c.email)}">${esc(c.name || c.email)}${c.company ? "（" + esc(c.company) + "）" : ""}</option>`
-        ).join("") + `</optgroup>`
-      ).join("");
+  function approverOptionsHtml() {
+    const list = approvers();
+    if (!list.length) return `<option value="">（清單尚未建立，請直接輸入）</option>`;
+    return `<option value="">從清單選擇…</option>` +
+      list.slice().sort((a, b) => (a.name || "").localeCompare(b.name || ""))
+        // 同名時要能分辨，所以姓名後面一併顯示信箱
+        .map(a => `<option value="${esc(a.email)}">${a.name ? esc(a.name) + "－" : ""}${esc(a.email)}</option>`).join("");
   }
 
   // 下拉選了人就把信箱填進旁邊的輸入框（輸入框仍可自行覆寫）
@@ -212,20 +223,61 @@ function initPage() {
     });
   }
 
-  fetch("contacts.json")
-    .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
-    .then(d => {
-      contacts = Array.isArray(d.contacts) ? d.contacts : [];
-      const addPick = document.getElementById("add-dept-email-pick");
-      addPick.innerHTML = contactOptionsHtml();
-      bindContactPicker(addPick, document.getElementById("add-dept-email"));
-      renderDeptRows();   // 重畫既有列，讓每列的下拉也帶入通訊錄
-    })
-    .catch(err => {
-      console.error("載入通訊錄失敗：", err);
-      document.getElementById("add-dept-email-pick").innerHTML =
-        `<option value="">（通訊錄載入失敗，請直接輸入信箱）</option>`;
+  // 在單位對照表手動輸入新信箱並儲存時，順手收進清單，下次就能直接選。
+  async function rememberApprover(email, name) {
+    const e = (email || "").trim();
+    if (!e) return;
+    const list = approvers();
+    if (list.some(a => (a.email || "").toLowerCase() === e.toLowerCase())) return;
+    await setDoc(configRef, { approvers: [...list, { name: (name || "").trim(), email: e }] }, { merge: true });
+  }
+
+  function renderApproverList() {
+    const list = approvers().slice().sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    const el = document.getElementById("approver-list");
+    el.innerHTML = list.length
+      ? list.map((a, i) =>
+          `<span class="staff-tag">${esc(a.name || "")}${a.name ? "　" : ""}${esc(a.email)}<button data-i="${i}">✕</button></span>`).join("")
+      : `<p class="empty-state">尚未建立任何簽核主管信箱。</p>`;
+    el.querySelectorAll("button[data-i]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const target = list[Number(btn.dataset.i)];
+        if (!confirm(`確定要從清單移除「${target.name || target.email}」嗎？\n（已設定此信箱的委託單位不受影響）`)) return;
+        const next = approvers().filter(a => (a.email || "").toLowerCase() !== (target.email || "").toLowerCase());
+        try { await setDoc(configRef, { approvers: next }, { merge: true }); }
+        catch (e) { document.getElementById("approver-msg").textContent = "移除失敗：" + e.message; }
+      });
     });
+    // 清單變動時，兩處下拉都要跟著更新
+    const addPick = document.getElementById("add-dept-email-pick");
+    if (addPick) addPick.innerHTML = approverOptionsHtml();
+    document.querySelectorAll("#dept-rows .f-email-pick").forEach(sel => sel.innerHTML = approverOptionsHtml());
+  }
+
+  document.getElementById("btn-add-approver").addEventListener("click", async () => {
+    const name = document.getElementById("add-approver-name").value.trim();
+    const email = document.getElementById("add-approver-email").value.trim();
+    const msgEl = document.getElementById("approver-msg");
+    if (!email) { msgEl.style.color = "#ad2727"; msgEl.textContent = "請輸入信箱"; return; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      msgEl.style.color = "#ad2727"; msgEl.textContent = "信箱格式不正確"; return;
+    }
+    if (approvers().some(a => (a.email || "").toLowerCase() === email.toLowerCase())) {
+      msgEl.style.color = "#ad2727"; msgEl.textContent = "此信箱已在清單中"; return;
+    }
+    try {
+      await setDoc(configRef, { approvers: [...approvers(), { name, email }] }, { merge: true });
+      msgEl.style.color = "#20a66a"; msgEl.textContent = "✓ 已新增";
+      document.getElementById("add-approver-name").value = "";
+      document.getElementById("add-approver-email").value = "";
+      setTimeout(() => msgEl.textContent = "", 2500);
+    } catch (e) {
+      msgEl.style.color = "#ad2727"; msgEl.textContent = "新增失敗：" + e.message;
+    }
+  });
+
+  bindContactPicker(document.getElementById("add-dept-email-pick"),
+                    document.getElementById("add-dept-email"));
 
   function userOptionsHtml() {
     const list = Object.values(users).sort((a,b) => (a.employeeId||"").localeCompare(b.employeeId||""));
@@ -254,6 +306,7 @@ function initPage() {
     config = snap.exists() ? snap.data() : { hourlyRate: 0, techStaff: [] };
     document.getElementById("rate-input").value = config.hourlyRate ?? "";
     renderStaffList();
+    renderApproverList();
   }, onDbError("rate-msg"));
 
   onSnapshot(deptCol, snap => {
@@ -421,7 +474,7 @@ function initPage() {
         <td><input class="f-nameVi" value="${esc(d.nameVi||"")}" style="width:150px;padding:5px 7px;border:1px solid var(--line-strong);border-radius:5px"></td>
         <td><select class="f-sup" style="padding:5px 7px;border:1px solid var(--line-strong);border-radius:5px">${userOptionsHtml()}</select></td>
         <td>
-          <select class="f-email-pick" style="width:180px;padding:5px 7px;border:1px solid var(--line-strong);border-radius:5px">${contactOptionsHtml()}</select>
+          <select class="f-email-pick" style="width:180px;padding:5px 7px;border:1px solid var(--line-strong);border-radius:5px">${approverOptionsHtml()}</select>
           <input class="f-email" type="email" value="${esc(d.supervisorEmail||"")}" placeholder="或直接輸入信箱"
                  style="width:180px;margin-top:4px;padding:5px 7px;border:1px solid var(--line-strong);border-radius:5px">
         </td>
@@ -453,6 +506,7 @@ function initPage() {
             name, nameVi, supervisorUid, supervisorEmail,
             supervisorName: su ? (su.name || su.employeeId) : ""
           }, { merge: true });
+          await rememberApprover(supervisorEmail, su ? (su.name || su.employeeId) : "");
           msgEl.style.color = "#20a66a"; msgEl.textContent = "✓ 已儲存";
           setTimeout(() => msgEl.textContent = "", 2500);
         } catch (e) {
@@ -485,6 +539,7 @@ function initPage() {
       const newDoc = doc(deptCol);
       await setDoc(newDoc, { name, nameVi, supervisorUid, supervisorEmail,
         supervisorName: su ? (su.name || su.employeeId) : "" });
+      await rememberApprover(supervisorEmail, su ? (su.name || su.employeeId) : "");
       msgEl.style.color = "#20a66a"; msgEl.textContent = "✓ 已新增";
       document.getElementById("add-dept-name").value = "";
       document.getElementById("add-dept-nameVi").value = "";

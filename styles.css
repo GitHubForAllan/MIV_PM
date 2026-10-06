@@ -1184,11 +1184,43 @@ output {
   padding: 0;
 }
 
+.hub-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+.hub-group-title {
+  align-items: baseline;
+  border-bottom: 2px solid var(--line);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 18px;
+  font-weight: 800;
+  gap: 4px 10px;
+  margin: 0 auto 18px;
+  max-width: 1100px;
+  padding: 0 4px 8px;
+}
+
+.hub-group-title .vi {
+  color: var(--muted);
+  font-size: 13px;
+  font-style: italic;
+  font-weight: 500;
+}
+
 .hub-grid {
   display: grid;
   gap: 20px;
-  grid-template-columns: repeat(3, minmax(220px, 260px));
+  grid-template-columns: repeat(4, minmax(200px, 260px));
   justify-content: center;
+}
+
+@media (max-width: 1140px) {
+  .hub-grid {
+    grid-template-columns: repeat(3, minmax(200px, 260px));
+  }
 }
 
 .hub-tile {

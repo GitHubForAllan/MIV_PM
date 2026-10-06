@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>供應商入庫金額管理 / Quản Lý Nhập Kho Theo NCC</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f6fa;color:#1a1d23;min-height:100vh}
+.topbar{background:#1e293b;border-bottom:1px solid rgba(255,255,255,.08);padding:0 24px;height:72px;display:flex;align-items:center;justify-content:space-between}
+.topbar-left{display:flex;align-items:center;gap:16px}
+.topbar img{height:44px}
+.topbar-title h1{color:#fff;font-size:1.1rem;font-weight:700;line-height:1.2}
+.topbar-title p{color:#94a3b8;font-size:.78rem}
+.topbar-actions{display:flex;gap:10px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border:none;border-radius:6px;font-size:.88rem;font-weight:600;cursor:pointer;transition:.15s;text-decoration:none}
+.btn-outline{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.25);color:#fff}
+.btn-outline:hover{background:rgba(255,255,255,.15)}
+.btn-primary{background:#3b82f6;color:#fff}
+.btn-primary:hover{background:#2563eb}
+.wrap{max-width:1280px;margin:28px auto;padding:0 20px}
+.filter-card{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:20px 24px;margin-bottom:20px}
+.filter-card h2{font-size:.95rem;font-weight:700;color:#1e293b;margin-bottom:14px}
+.filter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;align-items:end}
+.form-label{display:block;font-size:.78rem;font-weight:600;color:#475569;margin-bottom:4px}
+.form-input{width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:.85rem;outline:none;transition:.15s}
+.form-input:focus{border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,.15)}
+.summary-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.summary-card{background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:14px 18px}
+.summary-label{font-size:.75rem;color:#64748b;font-weight:600;margin-bottom:4px}
+.summary-value{font-size:1.4rem;font-weight:700;color:#1e293b}
+.summary-card.blue .summary-value{color:#2563eb}
+.summary-card.green .summary-value{color:#059669}
+.summary-card.amber .summary-value{color:#d97706}
+.result-card{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);overflow:hidden}
+.result-card table{width:100%;border-collapse:collapse;font-size:.84rem}
+.result-card thead th{background:#f8fafc;padding:10px 12px;text-align:left;font-weight:600;color:#475569;border-bottom:1px solid #e2e5ed;white-space:nowrap;cursor:pointer;user-select:none}
+.result-card thead th:hover{background:#f0f4ff;color:#1e40af}
+.result-card thead th.sort-asc::after{content:" ▲";font-size:.7rem}
+.result-card thead th.sort-desc::after{content:" ▼";font-size:.7rem}
+.result-card tbody td{padding:10px 12px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+.result-card tbody tr.supplier-row{cursor:pointer}
+.result-card tbody tr.supplier-row:hover td{background:#f0f4ff}
+.result-card tbody tr.supplier-row td:first-child{font-weight:700}
+.detail-row{display:none;background:#fafbff}
+.detail-row.open{display:table-row}
+.detail-cell{padding:0!important;border-bottom:2px solid #e2e5ed!important}
+.detail-inner{padding:8px 16px 16px 32px}
+.detail-table{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:8px}
+.detail-table th{background:#eef2ff;padding:7px 10px;text-align:left;font-weight:600;color:#3730a3;border-bottom:1px solid #c7d2fe;white-space:nowrap}
+.detail-table td{padding:7px 10px;border-bottom:1px solid #e0e7ff;color:#374151;vertical-align:top}
+.detail-table tr:last-child td{border-bottom:none}
+.detail-table .num{text-align:right;font-variant-numeric:tabular-nums}
+.result-card tbody tr:last-child td{border-bottom:none}
+.total-row td{background:#f0f4ff;font-weight:700;color:#1e293b;border-top:2px solid #c7d2fe!important}
+.tag-no-supplier{display:inline-block;padding:2px 7px;background:#fef3c7;color:#92400e;border-radius:99px;font-size:.72rem;font-weight:700}
+.empty-state{text-align:center;padding:60px 20px;color:#9ca3af}
+.empty-icon{font-size:2.5rem;margin-bottom:12px}
+.rank-badge{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:.72rem;font-weight:700}
+.rank-1{background:#fef9c3;color:#854d0e}
+.rank-2{background:#f1f5f9;color:#475569}
+.rank-3{background:#fef3c7;color:#92400e}
+.rank-n{background:#f8fafc;color:#6b7280}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.vi{display:block;font-size:.75rem;color:#94a3b8;font-weight:400;margin-top:1px}
+.note-text{font-size:.75rem;color:#94a3b8;margin-top:2px}
+.loading-state{text-align:center;padding:60px 20px;color:#64748b}
+.spin{display:inline-block;animation:spin 1s linear infinite;font-size:1.5rem;margin-bottom:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:640px){
+  .wrap{padding:0 12px}.filter-grid{grid-template-columns:1fr 1fr}
+  .topbar{padding:0 12px}.topbar-title h1{font-size:.9rem}
+}
+</style>
+<link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
+</head>
+<body>
+<script type="module" src="auth-guard.js?v=d75ba30e"></script>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <img src="Rexon logo.png" alt="Rexon">
+    <div class="topbar-title">
+      <h1>供應商入庫金額管理 / Quản Lý Nhập Kho Theo NCC</h1>
+      <p>Rexon Industrial Co., Ltd.</p>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <a href="toolroom_report.html" class="btn btn-outline">📊 領用查詢</a>
+    <a href="toolroom.html" class="btn btn-outline">← 庫存管理</a>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- 篩選 -->
+  <div class="filter-card">
+    <h2>🔍 查詢條件 / Điều kiện tìm kiếm</h2>
+    <div class="filter-grid">
+      <div>
+        <label class="form-label">入庫日期（起）<span class="vi">Từ ngày nhập kho</span></label>
+        <input type="date" class="form-input" id="f-from">
+      </div>
+      <div>
+        <label class="form-label">入庫日期（迄）<span class="vi">Đến ngày nhập kho</span></label>
+        <input type="date" class="form-input" id="f-to">
+      </div>
+      <div>
+        <label class="form-label">品項分類<span class="vi">Phân loại</span></label>
+        <select class="form-input" id="f-cat">
+          <option value="">全部分類</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">供應商<span class="vi">Nhà cung cấp</span></label>
+        <select class="form-input" id="f-supplier">
+          <option value="">全部供應商</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" style="flex:1" onclick="runQuery()">🔍 查詢</button>
+        <button class="btn" style="background:#f1f5f9;color:#374151;flex:1" onclick="resetQuery()">重置</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 統計摘要 -->
+  <div class="summary-row" id="summary-row" style="display:none">
+    <div class="summary-card">
+      <div class="summary-label">供應商數 / Số NCC</div>
+      <div class="summary-value" id="s-vendors">0</div>
+    </div>
+    <div class="summary-card blue">
+      <div class="summary-label">入庫總金額 (VND) / Tổng tiền nhập</div>
+      <div class="summary-value" id="s-amount">0</div>
+    </div>
+    <div class="summary-card green">
+      <div class="summary-label">入庫筆數 / Số lần nhập</div>
+      <div class="summary-value" id="s-txcount">0</div>
+    </div>
+    <div class="summary-card amber">
+      <div class="summary-label">涉及品項數 / Số mặt hàng</div>
+      <div class="summary-value" id="s-items">0</div>
+    </div>
+  </div>
+
+  <!-- 結果表格 -->
+  <div class="result-card" id="result-card" style="display:none">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:32px"></th>
+          <th data-col="rank" style="width:40px">#</th>
+          <th data-col="supplier">供應商 / Nhà cung cấp</th>
+          <th data-col="itemCount" class="num">品項數</th>
+          <th data-col="txCount" class="num">入庫筆數</th>
+          <th data-col="totalQty" class="num">入庫總量</th>
+          <th data-col="totalAmount" class="num sort-desc">入庫金額 (VND)</th>
+          <th data-col="lastAt">最近入庫</th>
+        </tr>
+      </thead>
+      <tbody id="result-tbody"></tbody>
+    </table>
+    <div class="empty-state" id="result-empty" style="display:none">
+      <div class="empty-icon">📦</div>
+      <div>查無符合條件的入庫記錄</div>
+      <div style="font-size:.82rem;color:#9ca3af;margin-top:6px">請調整篩選條件後重新查詢</div>
+    </div>
+  </div>
+
+  <div class="loading-state" id="loading-state" style="display:none">
+    <div class="spin">⏳</div>
+    <div>資料載入中… / Đang tải dữ liệu…</div>
+  </div>
+
+</div>
+
+<script type="module">
+import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { mivRequireApp } from "./auth-guard.js?v=d75ba30e";
+
+await mivRequireApp("toolroom", "use", "toolroom.html");
+
+const db = getFirestore(getApp());
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtVnd(n){ return n!=null ? Number(Math.round(n)).toLocaleString('vi-VN') : '—'; }
+function fmtDate(ts){
+  if (!ts) return '—';
+  const d = ts.toDate ? ts.toDate() : new Date(ts.seconds * 1000);
+  return d.toLocaleDateString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit'});
+}
+
+// --- 載入所有品項 ---
+document.getElementById('loading-state').style.display = '';
+let allItems = [];
+try {
+  const snap = await getDocs(collection(db,'toolroom_items'));
+  allItems = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  document.getElementById('loading-state').style.display = 'none';
+} catch(e) {
+  document.getElementById('loading-state').innerHTML =
+    `<div style="color:#dc2626;padding:12px">⚠️ 資料載入失敗：${esc(e.message)}<br><small>請確認帳號是否具備工具室使用權限，或重新整理頁面</small></div>`;
+  // 不 throw — 讓模組繼續執行，確保 window.runQuery 仍然定義
+}
+
+// --- 填入分類 + 供應商下拉 ---
+const cats = [...new Set(allItems.map(it => it.category).filter(Boolean))].sort();
+const catSel = document.getElementById('f-cat');
+cats.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; catSel.appendChild(o); });
+
+const sups = [...new Set(allItems.map(it => it.supplier?.trim()).filter(Boolean))].sort((a,b) => a.localeCompare(b,'zh-Hant'));
+const supSel = document.getElementById('f-supplier');
+sups.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; supSel.appendChild(o); });
+
+// --- 排序狀態 ---
+let sortCol = 'totalAmount', sortAsc = false;
+
+// --- 查詢 ---
+window.runQuery = function() {
+  const fromVal = document.getElementById('f-from').value;
+  const toVal   = document.getElementById('f-to').value;
+  const cat     = document.getElementById('f-cat').value;
+  const supFilter = document.getElementById('f-supplier').value;
+
+  const fromDate = fromVal ? new Date(fromVal + 'T00:00:00') : null;
+  const toDate   = toVal   ? new Date(toVal   + 'T23:59:59') : null;
+
+  // --- 聚合 ---
+  const supMap = {};   // supplier → { txCount, totalQty, totalAmount, lastAt, items: {} }
+
+  for (const item of allItems) {
+    if (cat && item.category !== cat) continue;
+
+    const sup = item.supplier?.trim() || '';
+    if (supFilter && sup !== supFilter) continue;
+
+    const unitPrice = item.unitPrice ?? 0;
+
+    for (const tx of (item.txLog || [])) {
+      if (tx.type !== 'in') continue;
+
+      const txDate = tx.at ? (tx.at.toDate ? tx.at.toDate() : new Date(tx.at.seconds*1000)) : null;
+      if (fromDate && txDate && txDate < fromDate) continue;
+      if (toDate   && txDate && txDate > toDate)   continue;
+
+      const supKey = sup || '（未設定供應商）';
+      if (!supMap[supKey]) supMap[supKey] = { txCount:0, totalQty:0, totalAmount:0, lastAt:null, items:{} };
+      const s = supMap[supKey];
+      s.txCount++;
+      s.totalQty += tx.qty ?? 0;
+      s.totalAmount += (tx.qty ?? 0) * unitPrice;
+      if (!s.lastAt || (txDate && txDate > s.lastAt)) s.lastAt = txDate;
+
+      if (!s.items[item.id]) s.items[item.id] = {
+        code: item.code, name: item.name, spec: item.spec||'', unit: item.unit||'',
+        unitPrice, txCount:0, totalQty:0, totalAmount:0, lastAt:null
+      };
+      const si = s.items[item.id];
+      si.txCount++;
+      si.totalQty += tx.qty ?? 0;
+      si.totalAmount += (tx.qty ?? 0) * unitPrice;
+      if (!si.lastAt || (txDate && txDate > si.lastAt)) si.lastAt = txDate;
+    }
+  }
+
+  renderTable(supMap);
+};
+
+function renderTable(supMap) {
+  const rows = Object.entries(supMap).map(([sup, d]) => ({
+    supplier: sup,
+    itemCount: Object.keys(d.items).length,
+    txCount: d.txCount,
+    totalQty: d.totalQty,
+    totalAmount: d.totalAmount,
+    lastAt: d.lastAt,
+    items: d.items
+  }));
+
+  // 排序
+  rows.sort((a, b) => {
+    let va = a[sortCol], vb = b[sortCol];
+    if (typeof va === 'string') va = va.toLowerCase();
+    if (typeof vb === 'string') vb = vb.toLowerCase();
+    if (va == null) va = '';
+    if (vb == null) vb = '';
+    if (va < vb) return sortAsc ? -1 : 1;
+    if (va > vb) return sortAsc ?  1 : -1;
+    return 0;
+  });
+
+  // 更新排序指示
+  document.querySelectorAll('.result-card thead th').forEach(th => {
+    th.classList.remove('sort-asc','sort-desc');
+    if (th.dataset.col === sortCol) th.classList.add(sortAsc ? 'sort-asc' : 'sort-desc');
+  });
+
+  // 摘要
+  const totalAmount  = rows.reduce((s,r) => s + r.totalAmount, 0);
+  const totalTxCount = rows.reduce((s,r) => s + r.txCount, 0);
+  const totalItems   = rows.reduce((s,r) => s + r.itemCount, 0);
+  document.getElementById('s-vendors').textContent  = rows.length;
+  document.getElementById('s-amount').textContent   = fmtVnd(totalAmount);
+  document.getElementById('s-txcount').textContent  = totalTxCount.toLocaleString();
+  document.getElementById('s-items').textContent    = totalItems.toLocaleString();
+  document.getElementById('summary-row').style.display = '';
+
+  const tbody = document.getElementById('result-tbody');
+  tbody.innerHTML = '';
+
+  if (!rows.length) {
+    document.getElementById('result-empty').style.display = '';
+    document.getElementById('result-card').style.display = '';
+    return;
+  }
+  document.getElementById('result-empty').style.display = 'none';
+  document.getElementById('result-card').style.display = '';
+
+  rows.forEach((r, idx) => {
+    const rank = idx + 1;
+    const rankHtml = rank <= 3
+      ? `<span class="rank-badge rank-${rank}">${rank}</span>`
+      : `<span class="rank-badge rank-n">${rank}</span>`;
+    const isNoSup = r.supplier === '（未設定供應商）';
+    const supHtml = isNoSup
+      ? `<span class="tag-no-supplier">未設定</span>`
+      : esc(r.supplier);
+    const detailId = `detail-${idx}`;
+
+    // Supplier summary row
+    const tr = document.createElement('tr');
+    tr.className = 'supplier-row';
+    tr.setAttribute('aria-expanded','false');
+    tr.innerHTML = `
+      <td style="color:#94a3b8;font-size:.8rem;text-align:center">▶</td>
+      <td>${rankHtml}</td>
+      <td>${supHtml}</td>
+      <td class="num">${r.itemCount}</td>
+      <td class="num">${r.txCount}</td>
+      <td class="num">${r.totalQty.toLocaleString()}</td>
+      <td class="num" style="font-weight:700;color:#2563eb">${fmtVnd(r.totalAmount)}</td>
+      <td style="font-size:.82rem;color:#64748b">${r.lastAt ? r.lastAt.toLocaleDateString('zh-TW') : '—'}</td>`;
+    tr.addEventListener('click', () => toggleDetail(tr, detailId));
+    tbody.appendChild(tr);
+
+    // Detail row (collapsed by default)
+    const itemRows = Object.values(r.items).sort((a,b) => b.totalAmount - a.totalAmount);
+    const detailTr = document.createElement('tr');
+    detailTr.className = 'detail-row';
+    detailTr.id = detailId;
+    detailTr.innerHTML = `
+      <td class="detail-cell" colspan="8">
+        <div class="detail-inner">
+          <table class="detail-table">
+            <thead>
+              <tr>
+                <th>料號 / Mã hàng</th>
+                <th>品名規格 / Tên & Quy cách</th>
+                <th class="num">現行單價 (VND)</th>
+                <th class="num">入庫筆數</th>
+                <th class="num">入庫總量</th>
+                <th class="num">入庫金額 (VND)</th>
+                <th>最近入庫</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemRows.map(si => `
+                <tr>
+                  <td style="font-weight:600">${esc(si.code||'—')}</td>
+                  <td>
+                    ${esc(si.name||'—')}
+                    ${si.spec ? `<div class="note-text">${esc(si.spec)}</div>` : ''}
+                  </td>
+                  <td class="num">${fmtVnd(si.unitPrice)}</td>
+                  <td class="num">${si.txCount}</td>
+                  <td class="num">${si.totalQty.toLocaleString()} ${esc(si.unit)}</td>
+                  <td class="num" style="font-weight:600;color:#2563eb">${fmtVnd(si.totalAmount)}</td>
+                  <td style="font-size:.78rem;color:#64748b">${si.lastAt ? si.lastAt.toLocaleDateString('zh-TW') : '—'}</td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </td>`;
+    tbody.appendChild(detailTr);
+  });
+
+  // 合計列
+  const totalTr = document.createElement('tr');
+  totalTr.className = 'total-row';
+  totalTr.innerHTML = `
+    <td></td>
+    <td></td>
+    <td style="font-weight:700">合計 / Tổng cộng</td>
+    <td class="num">${totalItems.toLocaleString()}</td>
+    <td class="num">${totalTxCount.toLocaleString()}</td>
+    <td class="num">—</td>
+    <td class="num" style="color:#2563eb">${fmtVnd(totalAmount)}</td>
+    <td></td>`;
+  tbody.appendChild(totalTr);
+}
+
+function toggleDetail(tr, detailId) {
+  const detailTr = document.getElementById(detailId);
+  const expanded = tr.getAttribute('aria-expanded') === 'true';
+  tr.setAttribute('aria-expanded', !expanded);
+  tr.querySelector('td:first-child').textContent = expanded ? '▶' : '▼';
+  detailTr.classList.toggle('open', !expanded);
+}
+
+// --- 排序點擊 ---
+document.querySelectorAll('.result-card thead th[data-col]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.col;
+    if (sortCol === col) { sortAsc = !sortAsc; }
+    else { sortCol = col; sortAsc = col === 'supplier'; }
+    window.runQuery();
+  });
+});
+
+// --- 重置 ---
+window.resetQuery = function() {
+  document.getElementById('f-from').value = '';
+  document.getElementById('f-to').value   = '';
+  document.getElementById('f-cat').value  = '';
+  document.getElementById('f-supplier').selectedIndex = 0;
+  document.getElementById('summary-row').style.display = 'none';
+  document.getElementById('result-card').style.display = 'none';
+};
+
+// --- 預設執行查詢（全部） ---
+window.runQuery();
+</script>
+</body>
+</html>

@@ -236,6 +236,20 @@ service cloud.firestore {
       allow create: if canManage('briefing');
       allow delete: if canManage('briefing');
     }
+    // 部門主檔：全體可讀（讓表單動態選單正常顯示）；建立、修改、刪除需管理權限
+    match /briefing_departments/{deptId} {
+      allow read:   if canUse('briefing');
+      allow create: if canManage('briefing');
+      allow update: if canManage('briefing');
+      allow delete: if canManage('briefing');
+    }
+    // 人員名冊：全體可讀（用作姓名建議輸入）；建立、修改、刪除需管理權限
+    match /briefing_employees/{empId} {
+      allow read:   if canUse('briefing');
+      allow create: if canManage('briefing');
+      allow update: if canManage('briefing');
+      allow delete: if canManage('briefing');
+    }
 
     // ── 採購進度追蹤 ────────────────────────────────────────────
     // 案件與主檔：可使用者檢視；建立與編輯需管理權限

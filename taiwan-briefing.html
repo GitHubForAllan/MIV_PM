@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-Hant">
+<html lang="zh-Hant" data-theme="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -251,7 +251,7 @@
   .cal-head-cell:last-child { border-right: none; }
   .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
   .cal-cell {
-    min-height: 110px;
+    min-height: 80px;
     padding: 5px;
     border-right: 1px solid var(--border-subtle);
     border-bottom: 1px solid var(--border-subtle);
@@ -460,6 +460,60 @@
   .color-swatch:hover { transform: scale(1.1); }
   .color-swatch.selected { border-color: var(--text); }
 
+  /* Admin section */
+  .admin-section {
+    margin-top: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .admin-section-hd {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface2);
+  }
+  .admin-section-hd h2 { font-size: 13px; font-weight: 700; }
+  .admin-tabs { display: flex; gap: 4px; margin-left: auto; }
+  .admin-tab {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 4px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 11px;
+    font-family: var(--font);
+    font-weight: 600;
+    transition: all .12s;
+  }
+  .admin-tab.is-active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .admin-tab:not(.is-active):hover { background: var(--accent-bg); color: var(--accent); border-color: var(--accent); }
+  .admin-toolbar {
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .admin-list { padding: 4px 16px 12px; }
+  .admin-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: 12px;
+  }
+  .admin-row:last-child { border-bottom: none; }
+  .admin-row-name { flex: 1; font-weight: 600; }
+  .admin-row-sub { color: var(--text-muted); font-size: 11px; }
+  .admin-row-actions { display: flex; gap: 4px; }
+
   .btn-delete, .btn-edit {
     background: none;
     border: 1px solid transparent;
@@ -559,7 +613,7 @@
   @media (max-width: 640px) {
     .page-header { padding: 0 12px; }
     .main-content { padding: 12px 12px 24px; }
-    .cal-cell { min-height: 80px; }
+    .cal-cell { min-height: 60px; }
   }
   </style>
 </head>
@@ -639,6 +693,87 @@
           <div class="empty-state" style="padding:16px">尚無特殊事件</div>
         </div>
       </div>
+
+      <!-- Admin section (managers only) -->
+      <div class="admin-section" id="adminSection" hidden>
+        <div class="admin-section-hd">
+          <h2>⚙️ 後台管理</h2>
+          <div class="admin-tabs">
+            <button class="admin-tab is-active" id="tabBtnDepts">部門管理</button>
+            <button class="admin-tab" id="tabBtnEmps">人員名冊</button>
+          </div>
+        </div>
+        <div id="tabDepts">
+          <div class="admin-toolbar">
+            <span class="apps-count" id="deptsCount">0 個</span>
+            <button class="btn-primary" id="addDeptBtn" style="font-size:11px;padding:4px 11px">＋ 新增部門</button>
+            <button class="btn-secondary" id="seedDeptsBtn" style="font-size:11px;padding:4px 11px">載入預設部門</button>
+          </div>
+          <div class="admin-list" id="deptsList">
+            <div class="empty-state" style="padding:16px">尚無部門資料，按「載入預設部門」或手動新增</div>
+          </div>
+        </div>
+        <div id="tabEmps" hidden>
+          <div class="admin-toolbar">
+            <span class="apps-count" id="empsCount">0 位</span>
+            <button class="btn-primary" id="addEmpBtn" style="font-size:11px;padding:4px 11px">＋ 新增人員</button>
+          </div>
+          <div class="admin-list" id="empsList">
+            <div class="empty-state" style="padding:16px">尚無人員資料</div>
+          </div>
+        </div>
+      </div>
+  </div>
+
+  <!-- Dept Modal -->
+  <div id="deptModal" hidden>
+    <div class="modal-overlay" id="deptModalOverlay">
+      <div class="modal-box" role="dialog" aria-modal="true">
+        <div class="modal-title" id="deptModalTitle">新增部門</div>
+        <form id="deptForm" novalidate>
+          <div class="form-group">
+            <label class="form-label">部門名稱</label>
+            <input type="text" class="form-input" id="dmFieldName" maxlength="20" placeholder="例：技術部" autocomplete="off">
+            <div class="form-error" id="dmErrName"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">顏色</label>
+            <div class="color-swatch-row" id="deptColorSwatches"></div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" id="dmCancelBtn">取消</button>
+            <button type="submit" class="btn-primary" id="dmSubmitBtn">新增</button>
+            <input type="hidden" id="dmEditingId">
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Employee Modal -->
+  <div id="empModal" hidden>
+    <div class="modal-overlay" id="empModalOverlay">
+      <div class="modal-box" role="dialog" aria-modal="true">
+        <div class="modal-title" id="empModalTitle">新增人員</div>
+        <form id="empForm" novalidate>
+          <div class="form-group">
+            <label class="form-label">姓名</label>
+            <input type="text" class="form-input" id="emFieldName" maxlength="20" placeholder="輸入中文姓名" autocomplete="off">
+            <div class="form-error" id="emErrName"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">所屬部門</label>
+            <select class="form-select" id="emFieldDept"></select>
+            <div class="form-error" id="emErrDept"></div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" id="emCancelBtn">取消</button>
+            <button type="submit" class="btn-primary" id="emSubmitBtn">新增</button>
+            <input type="hidden" id="emEditingId">
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 
   <!-- Event Modal -->
@@ -686,7 +821,8 @@
         <form id="appForm" novalidate>
           <div class="form-group">
             <label class="form-label">姓名</label>
-            <input type="text" class="form-input" id="fieldName" placeholder="輸入中文姓名" autocomplete="off" maxlength="20">
+            <input type="text" class="form-input" id="fieldName" placeholder="輸入中文姓名" autocomplete="off" maxlength="20" list="empNameList">
+            <datalist id="empNameList"></datalist>
             <div class="form-error" id="errName"></div>
           </div>
           <div class="form-group">
@@ -758,7 +894,13 @@
     '管理部': '#B08800',  // 琥珀金
     '其他':   '#6B7280',  // 石板灰
   };
-  const deptColor = d => DEPT_COLORS[d] || '#6B7280';
+  const deptColor = d => {
+    if (departments.length) {
+      const found = departments.find(dep => dep.name === d);
+      if (found) return found.color;
+    }
+    return DEPT_COLORS[d] || '#6B7280';
+  };
 
   function isDark() {
     const t = document.documentElement.getAttribute('data-theme');
@@ -772,12 +914,17 @@
   // ── STATE ──
   let applications = [];
   let events = [];
+  let departments = [];
+  let employees = [];
   let currentYear  = new Date().getFullYear();
   let currentMonth = new Date().getMonth();
   let selectedBriefingDates = [];
 
   const EVENT_COLORS = ['#F97316','#EF4444','#8B5CF6','#0EA5E9','#22C55E','#EAB308'];
+  const DEPT_PALETTE  = ['#0072B2','#D55E00','#009270','#9455CC','#CC0044','#B08800','#6B7280',
+                         '#F97316','#EF4444','#8B5CF6','#0EA5E9','#22C55E','#EAB308','#EC4899'];
   let selectedEventColor = EVENT_COLORS[0];
+  let selectedDeptColor  = DEPT_PALETTE[0];
 
   // ── HELPERS ──
   function toDateStr(d) {
@@ -871,6 +1018,30 @@
     renderList();
     renderLegend();
     renderEvents();
+    rebuildDeptSelects();
+    rebuildEmpDatalist();
+    if (mivUser.canManage('briefing')) renderAdmin();
+  }
+
+  // ── DYNAMIC SELECTS / DATALIST ──
+  function deptOptionList() {
+    const src = departments.length ? departments.map(d => d.name) : Object.keys(DEPT_COLORS);
+    return '<option value="">— 選擇部門 —</option>' + src.map(n => `<option value="${n}">${n}</option>`).join('');
+  }
+  function rebuildDeptSelects() {
+    ['fieldDept', 'emFieldDept'].forEach(id => {
+      const sel = document.getElementById(id);
+      if (!sel) return;
+      const cur = sel.value;
+      sel.innerHTML = deptOptionList();
+      if (cur) sel.value = cur;
+    });
+  }
+  function rebuildEmpDatalist() {
+    const dl = document.getElementById('empNameList');
+    if (!dl) return;
+    const sorted = [...employees].sort((a,b) => a.name.localeCompare(b.name, 'zh-Hant'));
+    dl.innerHTML = sorted.map(e => `<option value="${e.name}">`).join('');
   }
 
   function buildMonthHTML(year, month) {
@@ -904,8 +1075,7 @@
         const {present,hasConflict}=conflictsForDate(cell.ds);
         if(hasConflict) cls+=' has-conflict';
         const sorted=[...present].sort((a,b)=>(isBriefDay(a,cell.ds)?0:1)-(isBriefDay(b,cell.ds)?0:1)||a.name.localeCompare(b.name));
-        const shown=sorted.slice(0,3), extra=sorted.length-3;
-        const els=shown.map(p=>{
+        const els=sorted.map(p=>{
           const c=deptColor(p.department);
           return `<div class="chip" style="background:${hexRgba(c,bgA)};border-color:${hexRgba(c,bdA)}">
             <div class="chip-dot" style="background:${c}"></div>
@@ -913,7 +1083,6 @@
             ${isBriefDay(p,cell.ds)?`<span class="chip-badge" style="background:${bColor};color:#fff">述</span>`:''}
           </div>`;
         });
-        if(extra>0) els.push(`<div class="chip-more">+${extra} 位</div>`);
         if(els.length) chips=`<div class="day-chips">${els.join('')}</div>`;
         // Special events
         const cellEvs=events.filter(ev=>cell.ds>=ev.startDate&&cell.ds<=ev.endDate);
@@ -1022,6 +1191,195 @@
     if(!confirm('確定要刪除此特殊事件？')) return;
     try { await deleteDoc(doc(fbDb,'briefing_events',id)); }
     catch(e){ alert('刪除失敗，請稍後再試'); }
+  }
+
+  // ── ADMIN ──
+  function renderAdmin() {
+    document.getElementById('adminSection').hidden = false;
+    // Depts
+    const deptsEl = document.getElementById('deptsList');
+    const deptsCount = document.getElementById('deptsCount');
+    deptsCount.textContent = `${departments.length} 個`;
+    if (!departments.length) {
+      deptsEl.innerHTML = '<div class="empty-state" style="padding:16px">尚無部門資料，按「載入預設部門」或手動新增</div>';
+    } else {
+      const sorted = [...departments].sort((a,b) => (a.order??99)-(b.order??99)||a.name.localeCompare(b.name,'zh-Hant'));
+      deptsEl.innerHTML = sorted.map(d => `
+        <div class="admin-row">
+          <div class="event-color-dot" style="background:${d.color}"></div>
+          <span class="admin-row-name">${d.name}</span>
+          <div class="admin-row-actions">
+            <button class="btn-edit" data-did="${d.id}" style="font-size:11px;padding:2px 8px">編輯</button>
+            <button class="btn-delete" data-did="${d.id}" style="font-size:11px;padding:2px 8px">刪除</button>
+          </div>
+        </div>`).join('');
+      deptsEl.querySelectorAll('.btn-edit[data-did]').forEach(b => b.addEventListener('click', () => openDeptModal(b.dataset.did)));
+      deptsEl.querySelectorAll('.btn-delete[data-did]').forEach(b => b.addEventListener('click', () => deleteDept(b.dataset.did)));
+    }
+    // Employees
+    const empsEl = document.getElementById('empsList');
+    const empsCount = document.getElementById('empsCount');
+    empsCount.textContent = `${employees.length} 位`;
+    if (!employees.length) {
+      empsEl.innerHTML = '<div class="empty-state" style="padding:16px">尚無人員資料</div>';
+    } else {
+      const sorted = [...employees].sort((a,b) => a.name.localeCompare(b.name,'zh-Hant'));
+      empsEl.innerHTML = sorted.map(e => `
+        <div class="admin-row">
+          <div class="event-color-dot" style="background:${deptColor(e.department)}"></div>
+          <span class="admin-row-name">${e.name}</span>
+          <span class="admin-row-sub">${e.department||'—'}</span>
+          <div class="admin-row-actions">
+            <button class="btn-edit" data-eid="${e.id}" style="font-size:11px;padding:2px 8px">編輯</button>
+            <button class="btn-delete" data-eid="${e.id}" style="font-size:11px;padding:2px 8px">刪除</button>
+          </div>
+        </div>`).join('');
+      empsEl.querySelectorAll('.btn-edit[data-eid]').forEach(b => b.addEventListener('click', () => openEmpModal(b.dataset.eid)));
+      empsEl.querySelectorAll('.btn-delete[data-eid]').forEach(b => b.addEventListener('click', () => deleteEmp(b.dataset.eid)));
+    }
+  }
+
+  // Admin tab switching
+  document.getElementById('tabBtnDepts').addEventListener('click', () => {
+    document.getElementById('tabDepts').hidden = false;
+    document.getElementById('tabEmps').hidden = true;
+    document.getElementById('tabBtnDepts').classList.add('is-active');
+    document.getElementById('tabBtnEmps').classList.remove('is-active');
+  });
+  document.getElementById('tabBtnEmps').addEventListener('click', () => {
+    document.getElementById('tabDepts').hidden = true;
+    document.getElementById('tabEmps').hidden = false;
+    document.getElementById('tabBtnDepts').classList.remove('is-active');
+    document.getElementById('tabBtnEmps').classList.add('is-active');
+  });
+
+  // ── DEPT MODAL ──
+  const deptModal = document.getElementById('deptModal');
+
+  function buildDeptColorSwatches() {
+    const row = document.getElementById('deptColorSwatches');
+    row.innerHTML = DEPT_PALETTE.map(c =>
+      `<div class="color-swatch${c===selectedDeptColor?' selected':''}" data-color="${c}" style="background:${c}" title="${c}"></div>`
+    ).join('');
+    row.querySelectorAll('.color-swatch').forEach(sw =>
+      sw.addEventListener('click', () => { selectedDeptColor = sw.dataset.color; buildDeptColorSwatches(); })
+    );
+  }
+
+  function openDeptModal(editId) {
+    const dept = editId ? departments.find(d => d.id === editId) : null;
+    document.getElementById('deptModalTitle').textContent = dept ? '修改部門' : '新增部門';
+    document.getElementById('dmSubmitBtn').textContent = dept ? '儲存' : '新增';
+    document.getElementById('dmFieldName').value = dept ? dept.name : '';
+    document.getElementById('dmEditingId').value = editId || '';
+    document.getElementById('dmErrName').textContent = '';
+    selectedDeptColor = dept ? dept.color : DEPT_PALETTE[0];
+    buildDeptColorSwatches();
+    deptModal.hidden = false;
+    document.getElementById('dmFieldName').focus();
+  }
+  function closeDeptModal() { deptModal.hidden = true; }
+
+  document.getElementById('addDeptBtn').addEventListener('click', () => openDeptModal(null));
+  document.getElementById('dmCancelBtn').addEventListener('click', closeDeptModal);
+  document.getElementById('deptModalOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeDeptModal(); });
+
+  document.getElementById('deptForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const name = document.getElementById('dmFieldName').value.trim();
+    const editingId = document.getElementById('dmEditingId').value;
+    if (!name) { document.getElementById('dmErrName').textContent = '請輸入部門名稱'; return; }
+    document.getElementById('dmErrName').textContent = '';
+    const btn = document.getElementById('dmSubmitBtn');
+    btn.disabled = true; btn.textContent = '處理中…';
+    try {
+      if (editingId) {
+        await updateDoc(doc(fbDb, 'briefing_departments', editingId), { name, color: selectedDeptColor, updatedAt: Date.now() });
+      } else {
+        await addDoc(collection(fbDb, 'briefing_departments'), {
+          name, color: selectedDeptColor, order: departments.length,
+          createdBy: mivUser.uid, createdAt: Date.now()
+        });
+      }
+      closeDeptModal();
+    } catch(err2) { alert('操作失敗：' + (err2.message||'請稍後再試')); }
+    btn.disabled = false; btn.textContent = editingId ? '儲存' : '新增';
+  });
+
+  async function deleteDept(id) {
+    const d = departments.find(x => x.id === id);
+    if (!confirm(`確定要刪除部門「${d?.name}」？`)) return;
+    try { await deleteDoc(doc(fbDb, 'briefing_departments', id)); }
+    catch(e) { alert('刪除失敗，請稍後再試'); }
+  }
+
+  document.getElementById('seedDeptsBtn').addEventListener('click', async () => {
+    if (!confirm('將載入 7 個預設部門（開發部、業務部…）\n現有同名部門不會重複新增，確定？')) return;
+    const existing = departments.map(d => d.name);
+    const toAdd = Object.entries(DEPT_COLORS)
+      .filter(([n]) => !existing.includes(n))
+      .map(([name, color], i) => ({ name, color, order: i }));
+    if (!toAdd.length) { alert('所有預設部門已存在'); return; }
+    try {
+      await Promise.all(toAdd.map(d =>
+        addDoc(collection(fbDb, 'briefing_departments'), { ...d, createdBy: mivUser.uid, createdAt: Date.now() })
+      ));
+    } catch(e) { alert('載入失敗：' + e.message); }
+  });
+
+  // ── EMPLOYEE MODAL ──
+  const empModal = document.getElementById('empModal');
+
+  function openEmpModal(editId) {
+    const emp = editId ? employees.find(e => e.id === editId) : null;
+    document.getElementById('empModalTitle').textContent = emp ? '修改人員' : '新增人員';
+    document.getElementById('emSubmitBtn').textContent = emp ? '儲存' : '新增';
+    document.getElementById('emFieldName').value = emp ? emp.name : '';
+    document.getElementById('emEditingId').value = editId || '';
+    document.getElementById('emErrName').textContent = '';
+    document.getElementById('emErrDept').textContent = '';
+    rebuildDeptSelects();
+    document.getElementById('emFieldDept').value = emp ? (emp.department || '') : '';
+    empModal.hidden = false;
+    document.getElementById('emFieldName').focus();
+  }
+  function closeEmpModal() { empModal.hidden = true; }
+
+  document.getElementById('addEmpBtn').addEventListener('click', () => openEmpModal(null));
+  document.getElementById('emCancelBtn').addEventListener('click', closeEmpModal);
+  document.getElementById('empModalOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeEmpModal(); });
+
+  document.getElementById('empForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const name = document.getElementById('emFieldName').value.trim();
+    const dept = document.getElementById('emFieldDept').value;
+    const editingId = document.getElementById('emEditingId').value;
+    let ok = true;
+    if (!name) { document.getElementById('emErrName').textContent = '請輸入姓名'; ok = false; }
+    if (!dept) { document.getElementById('emErrDept').textContent = '請選擇部門'; ok = false; }
+    if (!ok) return;
+    document.getElementById('emErrName').textContent = '';
+    document.getElementById('emErrDept').textContent = '';
+    const btn = document.getElementById('emSubmitBtn');
+    btn.disabled = true; btn.textContent = '處理中…';
+    try {
+      if (editingId) {
+        await updateDoc(doc(fbDb, 'briefing_employees', editingId), { name, department: dept, updatedAt: Date.now() });
+      } else {
+        await addDoc(collection(fbDb, 'briefing_employees'), {
+          name, department: dept, createdBy: mivUser.uid, createdAt: Date.now()
+        });
+      }
+      closeEmpModal();
+    } catch(err2) { alert('操作失敗：' + (err2.message||'請稍後再試')); }
+    btn.disabled = false; btn.textContent = editingId ? '儲存' : '新增';
+  });
+
+  async function deleteEmp(id) {
+    const e = employees.find(x => x.id === id);
+    if (!confirm(`確定要刪除人員「${e?.name}」？`)) return;
+    try { await deleteDoc(doc(fbDb, 'briefing_employees', id)); }
+    catch(err2) { alert('刪除失敗，請稍後再試'); }
   }
 
   // ── EVENT MODAL ──
@@ -1283,6 +1641,16 @@
     query(collection(fbDb,'briefing_events'),orderBy('createdAt','asc')),
     snap => { events=snap.docs.map(d=>({id:d.id,...d.data()})); renderAll(); },
     err => console.error('events snapshot error',err)
+  );
+  onSnapshot(
+    query(collection(fbDb,'briefing_departments'),orderBy('createdAt','asc')),
+    snap => { departments=snap.docs.map(d=>({id:d.id,...d.data()})); renderAll(); },
+    err => console.error('depts snapshot error',err)
+  );
+  onSnapshot(
+    query(collection(fbDb,'briefing_employees'),orderBy('createdAt','asc')),
+    snap => { employees=snap.docs.map(d=>({id:d.id,...d.data()})); renderAll(); },
+    err => console.error('employees snapshot error',err)
   );
   </script>
 </body>

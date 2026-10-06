@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
 </head>
   <body>
-    <script type="module" src="auth-guard.js?v=d75ba30e"></script>
+    <script type="module" src="auth-guard.js?v=1cdf362d"></script>
 
     <!-- 向下相容：舊版分享連結 index.html?p=xxx 自動跳轉 -->
     <script>
@@ -103,6 +103,12 @@
             <span class="hub-tile-sub">Tech Request</span>
             <span class="hub-tile-desc">委託受理、簽核與工時成本紀錄<br><span class="vi">Tiếp nhận ủy thác, ký duyệt và ghi nhận chi phí giờ công</span></span>
           </a>
+          <a href="sop-checklist.html" class="hub-tile hub-tile--indigo" data-app="sopcheck">
+            <span class="hub-tile-icon">📝</span>
+            <span class="hub-tile-name">SOP 轉點檢表工具</span>
+            <span class="hub-tile-sub">SOP to Checklist</span>
+            <span class="hub-tile-desc">作業標準書轉工具點檢表、扭力設定表與流程圖<br><span class="vi">Chuyển SOP thành bảng kiểm tra dụng cụ, bảng lực siết và lưu đồ</span></span>
+          </a>
           <a href="https://script.google.com/macros/s/AKfycbyp-YoEkJ_425bkv2tLWDQbqjSoOiZQDsbYylFbypqV4A2zJ1EFLVAtEF9Q5YTXbMkP/exec" target="_blank" rel="noopener noreferrer" class="hub-tile hub-tile--blue">
             <span class="hub-tile-icon">🔩</span>
             <span class="hub-tile-name">模具管理系統</span>
@@ -178,7 +184,7 @@
       // 依權限隱藏用不到的系統入口，避免點進去才發現被擋。
       // 磁磚上的 data-app 對應 auth-guard.js 的 MIV_APPS 代碼；
       // 沒有勾「使用」的系統就不顯示。權限在 admin-users.html 勾選。
-      import { mivAuthReady } from "./auth-guard.js?v=d75ba30e";
+      import { mivAuthReady } from "./auth-guard.js?v=1cdf362d";
       mivAuthReady.then(user => {
         document.querySelectorAll(".hub-tile[data-app]").forEach(tile => {
           if (!user.can(tile.dataset.app)) tile.style.display = "none";

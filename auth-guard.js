@@ -62,6 +62,8 @@ export const MIV_APPS = [
     useHint: "檢視案件與報表", manageHint: "建立／編輯案件、後台主檔" },
   { key: "briefing", name: "返台述職排程", sub: "Briefing Schedule", short: "述職排程",
     useHint: "檢視日曆、提出申請", manageHint: "刪除他人申請、管理記錄" },
+  { key: "sopcheck", name: "SOP 轉點檢表工具", sub: "SOP to Checklist", short: "SOP 點檢",
+    useHint: "上傳 SOP 產生點檢表（本機處理）", manageHint: "" },
 ];
 export const MIV_APP_KEYS = MIV_APPS.map(a => a.key);
 
@@ -76,6 +78,7 @@ const LEGACY_USE = {
   techreq:     ["viewer", "production", "toolroom", "quality", "admin"],
   purchase:    ["viewer", "production", "toolroom", "quality", "admin"],
   briefing:    ["viewer", "production", "toolroom", "quality", "admin"],
+  sopcheck:    ["viewer", "production", "toolroom", "quality", "admin"],
 };
 const LEGACY_MANAGE = {
   andon:       ["admin"],
@@ -87,6 +90,7 @@ const LEGACY_MANAGE = {
   techreq:     ["admin"],
   purchase:    ["production", "toolroom", "quality", "admin"],
   briefing:    ["admin"],
+  sopcheck:    ["admin"],
 };
 
 // 由 users 文件資料算出實際權限：{ isAdmin, use:Set, manage:Set, migrated }

@@ -296,13 +296,13 @@ $("f-assignee").value = req.assignee || "";
 $("f-workerCount").value = req.workerCount ?? "";
 $("f-hoursH").value = req.hoursH ?? "";
 $("f-hoursM").value = req.hoursM ?? "";
-// 維修次數：已填就用原值；未填則比對同機種＋同圖號的歷史單自動帶入
+// 維修次數：已填就用原值；未填則比對同圖號的歷史單自動帶入。
+// 只看圖號不看機種（機種填寫方式不統一，一併比對會漏掉同一個零件）。
 if (req.repairCount != null && req.repairCount !== "") {
   $("f-repairCount").value = req.repairCount;
 } else {
-  const model = (req.model || "").trim().toLowerCase();
   const drawing = (req.drawingNo || "").trim().toLowerCase();
-  if (model || drawing) {
+  if (drawing) {
     try {
       const all = await getDocs(collection(db, "treq_requests"));
       const mine = req.createdAt?.toMillis ? req.createdAt.toMillis() : Infinity;
@@ -311,7 +311,6 @@ if (req.repairCount != null && req.repairCount !== "") {
         if (d.id === reqId) return;
         const o = d.data();
         if (o.status === "rejected") return;
-        if ((o.model || "").trim().toLowerCase() !== model) return;
         if ((o.drawingNo || "").trim().toLowerCase() !== drawing) return;
         if ((o.createdAt?.toMillis ? o.createdAt.toMillis() : 0) < mine) n++;
       });

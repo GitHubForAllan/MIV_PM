@@ -518,12 +518,12 @@ function fmtWait(mins) {
   return `${m} 分`;
 }
 
-// ── 維修次數：同機種＋同圖號的歷史委託單累加 ────────────────────
-// 兩者皆空時無從比對，回傳 null 代表無法自動判定。
+// ── 維修次數：同圖號的歷史委託單累加 ────────────────────────────
+// 只看圖號不看機種：機種的填寫方式不統一，一併比對會漏掉實際同一個零件。
+// 圖號空白時無從比對，回傳 null 代表無法自動判定。
 function repairKey(r) {
-  const model = (r.model || "").trim().toLowerCase();
   const drawing = (r.drawingNo || "").trim().toLowerCase();
-  return (model || drawing) ? model + "｜" + drawing : null;
+  return drawing || null;
 }
 // 這張單之前、同一標的的委託單（不含本單、不含已退回）
 function previousRepairs(r) {
@@ -823,7 +823,7 @@ window.openDetail = function(id) {
     document.getElementById("f-assignee2").value = r.assignee ?? "";
     document.getElementById("f-workerCount").value = r.workerCount ?? "";
 
-    // 維修次數：自動帶入「同機種＋同圖號的歷史單數 + 1」，並說明依據；
+    // 維修次數：自動帶入「同圖號的歷史單數 + 1」，並說明依據；
     // 已填過就尊重原值，技術課也可以自行覆寫。
     const prev = previousRepairs(r);
     const hintEl = document.getElementById("d-repair-hint");
@@ -833,12 +833,12 @@ window.openDetail = function(id) {
       document.getElementById("f-repairCount").value = prev.length + 1;
     }
     if (!repairKey(r)) {
-      hintEl.textContent = "未填機種與圖號，無法自動比對歷史維修紀錄";
+      hintEl.textContent = "未填圖號，無法自動比對歷史維修紀錄";
     } else if (prev.length) {
-      hintEl.textContent = `同機種＋圖號先前已有 ${prev.length} 張：` +
+      hintEl.textContent = `同圖號先前已有 ${prev.length} 張：` +
         prev.map(o => o.no || "（無單號）").join("、") + "，自動帶入第 " + (prev.length + 1) + " 次（可自行修改）";
     } else {
-      hintEl.textContent = "查無同機種＋圖號的歷史單，視為第 1 次（可自行修改）";
+      hintEl.textContent = "查無同圖號的歷史單，視為第 1 次（可自行修改）";
     }
 
     // 待機時間：處理中先顯示「目前已等待」，標記完成時才定版

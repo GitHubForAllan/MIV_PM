@@ -169,7 +169,9 @@
       <th>維修次數<span class="vi">Số lần sửa</span></th>
       <td><input class="fill" type="number" min="0" id="f-repairCount"></td>
       <th>完成日期<span class="vi">Ngày hoàn thành</span></th>
-      <td colspan="3"><input class="fill" type="date" id="f-workDate"></td>
+      <td><input class="fill" type="date" id="f-workDate"></td>
+      <th>待機時間<span class="vi">Thời gian chờ</span></th>
+      <td id="p-wait">—</td>
     </tr>
   </table>
 
@@ -207,7 +209,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, getDocs, collection, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { mivAuthReady, mivDenyScreen } from "./auth-guard.js?v=1cdf362d";
 
 const firebaseConfig = {
@@ -294,7 +296,48 @@ $("f-assignee").value = req.assignee || "";
 $("f-workerCount").value = req.workerCount ?? "";
 $("f-hoursH").value = req.hoursH ?? "";
 $("f-hoursM").value = req.hoursM ?? "";
-$("f-repairCount").value = req.repairCount ?? "";
+// 維修次數：已填就用原值；未填則比對同機種＋同圖號的歷史單自動帶入
+if (req.repairCount != null && req.repairCount !== "") {
+  $("f-repairCount").value = req.repairCount;
+} else {
+  const model = (req.model || "").trim().toLowerCase();
+  const drawing = (req.drawingNo || "").trim().toLowerCase();
+  if (model || drawing) {
+    try {
+      const all = await getDocs(collection(db, "treq_requests"));
+      const mine = req.createdAt?.toMillis ? req.createdAt.toMillis() : Infinity;
+      let n = 0;
+      all.forEach(d => {
+        if (d.id === reqId) return;
+        const o = d.data();
+        if (o.status === "rejected") return;
+        if ((o.model || "").trim().toLowerCase() !== model) return;
+        if ((o.drawingNo || "").trim().toLowerCase() !== drawing) return;
+        if ((o.createdAt?.toMillis ? o.createdAt.toMillis() : 0) < mine) n++;
+      });
+      $("f-repairCount").value = n + 1;
+    } catch (e) {
+      console.error("比對歷史維修次數失敗：", e);
+    }
+  }
+}
+
+// 待機時間：開單到維修完成（完成後以存檔值為準，未完成則算到目前）
+(function () {
+  const startRaw = req.createdAt;
+  const start = startRaw && startRaw.toMillis ? startRaw.toMillis()
+              : (startRaw && startRaw.toDate ? startRaw.toDate().getTime() : null);
+  let mins = req.waitMinutes;
+  if (mins == null && start != null) {
+    const endRaw = req.completedAt;
+    const end = endRaw && endRaw.toMillis ? endRaw.toMillis()
+              : (endRaw && endRaw.toDate ? endRaw.toDate().getTime() : Date.now());
+    mins = Math.max(0, Math.round((end - start) / 60000));
+  }
+  if (mins == null) { $("p-wait").textContent = "—"; return; }
+  const d = Math.floor(mins / 1440), h = Math.floor((mins % 1440) / 60), m = mins % 60;
+  $("p-wait").textContent = d ? `${d} 天 ${h} 小時` : (h ? `${h} 小時 ${m} 分` : `${m} 分`);
+})();
 $("f-workDate").value = req.workDate || (req.completedAt?.toDate
   ? req.completedAt.toDate().toISOString().slice(0, 10) : "");
 $("f-hourlyRate").value = req.hourlyRate ?? config.hourlyRate ?? "";

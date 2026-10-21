@@ -179,7 +179,7 @@
     <div class="table-wrap">
       <table>
         <thead><tr>
-          <th>單號</th><th>類別</th><th>機種</th><th>圖號</th><th>委託單位</th><th>內容摘要</th><th>委託人</th><th>擔當者</th><th>希望完成</th><th>狀態</th><th>總成本</th>
+          <th>單號</th><th>類別</th><th>機種</th><th>圖號</th><th>委託單位</th><th>內容摘要</th><th>委託人</th><th>擔當者</th><th>希望完成</th><th>狀態</th><th>待機時間</th><th>維修次數</th><th>總成本</th>
         </tr></thead>
         <tbody id="table-tbody"></tbody>
       </table>
@@ -293,7 +293,16 @@
         <div class="grid3">
           <div class="detail-row"><label>擔當者 <span class="vi">Người phụ trách</span></label><input id="f-assignee2"></div>
           <div class="detail-row"><label>工作人數 <span class="vi">Số người</span></label><input type="number" min="0" id="f-workerCount"></div>
-          <div class="detail-row"><label>維修次數 <span class="vi">Số lần sửa chữa</span></label><input type="number" min="0" id="f-repairCount"></div>
+          <div class="detail-row">
+            <label>維修次數 <span class="vi">Số lần sửa chữa</span></label>
+            <input type="number" min="0" id="f-repairCount">
+            <p class="hint" id="d-repair-hint"></p>
+          </div>
+        </div>
+        <div class="detail-row">
+          <label>待機時間（開單至完成） <span class="vi">Thời gian chờ (từ lập đơn đến hoàn thành)</span></label>
+          <input id="f-waitDisplay" disabled>
+          <p class="hint">系統依開單時間與按下「標記完成」的時間自動計算</p>
         </div>
         <div class="grid3">
           <div class="detail-row"><label>工作總工時－時 <span class="vi">Giờ</span></label><input type="number" min="0" id="f-hoursH" oninput="recalcCost()"></div>
@@ -486,6 +495,47 @@ function updateStats() {
   STATUSES.forEach(s => { document.getElementById("stat-"+s).textContent = list.filter(r => r.status === s).length; });
 }
 
+// ── 待機時間：開單（createdAt）到維修完成（completedAt）──────────
+function toMillis(ts) {
+  if (!ts) return null;
+  if (ts.toMillis) return ts.toMillis();
+  if (ts.toDate) return ts.toDate().getTime();
+  const d = new Date(ts);
+  return isNaN(d) ? null : d.getTime();
+}
+// 回傳分鐘數；尚未完成時以現在時間計算（讓處理中也看得到已經等多久）
+function waitMinutes(r, endTs) {
+  const start = toMillis(r.createdAt);
+  if (start == null) return null;
+  const end = toMillis(endTs ?? r.completedAt) ?? Date.now();
+  return Math.max(0, Math.round((end - start) / 60000));
+}
+function fmtWait(mins) {
+  if (mins == null) return "—";
+  const d = Math.floor(mins / 1440), h = Math.floor((mins % 1440) / 60), m = mins % 60;
+  if (d) return `${d} 天 ${h} 小時`;
+  if (h) return `${h} 小時 ${m} 分`;
+  return `${m} 分`;
+}
+
+// ── 維修次數：同機種＋同圖號的歷史委託單累加 ────────────────────
+// 兩者皆空時無從比對，回傳 null 代表無法自動判定。
+function repairKey(r) {
+  const model = (r.model || "").trim().toLowerCase();
+  const drawing = (r.drawingNo || "").trim().toLowerCase();
+  return (model || drawing) ? model + "｜" + drawing : null;
+}
+// 這張單之前、同一標的的委託單（不含本單、不含已退回）
+function previousRepairs(r) {
+  const key = repairKey(r);
+  if (!key) return [];
+  const mine = toMillis(r.createdAt) ?? Infinity;
+  return Object.values(requests)
+    .filter(o => o.id !== r.id && o.status !== "rejected" && repairKey(o) === key)
+    .filter(o => (toMillis(o.createdAt) ?? 0) < mine)
+    .sort((a, b) => (toMillis(a.createdAt) || 0) - (toMillis(b.createdAt) || 0));
+}
+
 function deptLabel(id) {
   const d = departments[id];
   return d ? d.name : (id || "—");
@@ -544,6 +594,8 @@ function renderTable(list) {
       <td>${esc(r.assignee || "—")}</td>
       <td>${r.desiredDate ? fmtDT(r.desiredDate) : "—"}</td>
       <td><span class="badge badge-status st-${r.status}">${STATUS_LABEL[r.status]||r.status}</span></td>
+      <td>${fmtWait(r.waitMinutes ?? waitMinutes(r))}</td>
+      <td>${r.repairCount ?? "—"}</td>
       <td>${r.status === "completed" ? (r.totalCost ?? 0) : "—"}</td>
     </tr>`).join("");
 }
@@ -757,6 +809,7 @@ window.openDetail = function(id) {
     document.getElementById("d-complete-info-text").textContent =
       `完成時間：${fmtTime(r.completedAt)}　擔當者：${r.assignee || "—"}　工作人數：${r.workerCount ?? "—"}　` +
       `工作總工時：${r.hoursH ?? 0} 時 ${r.hoursM ?? 0} 分　維修次數：${r.repairCount ?? "—"}　` +
+      `待機時間：${fmtWait(r.waitMinutes ?? waitMinutes(r))}　` +
       `委外廠商：${r.vendor || "（無委外）"}　備註：${r.remarks || "（無）"}`;
     document.getElementById("d-hourlyRate2").textContent = r.hourlyRate ?? "—";
     document.getElementById("d-laborCost2").textContent = r.laborCost ?? "—";
@@ -769,7 +822,27 @@ window.openDetail = function(id) {
     costSummary.style.display = "none";
     document.getElementById("f-assignee2").value = r.assignee ?? "";
     document.getElementById("f-workerCount").value = r.workerCount ?? "";
-    document.getElementById("f-repairCount").value = r.repairCount ?? "";
+
+    // 維修次數：自動帶入「同機種＋同圖號的歷史單數 + 1」，並說明依據；
+    // 已填過就尊重原值，技術課也可以自行覆寫。
+    const prev = previousRepairs(r);
+    const hintEl = document.getElementById("d-repair-hint");
+    if (r.repairCount != null && r.repairCount !== "") {
+      document.getElementById("f-repairCount").value = r.repairCount;
+    } else {
+      document.getElementById("f-repairCount").value = prev.length + 1;
+    }
+    if (!repairKey(r)) {
+      hintEl.textContent = "未填機種與圖號，無法自動比對歷史維修紀錄";
+    } else if (prev.length) {
+      hintEl.textContent = `同機種＋圖號先前已有 ${prev.length} 張：` +
+        prev.map(o => o.no || "（無單號）").join("、") + "，自動帶入第 " + (prev.length + 1) + " 次（可自行修改）";
+    } else {
+      hintEl.textContent = "查無同機種＋圖號的歷史單，視為第 1 次（可自行修改）";
+    }
+
+    // 待機時間：處理中先顯示「目前已等待」，標記完成時才定版
+    document.getElementById("f-waitDisplay").value = fmtWait(waitMinutes(r)) + "（目前累計）";
     document.getElementById("f-hoursH").value = r.hoursH ?? "";
     document.getElementById("f-hoursM").value = r.hoursM ?? "";
     document.getElementById("f-materialCost").value = r.materialCost ?? "";
@@ -1016,9 +1089,13 @@ window.completeRequest = async function() {
   const decHours = hoursH + hoursM/60;
   const laborCost = Math.round(decHours * rate * 100) / 100;
   const totalCost = Math.round((laborCost + materialCost + outsourceCost) * 100) / 100;
+  // 待機時間在此定版存檔（serverTimestamp 要回寫後才讀得到，因此用本機時間計算），
+  // 之後報表直接取用這個值，不必每次重算。
+  const wait = waitMinutes(requests[detailId] || {}, Date.now());
   await updateDoc(doc(db, "treq_requests", detailId), {
     status: "completed", workerCount, hoursH, hoursM, materialCost,
     assignee, vendor, outsourceCost, repairCount,
+    waitMinutes: wait,
     hourlyRate: rate, laborCost, totalCost, remarks,
     completedAt: serverTimestamp(), completedBy: trUser.name || trUser.employeeId, updatedAt: serverTimestamp(),
   });
